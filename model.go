@@ -31,7 +31,7 @@ type ErrorLoginResponse struct {
 type CustomersRequest struct {
 	Documment    string    `validate:"required,cpf" json:"documentNumber,omitempty"`
 	RegisterName string    `validate:"required" json:"registerName,omitempty"`
-	SocialName   *string   `json:"socialName,omitempty"`
+	SocialName   string    `json:"socialName,omitempty"`
 	Phone        *Phone    `validate:"required,dive" json:"phone,omitempty"`
 	Address      *Address  `validate:"required,dive" json:"address,omitempty"`
 	BirthDate    time.Time `validate:"required" json:"birthDate,omitempty"`
@@ -81,7 +81,7 @@ type Address struct {
 	ZipCode        string  `validate:"required" json:"zipCode,omitempty"`
 	AddressLine    string  `validate:"required" json:"addressLine,omitempty"`
 	BuildingNumber string  `validate:"required" json:"buildingNumber,omitempty"`
-	Complement     *string `json:"complement,omitempty"`
+	Complement     string  `json:"complement,omitempty"`
 	Neighborhood   string  `validate:"required" json:"neighborhood,omitempty"`
 	City           string  `validate:"required" json:"city,omitempty"`
 	State          string  `validate:"required" json:"state,omitempty"`
@@ -205,7 +205,7 @@ const (
 type LegalRepresentative struct {
 	Documment    string    `validate:"required,cpf" json:"documentNumber,omitempty"`
 	RegisterName string    `validate:"required" json:"registerName,omitempty"`
-	SocialName   *string   `json:"socialName,omitempty"`
+	SocialName   string    `json:"socialName,omitempty"`
 	Phone        *Phone    `validate:"required,dive" json:"phone,omitempty"`
 	Address      *Address  `validate:"required,dive" json:"address,omitempty"`
 	BirthDate    time.Time `validate:"required" json:"birthDate,omitempty"`
