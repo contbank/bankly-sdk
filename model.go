@@ -175,6 +175,17 @@ type BusinessRequest struct {
 	LegalRepresentative		LegalRepresentative		`validate:"required,dive" json:"legalRepresentative,omitempty"`
 }
 
+//BusinessUpdateRequest ...
+type BusinessUpdateRequest struct {
+	BusinessName  			string    				`validate:"required" json:"businessName,omitempty"`
+	TradingName	  			string    				`json:"tradingName,omitempty"`
+	BusinessEmail 			string    				`json:"businessEmail,omitempty"`
+	BusinessType  			BusinessType 			`validate:"required" json:"businessType"`
+	BusinessSize 			BusinessSize 			`validate:"required" json:"businessSize"`
+	BusinessAddress 		*Address  				`validate:"required,dive" json:"businessAddress,omitempty"`
+	LegalRepresentative		LegalRepresentative		`validate:"required,dive" json:"legalRepresentative,omitempty"`
+}
+
 //BusinessType ...
 type BusinessType string
 
@@ -219,6 +230,7 @@ type BusinessResponse struct {
 	Document    	string 			`json:"documentNumber,omitempty"`
 	BusinessName 	string 			`json:"businessName,omitempty"`
 	TradingName	 	string 			`json:"tradingName,omitempty"`
+	BusinessEmail   string    		`json:"businessEmail,omitempty"`
 	Status	 	 	string 			`json:"status,omitempty"`
 	BusinessType 	BusinessType 	`json:"businessType"`
 	BusinessSize 	BusinessSize 	`json:"businessSize"`

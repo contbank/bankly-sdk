@@ -82,6 +82,58 @@ func (c *Business) CreateBusiness(businessRequest BusinessRequest) error {
 	return errors.New("error create business")
 }
 
+//UpdateBusiness ...
+func (c *Business) UpdateBusiness(businessDocument string, businessUpdateRequest BusinessUpdateRequest) error {
+	u, err := url.Parse(c.session.APIEndpoint)
+	if err != nil {
+		return err
+	}
+
+	u.Path = path.Join(u.Path, BusinessPath)
+	u.Path = path.Join(u.Path, grok.OnlyDigits(businessDocument))
+	endpoint := u.String()
+
+	reqbyte, err := json.Marshal(businessUpdateRequest)
+
+	req, err := http.NewRequest("PATCH", endpoint, bytes.NewReader(reqbyte))
+	if err != nil {
+		return err
+	}
+
+	token, err := c.authentication.Token()
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Authorization", token)
+	req.Header.Add("Content-type", "application/json")
+	req.Header.Add("api-version", c.session.APIVersion)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode == http.StatusAccepted {
+		return nil
+	}
+
+	var bodyErr *ErrorResponse
+
+	err = json.Unmarshal(respBody, &bodyErr)
+	if err != nil {
+		return err
+	}
+
+	if bodyErr.Errors != nil {
+		return errors.New(bodyErr.Errors[0].Messages[0])
+	}
+	return errors.New("error updating business")
+}
+
 //CreateBusinessAccount ...
 func (c *Business) CreateBusinessAccount(businessAccountRequest BusinessAccountRequest) (*AccountResponse, error) {
 	u, err := url.Parse(c.session.APIEndpoint)
