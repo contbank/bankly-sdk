@@ -44,7 +44,7 @@ func (c *Customers) CreateRegistration(customer CustomersRequest) error {
 	}
 
 	u.Path = path.Join(u.Path, CustomersPath)
-	u.Path = path.Join(u.Path, customer.Documment)
+	u.Path = path.Join(u.Path, customer.Document)
 	endpoint := u.String()
 
 	reqbyte, err := json.Marshal(customer)
@@ -92,7 +92,7 @@ func (c *Customers) CreateRegistration(customer CustomersRequest) error {
 	}
 
 	if bodyErr.Errors != nil {
-		return errors.New(bodyErr.Errors[0].Messages[0])
+		return FindError(bodyErr.Errors[0])
 	}
 
 	return errors.New("error create registration")
@@ -161,7 +161,7 @@ func (c *Customers) FindRegistration(document string) (*CustomersResponse, error
 	}
 
 	if bodyErr.Errors != nil {
-		return nil, errors.New(bodyErr.Errors[0].Messages[0])
+		return nil, FindError(bodyErr.Errors[0])
 	}
 
 	return nil, errors.New("error find registration")
@@ -233,7 +233,7 @@ func (c *Customers) CreateAccount(document string, accountType AccountType) (*Ac
 	}
 
 	if bodyErr.Errors != nil {
-		return nil, errors.New(bodyErr.Errors[0].Messages[0])
+		return nil, FindError(bodyErr.Errors[0])
 	}
 
 	return nil, errors.New("error create account")
@@ -302,7 +302,7 @@ func (c *Customers) FindAccounts(document string) ([]AccountResponse, error) {
 	}
 
 	if bodyErr.Errors != nil {
-		return nil, errors.New(bodyErr.Errors[0].Messages[0])
+		return nil, FindError(bodyErr.Errors[0])
 	}
 
 	return nil, errors.New("error find accounts")

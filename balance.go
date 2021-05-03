@@ -97,7 +97,7 @@ func (c *Balance) Balance(account string) (*AccountResponse, error) {
 	}
 
 	if bodyErr.Errors != nil {
-		return nil, errors.New(bodyErr.Errors[0].Messages[0])
+		return nil, FindError(bodyErr.Errors[0])
 	}
 
 	return nil, errors.New("error balance")

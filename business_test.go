@@ -51,7 +51,7 @@ func (s *BusinessTestSuite) TestCreateBusinessErrorInvalidTypeMEIAndSizeEPP() {
 	err := s.business.CreateBusiness(businessRequest)
 
 	s.assert.Error(err)
-	s.assert.EqualError(err, "Invalid business size to personal business")
+	s.assert.Equal(err, bankly.ErrInvalidBusinessSize)
 }
 
 func (s *BusinessTestSuite) TestCreateBusinessErrorInvalidTypeMEIAndSizeME() {
@@ -60,11 +60,12 @@ func (s *BusinessTestSuite) TestCreateBusinessErrorInvalidTypeMEIAndSizeME() {
 	err := s.business.CreateBusiness(businessRequest)
 
 	s.assert.Error(err)
-	s.assert.EqualError(err, "Invalid business size to personal business")
+	s.assert.Equal(err, bankly.ErrInvalidBusinessSize)
 }
 
 func (s *BusinessTestSuite) TestUpdateBusinessName() {
 
+	// TODO Retirar skip quando o Bankly liberar o PATCH
 	s.T().Skip("Aguardando o mock do bankly para reativar este teste")
 
 	// create business
@@ -92,6 +93,7 @@ func (s *BusinessTestSuite) TestUpdateBusinessName() {
 
 func (s *BusinessTestSuite) TestUpdateBusinessEmailAndBusinessTypeAndBusinessType() {
 
+	// TODO Retirar skip quando o Bankly liberar o PATCH
 	s.T().Skip("Aguardando o mock do bankly para reativar este teste")
 
 	// create business
@@ -144,11 +146,10 @@ func (s *BusinessTestSuite) TestCreateBusinessAccountErrorDoesntHaveAnApprovedRe
 		Document: grok.GeneratorCNPJ(),
 		AccountType: bankly.PaymentAccount,
 	}
-
 	account, err := s.business.CreateBusinessAccount(businessAccountRequest)
 
 	s.assert.Error(err)
-	s.assert.EqualError(err, "Account holder does not exist or does not have an approved registration yet")
+	s.assert.Equal(err, bankly.ErrAccountHolderNotExists)
 	s.assert.Nil(account)
 }
 
@@ -183,10 +184,10 @@ func createBusinessRequest(document string, businessType bankly.BusinessType, bu
 	}
 }
 
-func createLegalRepresentative() bankly.LegalRepresentative {
+func createLegalRepresentative() *bankly.LegalRepresentative {
 	randSurname := randStringBytes(10)
-	return bankly.LegalRepresentative {
-		Documment: grok.GeneratorCPF(),
+	return &bankly.LegalRepresentative {
+		Document: grok.GeneratorCPF(),
 		RegisterName: "Nome do Representante Legal " + randSurname,
 		Phone: &bankly.Phone {
 			CountryCode: "55",

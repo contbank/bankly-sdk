@@ -29,7 +29,7 @@ type ErrorLoginResponse struct {
 
 //CustomersRequest ...
 type CustomersRequest struct {
-	Documment    string    `validate:"required,cpf" json:"documentNumber,omitempty"`
+	Document    string     `validate:"required,cpf" json:"documentNumber,omitempty"`
 	RegisterName string    `validate:"required" json:"registerName,omitempty"`
 	SocialName   string    `json:"socialName,omitempty"`
 	Phone        *Phone    `validate:"required,dive" json:"phone,omitempty"`
@@ -172,7 +172,7 @@ type BusinessRequest struct {
 	BusinessType  			BusinessType 			`validate:"required" json:"businessType"`
 	BusinessSize 			BusinessSize 			`validate:"required" json:"businessSize"`
 	BusinessAddress 		*Address  				`validate:"required,dive" json:"businessAddress,omitempty"`
-	LegalRepresentative		LegalRepresentative		`validate:"required,dive" json:"legalRepresentative,omitempty"`
+	LegalRepresentative		*LegalRepresentative	`validate:"required,dive" json:"legalRepresentative,omitempty"`
 }
 
 //BusinessUpdateRequest ...
@@ -183,7 +183,7 @@ type BusinessUpdateRequest struct {
 	BusinessType  			BusinessType 			`validate:"required" json:"businessType"`
 	BusinessSize 			BusinessSize 			`validate:"required" json:"businessSize"`
 	BusinessAddress 		*Address  				`validate:"required,dive" json:"businessAddress,omitempty"`
-	LegalRepresentative		LegalRepresentative		`validate:"required,dive" json:"legalRepresentative,omitempty"`
+	LegalRepresentative		*LegalRepresentative	`validate:"required,dive" json:"legalRepresentative,omitempty"`
 }
 
 //BusinessType ...
@@ -214,7 +214,7 @@ const (
 
 //LegalRepresentative ...
 type LegalRepresentative struct {
-	Documment    string    `validate:"required,cpf" json:"documentNumber,omitempty"`
+	Document    string     `validate:"required,cpf" json:"documentNumber,omitempty"`
 	RegisterName string    `validate:"required" json:"registerName,omitempty"`
 	SocialName   string    `json:"socialName,omitempty"`
 	Phone        *Phone    `validate:"required,dive" json:"phone,omitempty"`
