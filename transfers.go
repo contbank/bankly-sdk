@@ -4,11 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
 	"time"
+)
+
+const (
+	// InternalBankCode ...
+	InternalBankCode string = "332"
 )
 
 //Transfers ...
@@ -29,38 +35,66 @@ func NewTransfers(session Session) *Transfers {
 	}
 }
 
-//CreateTransfers ...
-func (t *Transfers) CreateTransfers(correlationID string, model TransfersRequest) (*TransfersResponse, error) {
+// CreateExternalTransfer ...
+func (t *Transfers) CreateExternalTransfer(correlationID string, model TransfersRequest) (*TransfersResponse, error) {
+	logrus.
+		WithFields(logrus.Fields{
+			"correlation_id" : correlationID,
+		}).
+		Info("create external transfer")
+	return t.createTransfers(correlationID, model)
+}
+
+// CreateInternalTransfer ...
+func (t *Transfers) CreateInternalTransfer(correlationID string, model TransfersRequest) (*TransfersResponse, error) {
+	logrus.
+		WithFields(logrus.Fields{
+			"correlation_id" : correlationID,
+		}).
+		Info("create internal transfer")
+	model.Recipient.BankCode = InternalBankCode
+	return t.createTransfers(correlationID, model)
+}
+
+// createTransfers ...
+func (t *Transfers) createTransfers(correlationID string, model TransfersRequest) (*TransfersResponse, error) {
 	err := Validator.Struct(model)
-
 	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error validating model")
 		return nil, err
 	}
 
-	u, err := url.Parse(t.session.APIEndpoint)
-
+	endpoint, err := t.getTransferAPIEndpoint()
 	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error getting api endpoint")
 		return nil, err
 	}
-
-	u.Path = path.Join(u.Path, TransfersPath)
-	endpoint := u.String()
 
 	reqbyte, err := json.Marshal(model)
-
 	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error marshal model")
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(reqbyte))
-
+	req, err := http.NewRequest("POST", *endpoint, bytes.NewReader(reqbyte))
 	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error new request")
 		return nil, err
 	}
 
 	token, err := t.authentication.Token()
-
 	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error authentication")
 		return nil, err
 	}
 
@@ -70,8 +104,10 @@ func (t *Transfers) CreateTransfers(correlationID string, model TransfersRequest
 	req.Header.Add("x-correlation-id", correlationID)
 
 	resp, err := t.httpClient.Do(req)
-
 	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error http client")
 		return nil, err
 	}
 
@@ -83,23 +119,39 @@ func (t *Transfers) CreateTransfers(correlationID string, model TransfersRequest
 		var body *TransfersResponse
 
 		err = json.Unmarshal(respBody, &body)
-
 		if err != nil {
+			logrus.
+				WithError(err).
+				Error("error unmarshal")
 			return nil, err
 		}
-
+		
 		return body, nil
 	}
 
 	return nil, errors.New("error create transfers")
 }
 
-//FindTransfers ...
+// FindTransfers ...
 func (t *Transfers) FindTransfers() {
 
 }
 
-//FindTransfersByCode ...
+// FindTransfersByCode ...
 func (t *Transfers) FindTransfersByCode() {
 
+}
+
+// getTransferAPIEndpoint
+func (t *Transfers) getTransferAPIEndpoint() (*string, error) {
+	u, err := url.Parse(t.session.APIEndpoint)
+	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error api endpoint")
+		return nil, err
+	}
+	u.Path = path.Join(u.Path, TransfersPath)
+	endpoint := u.String()
+	return &endpoint, nil
 }

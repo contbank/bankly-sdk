@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/contbank/grok"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -32,18 +33,15 @@ func NewBusiness(session Session) *Business {
 
 //CreateBusiness ...
 func (c *Business) CreateBusiness(businessRequest BusinessRequest) error {
-	u, err := url.Parse(c.session.APIEndpoint)
+
+	endpoint, err := c.getBusinessAPIEndpoint(businessRequest.Document, false)
 	if err != nil {
 		return err
 	}
 
-	u.Path = path.Join(u.Path, BusinessPath)
-	u.Path = path.Join(u.Path, grok.OnlyDigits(businessRequest.Document))
-	endpoint := u.String()
-
 	reqbyte, err := json.Marshal(businessRequest)
 
-	req, err := http.NewRequest("PUT", endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequest("PUT", *endpoint, bytes.NewReader(reqbyte))
 	if err != nil {
 		return err
 	}
@@ -84,18 +82,15 @@ func (c *Business) CreateBusiness(businessRequest BusinessRequest) error {
 
 //UpdateBusiness ...
 func (c *Business) UpdateBusiness(businessDocument string, businessUpdateRequest BusinessUpdateRequest) error {
-	u, err := url.Parse(c.session.APIEndpoint)
+
+	endpoint, err := c.getBusinessAPIEndpoint(businessDocument, false)
 	if err != nil {
 		return err
 	}
 
-	u.Path = path.Join(u.Path, BusinessPath)
-	u.Path = path.Join(u.Path, grok.OnlyDigits(businessDocument))
-	endpoint := u.String()
-
 	reqbyte, err := json.Marshal(businessUpdateRequest)
 
-	req, err := http.NewRequest("PATCH", endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequest("PATCH", *endpoint, bytes.NewReader(reqbyte))
 	if err != nil {
 		return err
 	}
@@ -136,25 +131,27 @@ func (c *Business) UpdateBusiness(businessDocument string, businessUpdateRequest
 
 //CreateBusinessAccount ...
 func (c *Business) CreateBusinessAccount(businessAccountRequest BusinessAccountRequest) (*AccountResponse, error) {
-	u, err := url.Parse(c.session.APIEndpoint)
+
+	endpoint, err := c.getBusinessAPIEndpoint(businessAccountRequest.Document, true)
 	if err != nil {
 		return nil, err
 	}
 
-	u.Path = path.Join(u.Path, BusinessPath)
-	u.Path = path.Join(u.Path, grok.OnlyDigits(businessAccountRequest.Document))
-	u.Path = path.Join(u.Path, AccountsPath)
-	endpoint := u.String()
-
 	reqbyte, err := json.Marshal(businessAccountRequest)
 
-	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequest("POST", *endpoint, bytes.NewReader(reqbyte))
 	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error new request")
 		return nil, err
 	}
 
 	token, err := c.authentication.Token()
 	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error authentication")
 		return nil, err
 	}
 
@@ -164,6 +161,9 @@ func (c *Business) CreateBusinessAccount(businessAccountRequest BusinessAccountR
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error http client")
 		return nil, err
 	}
 
@@ -174,8 +174,10 @@ func (c *Business) CreateBusinessAccount(businessAccountRequest BusinessAccountR
 		var bodyResp *AccountResponse
 
 		err = json.Unmarshal(respBody, &bodyResp)
-
 		if err != nil {
+			logrus.
+				WithError(err).
+				Error("error unmarshal")
 			return nil, err
 		}
 
@@ -186,6 +188,9 @@ func (c *Business) CreateBusinessAccount(businessAccountRequest BusinessAccountR
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error unmarshal")
 		return nil, err
 	}
 
@@ -197,15 +202,13 @@ func (c *Business) CreateBusinessAccount(businessAccountRequest BusinessAccountR
 
 //FindBusiness ...
 func (c *Business) FindBusiness(document string) (*BusinessResponse, error) {
-	u, err := url.Parse(c.session.APIEndpoint)
+
+	endpoint, err := c.getBusinessAPIEndpoint(document, false)
 	if err != nil {
 		return nil, err
 	}
-	u.Path = path.Join(u.Path, BusinessPath)
-	u.Path = path.Join(u.Path, document)
-	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequest("GET", *endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -260,16 +263,13 @@ func (c *Business) FindBusiness(document string) (*BusinessResponse, error) {
 
 //FindBusinessAccounts ...
 func (c *Business) FindBusinessAccounts(document string) ([]AccountResponse, error) {
-	u, err := url.Parse(c.session.APIEndpoint)
+
+	endpoint, err := c.getBusinessAPIEndpoint(document, true)
 	if err != nil {
 		return nil, err
 	}
-	u.Path = path.Join(u.Path, BusinessPath)
-	u.Path = path.Join(u.Path, document)
-	u.Path = path.Join(u.Path, AccountsPath)
-	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequest("GET", *endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -319,4 +319,22 @@ func (c *Business) FindBusinessAccounts(document string) ([]AccountResponse, err
 	}
 
 	return nil, errors.New("error find business accounts")
+}
+
+// getBusinessAPIEndpoint
+func (c *Business) getBusinessAPIEndpoint(document string, isAccountPath bool) (*string, error) {
+	u, err := url.Parse(c.session.APIEndpoint)
+	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error api endpoint")
+		return nil, err
+	}
+	u.Path = path.Join(u.Path, BusinessPath)
+	u.Path = path.Join(u.Path, grok.OnlyDigits(document))
+	if isAccountPath == true {
+		u.Path = path.Join(u.Path, AccountsPath)
+	}
+	endpoint := u.String()
+	return &endpoint, nil
 }
