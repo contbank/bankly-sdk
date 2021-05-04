@@ -1,20 +1,19 @@
 package bankly_test
 
 import (
-	"github.com/contbank/grok"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/contbank/bankly-sdk"
+	bankly "github.com/contbank/bankly-sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
 type BusinessTestSuite struct {
 	suite.Suite
-	assert    *assert.Assertions
-	session   *bankly.Session
+	assert   *assert.Assertions
+	session  *bankly.Session
 	business *bankly.Business
 }
 
@@ -37,7 +36,7 @@ func (s *BusinessTestSuite) SetupTest() {
 }
 
 func (s *BusinessTestSuite) TestCreateBusiness() {
-	businessRequest := s.createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeEI, bankly.BusinessSizeME)
+	businessRequest := s.createBusinessRequest(bankly.GeneratorCNPJ(), bankly.BusinessTypeEI, bankly.BusinessSizeME)
 
 	err := s.business.CreateBusiness(businessRequest)
 
@@ -46,7 +45,7 @@ func (s *BusinessTestSuite) TestCreateBusiness() {
 }
 
 func (s *BusinessTestSuite) TestCreateBusinessErrorInvalidTypeMEIAndSizeEPP() {
-	businessRequest := s.createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeEPP)
+	businessRequest := s.createBusinessRequest(bankly.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeEPP)
 
 	err := s.business.CreateBusiness(businessRequest)
 
@@ -55,7 +54,7 @@ func (s *BusinessTestSuite) TestCreateBusinessErrorInvalidTypeMEIAndSizeEPP() {
 }
 
 func (s *BusinessTestSuite) TestCreateBusinessErrorInvalidTypeMEIAndSizeME() {
-	businessRequest := s.createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeME)
+	businessRequest := s.createBusinessRequest(bankly.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeME)
 
 	err := s.business.CreateBusiness(businessRequest)
 
@@ -64,14 +63,14 @@ func (s *BusinessTestSuite) TestCreateBusinessErrorInvalidTypeMEIAndSizeME() {
 }
 
 func (s *BusinessTestSuite) TestCreateBusinessAccount() {
-	businessRequest := s.createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeEI, bankly.BusinessSizeME)
+	businessRequest := s.createBusinessRequest(bankly.GeneratorCNPJ(), bankly.BusinessTypeEI, bankly.BusinessSizeME)
 
 	err := s.business.CreateBusiness(businessRequest)
 	s.assert.NoError(err)
 	s.assert.Nil(err)
 
-	businessAccountRequest := bankly.BusinessAccountRequest {
-		Document: businessRequest.Document,
+	businessAccountRequest := bankly.BusinessAccountRequest{
+		Document:    businessRequest.Document,
 		AccountType: bankly.PaymentAccount,
 	}
 
@@ -81,8 +80,8 @@ func (s *BusinessTestSuite) TestCreateBusinessAccount() {
 }
 
 func (s *BusinessTestSuite) TestCreateBusinessAccountErrorDoesntHaveAnApprovedRegistration() {
-	businessAccountRequest := bankly.BusinessAccountRequest {
-		Document: grok.GeneratorCNPJ(),
+	businessAccountRequest := bankly.BusinessAccountRequest{
+		Document:    bankly.GeneratorCNPJ(),
 		AccountType: bankly.PaymentAccount,
 	}
 
@@ -96,16 +95,16 @@ func (s *BusinessTestSuite) TestCreateBusinessAccountErrorDoesntHaveAnApprovedRe
 func (s *BusinessTestSuite) createBusinessRequest(document string,
 	businessType bankly.BusinessType, businessSize bankly.BusinessSize) bankly.BusinessRequest {
 
-	randomName := randStringBytes(10)
+	randomName := bankly.RandStringBytes(10)
 	email := "email_de_teste_" + randomName + "@contbank.com"
 
-	return bankly.BusinessRequest {
-		Document: grok.OnlyDigits(document),
-		BusinessName: "Nome da Empresa " + randomName,
-		TradingName: "Nome Fantasia " + randomName,
+	return bankly.BusinessRequest{
+		Document:      bankly.OnlyDigits(document),
+		BusinessName:  "Nome da Empresa " + randomName,
+		TradingName:   "Nome Fantasia " + randomName,
 		BusinessEmail: email,
-		BusinessType: businessType,
-		BusinessSize: businessSize,
+		BusinessType:  businessType,
+		BusinessSize:  businessSize,
 		BusinessAddress: &bankly.Address{
 			ZipCode:        "05410900",
 			City:           "São Paulo",
@@ -120,16 +119,16 @@ func (s *BusinessTestSuite) createBusinessRequest(document string,
 }
 
 func (s *BusinessTestSuite) createLegalRepresentative() bankly.LegalRepresentative {
-	randSurname := randStringBytes(10)
+	randSurname := bankly.RandStringBytes(10)
 
-	return bankly.LegalRepresentative {
-		Documment: grok.GeneratorCPF(),
+	return bankly.LegalRepresentative{
+		Documment:    bankly.GeneratorCPF(),
 		RegisterName: "Nome do Representante Legal " + randSurname,
-		Phone: &bankly.Phone {
+		Phone: &bankly.Phone{
 			CountryCode: "55",
-			Number:      grok.GeneratorCellphone(),
+			Number:      bankly.GeneratorCellphone(),
 		},
-		Address: &bankly.Address {
+		Address: &bankly.Address{
 			ZipCode:        "05410900",
 			City:           "São Paulo",
 			AddressLine:    "Rua Qualquer XYZ",
@@ -138,9 +137,9 @@ func (s *BusinessTestSuite) createLegalRepresentative() bankly.LegalRepresentati
 			State:          "SP",
 			Country:        "BR",
 		},
-		BirthDate:    time.Date(1990, time.June, 29, 0, 0, 0, 0, time.UTC),
-		MotherName:   "Nome da Mãe do Representante Legal " + randSurname,
-		Email:        "email_legal_representative_" + randSurname + "@contbank.com",
+		BirthDate:  time.Date(1990, time.June, 29, 0, 0, 0, 0, time.UTC),
+		MotherName: "Nome da Mãe do Representante Legal " + randSurname,
+		Email:      "email_legal_representative_" + randSurname + "@contbank.com",
 	}
 }
 

@@ -13,6 +13,8 @@ const (
 	TransfersPath = "fund-transfers"
 	//BusinessPath ...
 	BusinessPath = "business"
+	//BoletosPath ...
+	BoletosPath = "bankslip"
 )
 
 //AuthenticationResponse ...
@@ -78,14 +80,28 @@ type Phone struct {
 
 //Address ...
 type Address struct {
-	ZipCode        string  `validate:"required" json:"zipCode,omitempty"`
-	AddressLine    string  `validate:"required" json:"addressLine,omitempty"`
-	BuildingNumber string  `validate:"required" json:"buildingNumber,omitempty"`
-	Complement     string  `json:"complement,omitempty"`
-	Neighborhood   string  `validate:"required" json:"neighborhood,omitempty"`
-	City           string  `validate:"required" json:"city,omitempty"`
-	State          string  `validate:"required" json:"state,omitempty"`
-	Country        string  `validate:"required" json:"country,omitempty"`
+	ZipCode        string `validate:"required" json:"zipCode,omitempty"`
+	AddressLine    string `validate:"required" json:"addressLine,omitempty"`
+	BuildingNumber string `validate:"required" json:"buildingNumber,omitempty"`
+	Complement     string `json:"complement,omitempty"`
+	Neighborhood   string `validate:"required" json:"neighborhood,omitempty"`
+	City           string `validate:"required" json:"city,omitempty"`
+	State          string `validate:"required" json:"state,omitempty"`
+	Country        string `validate:"required" json:"country,omitempty"`
+}
+
+// Account ...
+type Account struct {
+	Number string `validate:"required" json:"number,omitempty"`
+	Branch string `validate:"required" json:"branch,omitempty"`
+}
+
+// Payer ...
+type Payer struct {
+	Name      string   `validate:"required" json:"name,omitempty"`
+	TradeName string   `validate:"required" json:"tradeName,omitempty"`
+	Document  string   `validate:"required,cpfcnpj" json:"document,omitempty"`
+	Address   *Address `validate:"required" json:"address,omitempty"`
 }
 
 //ErrorResponse ...
@@ -165,22 +181,22 @@ type TransfersResponse struct {
 
 //BusinessRequest ...
 type BusinessRequest struct {
-	Document     			string    				`validate:"required,cnpj" json:"documentNumber,omitempty"`
-	BusinessName  			string    				`validate:"required" json:"businessName,omitempty"`
-	TradingName	  			string    				`json:"tradingName,omitempty"`
-	BusinessEmail 			string    				`json:"businessEmail,omitempty"`
-	BusinessType  			BusinessType 			`validate:"required" json:"businessType"`
-	BusinessSize 			BusinessSize 			`validate:"required" json:"businessSize"`
-	BusinessAddress 		*Address  				`validate:"required,dive" json:"businessAddress,omitempty"`
-	LegalRepresentative		LegalRepresentative		`validate:"required,dive" json:"legalRepresentative,omitempty"`
+	Document            string              `validate:"required,cnpj" json:"documentNumber,omitempty"`
+	BusinessName        string              `validate:"required" json:"businessName,omitempty"`
+	TradingName         string              `json:"tradingName,omitempty"`
+	BusinessEmail       string              `json:"businessEmail,omitempty"`
+	BusinessType        BusinessType        `validate:"required" json:"businessType"`
+	BusinessSize        BusinessSize        `validate:"required" json:"businessSize"`
+	BusinessAddress     *Address            `validate:"required,dive" json:"businessAddress,omitempty"`
+	LegalRepresentative LegalRepresentative `validate:"required,dive" json:"legalRepresentative,omitempty"`
 }
 
 //BusinessType ...
 type BusinessType string
 
 const (
-	BusinessTypeMEI BusinessType = "MEI"
-	BusinessTypeEI BusinessType = "EI"
+	BusinessTypeMEI    BusinessType = "MEI"
+	BusinessTypeEI     BusinessType = "EI"
 	BusinessTypeEIRELI BusinessType = "EIRELI"
 )
 
@@ -189,7 +205,7 @@ type BusinessSize string
 
 const (
 	BusinessSizeMEI BusinessSize = "MEI"
-	BusinessSizeME BusinessSize = "ME"
+	BusinessSizeME  BusinessSize = "ME"
 	BusinessSizeEPP BusinessSize = "EPP"
 )
 
@@ -197,7 +213,7 @@ const (
 type ResultLevel string
 
 const (
-	ResultLevelBasic ResultLevel = "BASIC"
+	ResultLevelBasic    ResultLevel = "BASIC"
 	ResultLevelDetailed ResultLevel = "DETAILED"
 )
 
@@ -215,19 +231,101 @@ type LegalRepresentative struct {
 
 //BusinessResponse ...
 type BusinessResponse struct {
-	ResultLevel 	ResultLevel 	`json:"resultLevel,omitempty"`
-	Document    	string 			`json:"documentNumber,omitempty"`
-	BusinessName 	string 			`json:"businessName,omitempty"`
-	TradingName	 	string 			`json:"tradingName,omitempty"`
-	Status	 	 	string 			`json:"status,omitempty"`
-	BusinessType 	BusinessType 	`json:"businessType"`
-	BusinessSize 	BusinessSize 	`json:"businessSize"`
-	CreatedAt    	time.Time 		`json:"createdAt"`
-	UpdatedAt    	time.Time 		`json:"updatedAt"`
+	ResultLevel  ResultLevel  `json:"resultLevel,omitempty"`
+	Document     string       `json:"documentNumber,omitempty"`
+	BusinessName string       `json:"businessName,omitempty"`
+	TradingName  string       `json:"tradingName,omitempty"`
+	Status       string       `json:"status,omitempty"`
+	BusinessType BusinessType `json:"businessType"`
+	BusinessSize BusinessSize `json:"businessSize"`
+	CreatedAt    time.Time    `json:"createdAt"`
+	UpdatedAt    time.Time    `json:"updatedAt"`
 }
 
 //BusinessAccountRequest ...
 type BusinessAccountRequest struct {
 	Document    string      `validate:"required,cnpj" json:"documentNumber,omitempty"`
 	AccountType AccountType `validate:"required" json:"accountType"`
+}
+
+//BoletoType ...
+type BoletoType string
+
+const (
+	Deposit BoletoType = "Deposit"
+	Levy    BoletoType = "Levy"
+)
+
+//BoletoRequest ...
+type BoletoRequest struct {
+	Alias       *string    `json:"alias,omitempty"`
+	Document    string     `validate:"required,cpfcnpj" json:"documentNumber,omitempty"`
+	Amount      float64    `validate:"required" json:"amount,omitempty"`
+	DueDate     time.Time  `validate:"required" json:"dueDate,omitempty"`
+	EmissionFee bool       `json:"emissionFee,omitempty"`
+	Type        BoletoType `validate:"required" json:"type,omitempty"`
+	Account     *Account   `validate:"required" json:"account,omitempty"`
+	Payer       *Payer     `validate:"required" json:"payer,omitempty"`
+}
+
+//BoletoResponse ...
+type BoletoResponse struct {
+	AuthenticationCode string   `json:"authenticationCode,omitempty"`
+	Account            *Account `json:"account,omitempty"`
+}
+
+//BoletoAmount ...
+type BoletoAmount struct {
+	Value    float64 `json:"value,omitempty"`
+	Currency string  `json:"currency,omitempty"`
+}
+
+//BoletoPayment ...
+type BoletoPayment struct {
+	Id             string    `json:"id,omitempty"`
+	Amount         float64   `json:"amount,omitempty"`
+	PaymentChannel string    `json:"paymentChannel,omitempty"`
+	PaidOutDate    time.Time `json:"paidOutDate,omitempty"`
+}
+
+//BoletoDetailedResponse ...
+type BoletoDetailedResponse struct {
+	Alias              *string          `json:"alias,omitempty"`
+	AuthenticationCode string           `json:"authenticationCode,omitempty"`
+	Digitable          string           `json:"digitable,omitempty"`
+	Status             string           `json:"status,omitempty"`
+	Document           string           `json:"documentNumber,omitempty"`
+	DueDate            time.Time        `json:"dueDate,omitempty"`
+	EmissionFee        bool             `json:"emissionFee,omitempty"`
+	OurNumber          string           `json:"ourNumber,omitempty"`
+	Type               BoletoType       `json:"type,omitempty"`
+	Amount             *BoletoAmount    `json:"amount,omitempty"`
+	Account            *Account         `json:"account,omitempty"`
+	Payer              *Payer           `json:"payer,omitempty"`
+	RecipientFinal     *Payer           `json:"recipientFinal,omitempty"`
+	RecipientOrigin    *Payer           `json:"recipientOrigin,omitempty"`
+	Payments           []*BoletoPayment `json:"payments,omitempty"`
+
+	// API is returning error for this field
+	// EmissionDate time.Time `json:"emissionDate,omitempty"`
+
+	UpdatedAt time.Time `json:"updatedAt,omitempty"`
+}
+
+//FindBoletoRequest ...
+type FindBoletoRequest struct {
+	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
+	Account            *Account `validate:"required" json:"account,omitempty"`
+}
+
+//CancelBoletoRequest ...
+type CancelBoletoRequest struct {
+	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
+	Account            *Account `validate:"required" json:"account,omitempty"`
+}
+
+//ExecutePayment ...
+type PayBoleto struct {
+	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
+	Account            *Account `validate:"required" json:"account,omitempty"`
 }

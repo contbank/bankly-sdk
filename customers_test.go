@@ -1,13 +1,11 @@
 package bankly_test
 
 import (
-	"github.com/contbank/grok"
-	"math/rand"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/contbank/bankly-sdk"
+	bankly "github.com/contbank/bankly-sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
@@ -38,10 +36,10 @@ func (s *CustomersTestSuite) SetupTest() {
 }
 
 func (s *CustomersTestSuite) TestCreateRegistration() {
-	randSurname := randStringBytes(10)
+	randSurname := bankly.RandStringBytes(10)
 	email := "email_de_teste_" + randSurname + "@contbank.com"
 
-	err := s.createRegistrationWithParams(randSurname, grok.GeneratorCPF(), grok.GeneratorCellphone(), email)
+	err := s.createRegistrationWithParams(randSurname, bankly.GeneratorCPF(), bankly.GeneratorCellphone(), email)
 
 	s.assert.NoError(err)
 }
@@ -54,7 +52,7 @@ func (s *CustomersTestSuite) TestFindRegistration() {
 }
 
 func (s *CustomersTestSuite) TestFindRegistrationErrorNotFound() {
-	response, err := s.customers.FindRegistration(grok.GeneratorCPF())
+	response, err := s.customers.FindRegistration(bankly.GeneratorCPF())
 
 	s.assert.Error(err)
 	s.assert.EqualError(err, "not found")
@@ -70,7 +68,7 @@ func (s *CustomersTestSuite) TestCreateAccountErrorMoreThanOneAccountPerHolder()
 }
 
 func (s *CustomersTestSuite) TestCreateAccountErrorDoesntHaveAnApprovedRegistrationYet() {
-	account, err := s.customers.CreateAccount(grok.GeneratorCPF(), bankly.PaymentAccount)
+	account, err := s.customers.CreateAccount(bankly.GeneratorCPF(), bankly.PaymentAccount)
 
 	s.assert.Error(err)
 	s.assert.EqualError(err, "Account holder does not exist or does not have an approved registration yet")
@@ -85,9 +83,9 @@ func (s *CustomersTestSuite) TestFindAccounts() {
 }
 
 func (s *CustomersTestSuite) TestCreateAndFindAccount() {
-	document := grok.GeneratorCPF()
-	cellphone := grok.GeneratorCellphone()
-	randSurname := randStringBytes(10)
+	document := bankly.GeneratorCPF()
+	cellphone := bankly.GeneratorCellphone()
+	randSurname := bankly.RandStringBytes(10)
 	email := "email_de_teste_" + randSurname + "@contbank.com"
 
 	err := s.createRegistrationWithParams(randSurname, document, cellphone, email)
@@ -123,15 +121,4 @@ func (s *CustomersTestSuite) createRegistrationWithParams(surname string, docume
 		MotherName:   "Nome da Mãe da Pessoa " + surname,
 		Email:        email,
 	})
-}
-
-func randStringBytes(n int) string {
-	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
-	}
-
-	return string(b)
 }

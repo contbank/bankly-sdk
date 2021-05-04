@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/contbank/grok"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -38,7 +37,7 @@ func (c *Business) CreateBusiness(businessRequest BusinessRequest) error {
 	}
 
 	u.Path = path.Join(u.Path, BusinessPath)
-	u.Path = path.Join(u.Path, grok.OnlyDigits(businessRequest.Document))
+	u.Path = path.Join(u.Path, OnlyDigits(businessRequest.Document))
 	endpoint := u.String()
 
 	reqbyte, err := json.Marshal(businessRequest)
@@ -90,7 +89,7 @@ func (c *Business) CreateBusinessAccount(businessAccountRequest BusinessAccountR
 	}
 
 	u.Path = path.Join(u.Path, BusinessPath)
-	u.Path = path.Join(u.Path, grok.OnlyDigits(businessAccountRequest.Document))
+	u.Path = path.Join(u.Path, OnlyDigits(businessAccountRequest.Document))
 	u.Path = path.Join(u.Path, AccountsPath)
 	endpoint := u.String()
 
@@ -204,7 +203,6 @@ func (c *Business) FindBusiness(document string) (*BusinessResponse, error) {
 
 	return nil, errors.New("error find business")
 }
-
 
 //FindBusinessAccounts ...
 func (c *Business) FindBusinessAccounts(document string) ([]AccountResponse, error) {
