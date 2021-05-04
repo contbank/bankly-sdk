@@ -125,8 +125,19 @@ func (t *Transfers) createTransfers(correlationID string, model TransfersRequest
 				Error("error unmarshal")
 			return nil, err
 		}
-		
+
 		return body, nil
+	}
+
+	var bodyErr *TransferErrorResponse
+
+	err = json.Unmarshal(respBody, &bodyErr)
+	if err != nil {
+		return nil, err
+	}
+
+	if bodyErr.Errors != nil {
+		return nil, FindTransferError(bodyErr.Errors[0])
 	}
 
 	return nil, errors.New("error create transfers")

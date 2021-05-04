@@ -94,11 +94,26 @@ type ErrorResponse struct {
 	Reference string       `json:"reference,omitempty"`
 }
 
+// TransferErrorResponse ...
+type TransferErrorResponse struct {
+	Code         	string   			   `json:"code,omitempty"`
+	Message      	string   			   `json:"message,omitempty"`
+	Layer      	 	string   			   `json:"layer,omitempty"`
+	ApplicationName	string   			   `json:"applicationName,omitempty"`
+	Errors 			[]KeyValueErrorModel   `json:"errors,omitempty"`
+}
+
 // ErrorModel ...
 type ErrorModel struct {
 	Code         string   `json:"code,omitempty"`
 	PropertyName string   `json:"propertyName,omitempty"`
 	Messages     []string `json:"messages,omitempty"`
+}
+
+// KeyValueErrorModel ...
+type KeyValueErrorModel struct {
+	Key         string   `json:"key,omitempty"`
+	Value 		string   `json:"value,omitempty"`
 }
 
 // AccountResponse ...
@@ -140,27 +155,27 @@ type SenderRequest struct {
 
 // RecipientRequest ...
 type RecipientRequest struct {
-	TransfersType TransfersType `validate:"required" json:"accountType"`
-	BankCode      string        `validate:"required" json:"bankCode"`
-	Branch        string        `validate:"required" json:"branch"`
-	Account       string        `validate:"required" json:"account"`
-	Document      string        `validate:"required" json:"document"`
-	Name          string        `validate:"required" json:"name"`
+	TransfersAccountType TransfersAccountType `validate:"required" json:"accountType"`
+	BankCode      		 string        	      `validate:"required" json:"bankCode"`
+	Branch        		 string        	      `validate:"required" json:"branch"`
+	Account       		 string        	      `validate:"required" json:"account"`
+	Document      		 string        	      `validate:"required" json:"document"`
+	Name          		 string        	      `validate:"required" json:"name"`
 }
 
-// TransfersType ...
-type TransfersType string
+// TransfersAccountType ...
+type TransfersAccountType string
 
 const (
 	//CheckingAccount Conta corrente
-	CheckingAccount TransfersType = "CHECKING"
+	CheckingAccount TransfersAccountType = "CHECKING"
 	//SavingsAccount Conta Poupança
-	SavingsAccount TransfersType = "SAVINGS"
+	SavingsAccount TransfersAccountType = "SAVINGS"
 )
 
 // TransfersResponse ...
 type TransfersResponse struct {
-	AuthenticationCode string `json:"authenticationCode"`
+	AuthenticationCode 		string 			  		`json:"authenticationCode"`
 }
 
 // BusinessRequest ...
@@ -244,16 +259,6 @@ type BusinessAccountRequest struct {
 	AccountType AccountType `validate:"required" json:"accountType"`
 }
 
-// TransferAccountType ...
-type TransferAccountType string
-
-const (
-	// Checking ...
-	Checking TransferAccountType = "CHECKING"
-	// Savings ...
-	Savings TransferAccountType = "SAVINGS"
-)
-
 // TransferRequest
 type TransferRequest struct {
 	Amount     	 	float64     `validate:"required" json:"amount,omitempty"`
@@ -277,5 +282,5 @@ type Recipient struct {
 	Account 		string      			`validate:"required" json:"account,omitempty"`
 	Document 		string      			`validate:"required" json:"document,omitempty"`
 	Name 			string      			`validate:"required" json:"name,omitempty"`
-	AccountType     *TransferAccountType  	`validate:"required,dive" json:"accountType,omitempty"`
+	AccountType     *TransfersAccountType  	`validate:"required,dive" json:"accountType,omitempty"`
 }
