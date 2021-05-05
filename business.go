@@ -243,7 +243,7 @@ func (c *Business) FindBusiness(document string) (*BusinessResponse, error) {
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, errors.New("not found")
+		return nil, ErrEntryNotFound
 	}
 
 	var bodyErr *ErrorResponse
@@ -304,7 +304,7 @@ func (c *Business) FindBusinessAccounts(document string) ([]AccountResponse, err
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, errors.New("not found")
+		return nil, ErrEntryNotFound
 	}
 
 	var bodyErr *ErrorResponse

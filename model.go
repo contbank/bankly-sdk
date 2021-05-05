@@ -118,10 +118,11 @@ type KeyValueErrorModel struct {
 
 // AccountResponse ...
 type AccountResponse struct {
-	Balance *BalanceRespone `json:"balance,omitempty"`
-	Status  string          `json:"status,omitempty"`
-	Branch  string          `json:"branch,omitempty"`
-	Number  string          `json:"number,omitempty"`
+	Balance 	*BalanceRespone `json:"balance,omitempty"`
+	Status  	string          `json:"status,omitempty"`
+	Branch  	string          `json:"branch,omitempty"`
+	Number  	string          `json:"number,omitempty"`
+	Bank 		*Bank    		`json:"bank,omitempty"`
 }
 
 // BalanceRespone ...
@@ -175,7 +176,24 @@ const (
 
 // TransfersResponse ...
 type TransfersResponse struct {
-	AuthenticationCode 		string 			  		`json:"authenticationCode"`
+	ContinuationToken       string 						`json:"continuationToken"`
+	Data					[]TransferByCodeResponse	`json:"data"`
+}
+
+// TransferByCodeResponse ...
+type TransferByCodeResponse struct {
+	CompanyKey 				string				`json:"companyKey"`
+	AuthenticationCode 		string				`json:"authenticationCode"`
+	Amount 					float64				`json:"amount"`
+	CorrelationId 			string				`json:"correlationId"`
+	Sender 					*SenderResponse		`json:"sender"`
+	Recipient 				*RecipientResponse	`json:"recipient"`
+	Channel 				string				`json:"channel"`
+	Operation 				string				`json:"operation"`
+	Identifier 				string				`json:"identifier"`
+	Status 					string				`json:"status"`
+	CreatedAt 				time.Time			`json:"createdAt"`
+	UpdatedAt 				time.Time			`json:"updatedAt"`
 }
 
 // BusinessRequest ...
@@ -275,6 +293,20 @@ type Sender struct {
 	Name 		string      `validate:"required" json:"name,omitempty"`
 }
 
+// SenderResponse
+type SenderResponse struct {
+	Document 	string      		`json:"document,omitempty"`
+	Name 		string      		`json:"name,omitempty"`
+	Account 	*AccountResponse	`json:"account,omitempty"`
+}
+
+// Bank
+type Bank struct {
+	ISPB	string  `json:"ispb,omitempty"`
+	Name 	string  `json:"name,omitempty"`
+	Code	string	`json:"compe,omitempty"`
+}
+
 // Recipient
 type Recipient struct {
 	BankCode 		string      			`validate:"required" json:"bankCode,omitempty"`
@@ -283,4 +315,11 @@ type Recipient struct {
 	Document 		string      			`validate:"required" json:"document,omitempty"`
 	Name 			string      			`validate:"required" json:"name,omitempty"`
 	AccountType     *TransfersAccountType  	`validate:"required,dive" json:"accountType,omitempty"`
+}
+
+// RecipientResponse
+type RecipientResponse struct {
+	Document 		string      			`json:"document,omitempty"`
+	Name 			string      			`json:"name,omitempty"`
+	Account 	    *AccountResponse		`json:"account,omitempty"`
 }

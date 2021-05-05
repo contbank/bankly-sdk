@@ -149,7 +149,7 @@ func (c *Customers) FindRegistration(document string) (*CustomersResponse, error
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, errors.New("not found")
+		return nil, ErrEntryNotFound
 	}
 
 	var bodyErr *ErrorResponse
@@ -290,7 +290,7 @@ func (c *Customers) FindAccounts(document string) ([]AccountResponse, error) {
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, errors.New("not found")
+		return nil, ErrEntryNotFound
 	}
 
 	var bodyErr *ErrorResponse
