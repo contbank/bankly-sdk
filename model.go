@@ -80,14 +80,14 @@ type Phone struct {
 
 //Address ...
 type Address struct {
-	ZipCode        string `validate:"required" json:"zipCode,omitempty"`
-	AddressLine    string `validate:"required" json:"addressLine,omitempty"`
-	BuildingNumber string `validate:"required" json:"buildingNumber,omitempty"`
-	Complement     string `json:"complement,omitempty"`
-	Neighborhood   string `validate:"required" json:"neighborhood,omitempty"`
-	City           string `validate:"required" json:"city,omitempty"`
-	State          string `validate:"required" json:"state,omitempty"`
-	Country        string `validate:"required" json:"country,omitempty"`
+	ZipCode        string  `validate:"required" json:"zipCode,omitempty"`
+	AddressLine    string  `validate:"required" json:"addressLine,omitempty"`
+	BuildingNumber string  `validate:"required" json:"buildingNumber,omitempty"`
+	Complement     *string `json:"complement,omitempty"`
+	Neighborhood   string  `validate:"required" json:"neighborhood,omitempty"`
+	City           string  `validate:"required" json:"city,omitempty"`
+	State          string  `validate:"required" json:"state,omitempty"`
+	Country        string  `validate:"required" json:"country,omitempty"`
 }
 
 // Account ...
