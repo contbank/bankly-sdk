@@ -13,11 +13,6 @@ import (
 	"time"
 )
 
-const (
-	// InternalBankCode ...
-	InternalBankCode string = "332"
-)
-
 //Transfers ...
 type Transfers struct {
 	session        Session
@@ -36,14 +31,14 @@ func NewTransfers(session Session) *Transfers {
 	}
 }
 
-// CreateExternalTransfer ...
-func (t *Transfers) CreateExternalTransfer(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
+// CreateTransfer ...
+func (t *Transfers) CreateTransfer(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
 	logrus.
 		WithFields(logrus.Fields{
 			"correlation_id" : correlationID,
 		}).
-		Info("create external transfer")
-	return t.createTransfers(correlationID, model)
+		Info("create transfer")
+	return t.createTransferOperation(correlationID, model)
 }
 
 // CreateInternalTransfer ...
@@ -53,12 +48,23 @@ func (t *Transfers) CreateInternalTransfer(correlationID string, model Transfers
 			"correlation_id" : correlationID,
 		}).
 		Info("create internal transfer")
+	// TODO quando transação interna, necessário validar algo? limite de transação é maior do que quando externa?
 	model.Recipient.BankCode = InternalBankCode
-	return t.createTransfers(correlationID, model)
+	return t.createTransferOperation(correlationID, model)
 }
 
-// createTransfers ...
-func (t *Transfers) createTransfers(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
+// CreateExternalTransfer ...
+func (t *Transfers) CreateExternalTransfer(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
+	logrus.
+		WithFields(logrus.Fields{
+			"correlation_id" : correlationID,
+		}).
+		Info("create external transfer")
+	return t.createTransferOperation(correlationID, model)
+}
+
+// createTransferOperation ...
+func (t *Transfers) createTransferOperation(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
 
 	err := Validator.Struct(model)
 	if err != nil {
@@ -142,7 +148,7 @@ func (t *Transfers) createTransfers(correlationID string, model TransfersRequest
 		return nil, FindTransferError(*bodyErr)
 	}
 
-	return nil, errors.New("error create transfers")
+	return nil, errors.New("error create transfer operation")
 }
 
 // FindTransfers ...

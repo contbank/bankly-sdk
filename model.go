@@ -15,6 +15,11 @@ const (
 	BusinessPath = "business"
 )
 
+const (
+	// InternalBankCode ...
+	InternalBankCode string = "332"
+)
+
 // AuthenticationResponse ...
 type AuthenticationResponse struct {
 	AccessToken string `json:"access_token"`
