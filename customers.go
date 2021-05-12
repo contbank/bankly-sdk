@@ -165,7 +165,6 @@ func (c *Customers) FindRegistration(document string) (*CustomersResponse, error
 	}
 
 	return nil, errors.New("error find registration")
-
 }
 
 //CreateAccount ...

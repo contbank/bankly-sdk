@@ -71,6 +71,18 @@ func (s *BoletosTestSuite) TestFindBoleto() {
 	s.assert.NotNil(r)
 }
 
+func (s *BoletosTestSuite) TestFilterBoleto() {
+	document, account := s.createCustomerAndAccount()
+	boleto := s.createBoleto(document, account)
+
+	_, err := s.boletos.CreateBoleto(boleto)
+	s.assert.NoError(err)
+
+	r, err := s.boletos.FilterBoleto(time.Now().Add(-24 * time.Hour))
+	s.assert.NoError(err)
+	s.assert.NotNil(r)
+}
+
 // func (s *BoletosTestSuite) TestFindBoletoByBarCode() {
 // 	document, account := s.createCustomerAndAccount()
 // 	boleto := s.createBoleto(document, account)

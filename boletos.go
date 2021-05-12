@@ -30,6 +30,8 @@ func NewBoletos(session Session) *Boletos {
 	}
 }
 
+const ErrScouterQuantity = "SCOUTER_QUANTITY"
+
 //CreateBoleto ...
 func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
 	err := Validator.Struct(model)
@@ -91,7 +93,7 @@ func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
 		return body, nil
 	}
 
-	var bodyErr *ErrorResponse
+	var bodyErr *BoletoErrorResponse
 
 	err = json.Unmarshal(respBody, &bodyErr)
 
@@ -99,8 +101,12 @@ func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
-		return nil, errors.New(bodyErr.Errors[0].Messages[0])
+	if bodyErr.Code == ErrScouterQuantity {
+		return nil, errors.New(ErrScouterQuantity)
+	}
+
+	if bodyErr.Message != nil {
+		return nil, errors.New(*bodyErr.Message)
 	}
 
 	return nil, errors.New("error create boletos")
@@ -160,6 +166,70 @@ func (b *Boletos) FindBoleto(model *FindBoletoRequest) (*BoletoDetailedResponse,
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, errors.New("not found")
+	}
+
+	var bodyErr *ErrorResponse
+
+	err = json.Unmarshal(respBody, &bodyErr)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if bodyErr.Errors != nil {
+		return nil, errors.New(bodyErr.Errors[0].Messages[0])
+	}
+
+	return nil, errors.New("error find boleto")
+}
+
+//FilterBoleto ...
+func (b *Boletos) FilterBoleto(date time.Time) (*FilterBoletoResponse, error) {
+	u, err := url.Parse(b.session.APIEndpoint)
+
+	if err != nil {
+		return nil, err
+	}
+	u.Path = path.Join(u.Path, BoletosPath)
+	u.Path = path.Join(u.Path, "searchstatus")
+	u.Path = path.Join(u.Path, url.QueryEscape(date.UTC().Format("2006-01-02T15:04:05")))
+	endpoint := u.String()
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := b.authentication.Token()
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Authorization", token)
+	req.Header.Add("api-version", b.session.APIVersion)
+
+	resp, err := b.httpClient.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode == http.StatusOK {
+		var response *FilterBoletoResponse
+
+		err = json.Unmarshal(respBody, &response)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return response, nil
 	}
 
 	var bodyErr *ErrorResponse

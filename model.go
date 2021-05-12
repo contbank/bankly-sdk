@@ -110,6 +110,12 @@ type ErrorResponse struct {
 	Reference string       `json:"reference,omitempty"`
 }
 
+//BoletoErrorResponse ...
+type BoletoErrorResponse struct {
+	Code    string  `json:"code,omitempty"`
+	Message *string `json:"message,omitempty"`
+}
+
 //ErrorModel ...
 type ErrorModel struct {
 	Code         string   `json:"code,omitempty"`
@@ -310,6 +316,29 @@ type BoletoDetailedResponse struct {
 	// EmissionDate time.Time `json:"emissionDate,omitempty"`
 
 	UpdatedAt time.Time `json:"updatedAt,omitempty"`
+}
+
+//FilterBoletoData ...
+type FilterBoletoData struct {
+	Alias              *string          `json:"alias,omitempty"`
+	AuthenticationCode string           `json:"authenticationCode,omitempty"`
+	Barcode            string           `json:"barcode,omitempty"`
+	Digitable          string           `json:"digitable,omitempty"`
+	Status             string           `json:"status,omitempty"`
+	DueDate            time.Time        `json:"dueDate,omitempty"`
+	Amount             *BoletoAmount    `json:"amount,omitempty"`
+	Payer              *Payer           `json:"payer,omitempty"`
+	RecipientFinal     *Payer           `json:"recipientFinal,omitempty"`
+	RecipientOrigin    *Payer           `json:"recipientOrigin,omitempty"`
+	Payments           []*BoletoPayment `json:"payments,omitempty"`
+	// API is returning error for this field
+	// EmissionDate time.Time `json:"emissionDate,omitempty"`
+}
+
+//FilterBoletoResponse ...
+type FilterBoletoResponse struct {
+	NextPageToken string             `json:"nextPageToken,omitempty"`
+	Data          []FilterBoletoData `json:"data,omitempty"`
 }
 
 //FindBoletoRequest ...
