@@ -59,16 +59,16 @@ const (
 
 // CustomersResponse ...
 type CustomersResponse struct {
+	DocumentNumber             string    `json:"documentNumber"`
+	RegisterName               string    `json:"registerName"`
+	SocialName                 string    `json:"socialName"`
+	Email                      string    `json:"email"`
 	Phone                      Phone     `json:"phone"`
 	Address                    Address   `json:"address"`
-	Email                      string    `json:"email"`
 	MotherName                 string    `json:"motherName"`
 	BirthDate                  time.Time `json:"birthDate"`
 	IsPoliticallyExposedPerson bool      `json:"isPoliticallyExposedPerson"`
 	Reasons                    []string  `json:"reasons"`
-	DocumentNumber             string    `json:"documentNumber"`
-	RegisterName               string    `json:"registerName"`
-	SocialName                 string    `json:"socialName"`
 	Status                     string    `json:"status"`
 	Profile                    string    `json:"profile"`
 	CreatedAt                  time.Time `json:"createdAt"`
@@ -222,6 +222,17 @@ type BusinessUpdateRequest struct {
 	BusinessSize 			BusinessSize 			`validate:"required" json:"businessSize"`
 	BusinessAddress 		*Address  				`validate:"required,dive" json:"businessAddress,omitempty"`
 	LegalRepresentative		*LegalRepresentative	`validate:"required,dive" json:"legalRepresentative,omitempty"`
+}
+
+// CustomerUpdateRequest ...
+type CustomerUpdateRequest struct {
+	RegisterName string    `validate:"required" json:"registerName,omitempty"`
+	SocialName   string    `json:"socialName,omitempty"`
+	Phone        *Phone    `validate:"required,dive" json:"phone,omitempty"`
+	Address      *Address  `validate:"required,dive" json:"address,omitempty"`
+	BirthDate    time.Time `validate:"required" json:"birthDate,omitempty"`
+	MotherName   string    `validate:"required" json:"motherName,omitempty"`
+	Email        string    `validate:"required" json:"email,omitempty"`
 }
 
 // BusinessType ...

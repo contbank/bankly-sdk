@@ -260,7 +260,6 @@ func (c *Business) FindBusiness(document string) (*BusinessResponse, error) {
 	return nil, errors.New("error find business")
 }
 
-
 //FindBusinessAccounts ...
 func (c *Business) FindBusinessAccounts(document string) ([]AccountResponse, error) {
 
