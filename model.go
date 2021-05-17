@@ -13,6 +13,8 @@ const (
 	TransfersPath = "fund-transfers"
 	//BusinessPath ...
 	BusinessPath = "business"
+	//BanksPath ...
+	BanksPath = "banklist"
 )
 
 //AuthenticationResponse ...
@@ -78,14 +80,14 @@ type Phone struct {
 
 //Address ...
 type Address struct {
-	ZipCode        string  `validate:"required" json:"zipCode,omitempty"`
-	AddressLine    string  `validate:"required" json:"addressLine,omitempty"`
-	BuildingNumber string  `validate:"required" json:"buildingNumber,omitempty"`
-	Complement     string  `json:"complement,omitempty"`
-	Neighborhood   string  `validate:"required" json:"neighborhood,omitempty"`
-	City           string  `validate:"required" json:"city,omitempty"`
-	State          string  `validate:"required" json:"state,omitempty"`
-	Country        string  `validate:"required" json:"country,omitempty"`
+	ZipCode        string `validate:"required" json:"zipCode,omitempty"`
+	AddressLine    string `validate:"required" json:"addressLine,omitempty"`
+	BuildingNumber string `validate:"required" json:"buildingNumber,omitempty"`
+	Complement     string `json:"complement,omitempty"`
+	Neighborhood   string `validate:"required" json:"neighborhood,omitempty"`
+	City           string `validate:"required" json:"city,omitempty"`
+	State          string `validate:"required" json:"state,omitempty"`
+	Country        string `validate:"required" json:"country,omitempty"`
 }
 
 //ErrorResponse ...
@@ -165,22 +167,22 @@ type TransfersResponse struct {
 
 //BusinessRequest ...
 type BusinessRequest struct {
-	Document     			string    				`validate:"required,cnpj" json:"documentNumber,omitempty"`
-	BusinessName  			string    				`validate:"required" json:"businessName,omitempty"`
-	TradingName	  			string    				`json:"tradingName,omitempty"`
-	BusinessEmail 			string    				`json:"businessEmail,omitempty"`
-	BusinessType  			BusinessType 			`validate:"required" json:"businessType"`
-	BusinessSize 			BusinessSize 			`validate:"required" json:"businessSize"`
-	BusinessAddress 		*Address  				`validate:"required,dive" json:"businessAddress,omitempty"`
-	LegalRepresentative		LegalRepresentative		`validate:"required,dive" json:"legalRepresentative,omitempty"`
+	Document            string              `validate:"required,cnpj" json:"documentNumber,omitempty"`
+	BusinessName        string              `validate:"required" json:"businessName,omitempty"`
+	TradingName         string              `json:"tradingName,omitempty"`
+	BusinessEmail       string              `json:"businessEmail,omitempty"`
+	BusinessType        BusinessType        `validate:"required" json:"businessType"`
+	BusinessSize        BusinessSize        `validate:"required" json:"businessSize"`
+	BusinessAddress     *Address            `validate:"required,dive" json:"businessAddress,omitempty"`
+	LegalRepresentative LegalRepresentative `validate:"required,dive" json:"legalRepresentative,omitempty"`
 }
 
 //BusinessType ...
 type BusinessType string
 
 const (
-	BusinessTypeMEI BusinessType = "MEI"
-	BusinessTypeEI BusinessType = "EI"
+	BusinessTypeMEI    BusinessType = "MEI"
+	BusinessTypeEI     BusinessType = "EI"
 	BusinessTypeEIRELI BusinessType = "EIRELI"
 )
 
@@ -189,7 +191,7 @@ type BusinessSize string
 
 const (
 	BusinessSizeMEI BusinessSize = "MEI"
-	BusinessSizeME BusinessSize = "ME"
+	BusinessSizeME  BusinessSize = "ME"
 	BusinessSizeEPP BusinessSize = "EPP"
 )
 
@@ -197,7 +199,7 @@ const (
 type ResultLevel string
 
 const (
-	ResultLevelBasic ResultLevel = "BASIC"
+	ResultLevelBasic    ResultLevel = "BASIC"
 	ResultLevelDetailed ResultLevel = "DETAILED"
 )
 
@@ -215,19 +217,38 @@ type LegalRepresentative struct {
 
 //BusinessResponse ...
 type BusinessResponse struct {
-	ResultLevel 	ResultLevel 	`json:"resultLevel,omitempty"`
-	Document    	string 			`json:"documentNumber,omitempty"`
-	BusinessName 	string 			`json:"businessName,omitempty"`
-	TradingName	 	string 			`json:"tradingName,omitempty"`
-	Status	 	 	string 			`json:"status,omitempty"`
-	BusinessType 	BusinessType 	`json:"businessType"`
-	BusinessSize 	BusinessSize 	`json:"businessSize"`
-	CreatedAt    	time.Time 		`json:"createdAt"`
-	UpdatedAt    	time.Time 		`json:"updatedAt"`
+	ResultLevel  ResultLevel  `json:"resultLevel,omitempty"`
+	Document     string       `json:"documentNumber,omitempty"`
+	BusinessName string       `json:"businessName,omitempty"`
+	TradingName  string       `json:"tradingName,omitempty"`
+	Status       string       `json:"status,omitempty"`
+	BusinessType BusinessType `json:"businessType"`
+	BusinessSize BusinessSize `json:"businessSize"`
+	CreatedAt    time.Time    `json:"createdAt"`
+	UpdatedAt    time.Time    `json:"updatedAt"`
 }
 
 //BusinessAccountRequest ...
 type BusinessAccountRequest struct {
 	Document    string      `validate:"required,cnpj" json:"documentNumber,omitempty"`
 	AccountType AccountType `validate:"required" json:"accountType"`
+}
+
+//FilterBankListRequest ...
+type FilterBankListRequest struct {
+	IDs      []string
+	Name     *string
+	Product  *string
+	Page     *int
+	PageSize *int
+}
+
+//BankDataResponse ...
+type BankDataResponse struct {
+	Name        string   `json:"name,omitempty"`
+	ISPB        string   `json:"ispb,omitempty"`
+	Code        string   `json:"code,omitempty"`
+	ShortName   string   `json:"shortName,omitempty"`
+	IsSPIDirect bool     `json:"isSPIDirect,omitempty"`
+	Products    []string `json:"products,omitempty"`
 }

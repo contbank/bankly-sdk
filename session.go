@@ -69,7 +69,7 @@ func NewSession(config Config) (*Session, error) {
 	return session, nil
 }
 
-func validateCredentials() (error){
+func validateCredentials() error {
 	if os.Getenv("BANKLY_CLIENT_ID") == "" || os.Getenv("BANKLY_CLIENT_SECRET") == "" {
 		return errors.New("Invalid client id or client secret")
 	}
