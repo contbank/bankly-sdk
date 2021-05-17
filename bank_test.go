@@ -50,7 +50,7 @@ func (s *BankTestSuite) TestGetByID() {
 	s.assert.NotNil(bank)
 }
 
-//// this test is only returning the last id provided in the list
+////this test is only returning the last id provided in the list
 // func (s *BankTestSuite) TestListFilterIDs() {
 // 	filter := &bankly.FilterBankListRequest{}
 // 	banks, err := s.bank.List(filter)

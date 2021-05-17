@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-//Bank ...
+// Bank ...
 type Bank struct {
 	session        Session
 	httpClient     *http.Client

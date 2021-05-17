@@ -228,7 +228,7 @@ type BusinessResponse struct {
 	UpdatedAt    time.Time    `json:"updatedAt"`
 }
 
-//BusinessAccountRequest ...
+// BusinessAccountRequest ...
 type BusinessAccountRequest struct {
 	Document    string      `validate:"required,cnpj" json:"documentNumber,omitempty"`
 	AccountType AccountType `validate:"required" json:"accountType"`
