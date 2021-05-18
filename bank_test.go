@@ -1,6 +1,7 @@
 package bankly_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/contbank/bankly-sdk"
@@ -24,8 +25,8 @@ func (s *BankTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 
 	session, err := bankly.NewSession(bankly.Config{
-		ClientID:     bankly.String("0a9f5c95-4b73-44b5-b3dd-03569c570630"),
-		ClientSecret: bankly.String("V$^YzR$sI#Qhh4b!e0cHu6B1*r#*vkVj"),
+		ClientID:     bankly.String(os.Getenv("BANKLY_CLIENT_ID")),
+		ClientSecret: bankly.String(os.Getenv("BANKLY_CLIENT_SECRET")),
 	})
 
 	s.assert.NoError(err)
