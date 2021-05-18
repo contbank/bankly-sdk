@@ -15,6 +15,8 @@ const (
 	BusinessPath = "business"
 	//BoletosPath ...
 	BoletosPath = "bankslip"
+	//BanksPath ...
+	BanksPath = "banklist"
 )
 
 //AuthenticationResponse ...
@@ -357,4 +359,23 @@ type CancelBoletoRequest struct {
 type PayBoleto struct {
 	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
 	Account            *Account `validate:"required" json:"account,omitempty"`
+}
+
+//FilterBankListRequest ...
+type FilterBankListRequest struct {
+	IDs      []string
+	Name     *string
+	Product  *string
+	Page     *int
+	PageSize *int
+}
+
+//BankDataResponse ...
+type BankDataResponse struct {
+	Name        string   `json:"name,omitempty"`
+	ISPB        string   `json:"ispb,omitempty"`
+	Code        string   `json:"code,omitempty"`
+	ShortName   string   `json:"shortName,omitempty"`
+	IsSPIDirect bool     `json:"isSPIDirect,omitempty"`
+	Products    []string `json:"products,omitempty"`
 }
