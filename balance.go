@@ -85,7 +85,7 @@ func (c *Balance) Balance(account string) (*AccountResponse, error) {
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, errors.New("not found")
+		return nil, ErrEntryNotFound
 	}
 
 	var bodyErr *ErrorResponse

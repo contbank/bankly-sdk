@@ -24,47 +24,110 @@ var (
 	ErrAccountHolderNotExists = grok.NewError(http.StatusBadRequest, "account holder not exists")
 	// ErrHolderAlreadyHaveAAccount ...
 	ErrHolderAlreadyHaveAAccount = grok.NewError(http.StatusConflict, "holder already have a account")
+	// ErrInvalidCorrelationId
+	ErrInvalidCorrelationId = grok.NewError(http.StatusBadRequest, "invalid correlation id")
+	// ErrInvalidAmount
+	ErrInvalidAmount = grok.NewError(http.StatusBadRequest, "invalid amount")
+	// ErrInsufficientBalance
+	ErrInsufficientBalance = grok.NewError(http.StatusBadRequest, "insufficient balance")
+	// ErrInvalidAuthenticationCodeOrAccount
+	ErrInvalidAuthenticationCodeOrAccount = grok.NewError(http.StatusBadRequest, "invalid authentication code or account number")
+	// ErrInvalidAccountNumber
+	ErrInvalidAccountNumber = grok.NewError(http.StatusBadRequest, "invalid account number")
+	// ErrOutOfServicePeriod
+	ErrOutOfServicePeriod = grok.NewError(http.StatusBadRequest, "out of service period")
+	// ErrCashoutLimitNotEnough
+	ErrCashoutLimitNotEnough = grok.NewError(http.StatusBadRequest, "cashout limit not enough")
 )
 
 type BanklyError ErrorModel
 
-type Errors struct {
+type Error struct {
 	banklyError BanklyError
-	grokError *grok.Error
+	grokError 	*grok.Error
 }
 
-var errorsList = []Errors {
-	Errors {
+var errorList = []Error {
+	Error {
 		banklyError: BanklyError { Code : "INVALID_PERSONAL_BUSINESS_SIZE" },
 		grokError : ErrInvalidBusinessSize,
 	},
-	Errors {
+	Error {
 		banklyError: BanklyError { Code : "EMAIL_ALREADY_IN_USE" },
 		grokError : ErrEmailAlreadyInUse,
 	},
-	Errors {
+	Error {
 		banklyError: BanklyError { Code : "PHONE_ALREADY_IN_USE" },
 		grokError : ErrPhoneAlreadyInUse,
 	},
-	Errors {
+	Error {
 		banklyError: BanklyError { Code : "CUSTOMER_REGISTRATION_CANNOT_BE_REPLACED" },
 		grokError : ErrCustomerRegistrationCannotBeReplaced,
 	},
-	Errors {
+	Error {
 		banklyError: BanklyError { Code : "ACCOUNT_HOLDER_NOT_EXISTS" },
 		grokError : ErrAccountHolderNotExists,
 	},
-	Errors {
+	Error {
 		banklyError: BanklyError { Code : "HOLDER_ALREADY_HAVE_A_ACCOUNT" },
 		grokError : ErrHolderAlreadyHaveAAccount,
 	},
 }
 
+type BanklyTransferError KeyValueErrorModel
+
+type TransferError struct {
+	banklyTransferError BanklyTransferError
+	grokError 			*grok.Error
+}
+
+var transferErrorList = []TransferError {
+	TransferError {
+		banklyTransferError	: BanklyTransferError { Key : "x-correlation-id" },
+		grokError 			: ErrInvalidCorrelationId,
+	},
+	TransferError {
+		banklyTransferError	: BanklyTransferError { Key : "$.amount" },
+		grokError 			: ErrInvalidAmount,
+	},
+	TransferError {
+		banklyTransferError	: BanklyTransferError { Key : "INSUFFICIENT_BALANCE" },
+		grokError 			: ErrInsufficientBalance,
+	},
+	TransferError {
+		banklyTransferError	: BanklyTransferError { Key : "CASH_OUT_NOT_ALLOWED_OUT_OF_BUSINESS_PERIOD" },
+		grokError 			: ErrOutOfServicePeriod,
+	},
+	TransferError {
+		banklyTransferError	: BanklyTransferError { Key : "CASHOUT_LIMIT_NOT_ENOUGH" },
+		grokError 			: ErrCashoutLimitNotEnough,
+	},
+}
+
 func FindError(errorModel ErrorModel) *grok.Error {
-	for _, v := range errorsList {
+	for _, v := range errorList {
 		if v.banklyError.Code == errorModel.Code {
 			return v.grokError
 		}
 	}
 	return grok.NewError(http.StatusBadRequest, errorModel.Code + " - " + errorModel.Messages[0])
+}
+
+func FindTransferError(transferErrorResponse TransferErrorResponse) *grok.Error {
+	// get the error code if errors list is null
+	if len(transferErrorResponse.Errors) == 0 && transferErrorResponse.Code != "" {
+		transferErrorResponse.Errors = []KeyValueErrorModel {
+			KeyValueErrorModel {
+				Key: transferErrorResponse.Code,
+			},
+		}
+	}
+	// checking the errors list
+	errorModel := transferErrorResponse.Errors[0]
+	for _, v := range transferErrorList {
+		if v.banklyTransferError.Key == errorModel.Key {
+			return v.grokError
+		}
+	}
+	return grok.NewError(http.StatusBadRequest, errorModel.Key + " - " + errorModel.Value)
 }

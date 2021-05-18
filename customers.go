@@ -149,7 +149,7 @@ func (c *Customers) FindRegistration(document string) (*CustomersResponse, error
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, errors.New("not found")
+		return nil, ErrEntryNotFound
 	}
 
 	var bodyErr *ErrorResponse
@@ -166,6 +166,62 @@ func (c *Customers) FindRegistration(document string) (*CustomersResponse, error
 
 	return nil, errors.New("error find registration")
 
+}
+
+//UpdateRegistration ...
+func (c *Customers) UpdateRegistration(document string, customerUpdateRequest CustomerUpdateRequest) error {
+
+	u, err := url.Parse(c.session.APIEndpoint)
+	if err != nil {
+		return err
+	}
+
+	u.Path = path.Join(u.Path, CustomersPath)
+	u.Path = path.Join(u.Path, document)
+	endpoint := u.String()
+
+	reqbyte, err := json.Marshal(customerUpdateRequest)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("PUT", endpoint, bytes.NewReader(reqbyte))
+	if err != nil {
+		return err
+	}
+
+	token, err := c.authentication.Token()
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Authorization", token)
+	req.Header.Add("Content-type", "application/json")
+	req.Header.Add("api-version", c.session.APIVersion)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode == http.StatusAccepted {
+		return nil
+	}
+
+	var bodyErr *ErrorResponse
+
+	err = json.Unmarshal(respBody, &bodyErr)
+	if err != nil {
+		return err
+	}
+
+	if bodyErr.Errors != nil {
+		return FindError(bodyErr.Errors[0])
+	}
+	return errors.New("error updating customer")
 }
 
 //CreateAccount ...
@@ -290,7 +346,7 @@ func (c *Customers) FindAccounts(document string) ([]AccountResponse, error) {
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, errors.New("not found")
+		return nil, ErrEntryNotFound
 	}
 
 	var bodyErr *ErrorResponse

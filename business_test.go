@@ -83,8 +83,8 @@ func (s *BusinessTestSuite) TestUpdateBusinessName() {
 	s.assert.NoError(err)
 	s.assert.Nil(err)
 
-	// find business updated
-	updatedAccount, err := s.business.FindBusiness("59619372000143")
+	// find updated business
+	updatedAccount, err := s.business.FindBusiness(businessRequest.Document)
 	s.assert.NoError(err)
 	s.assert.NotNil(updatedAccount)
 	s.assert.Equal(businessRequest.Document, updatedAccount.Document)
@@ -135,6 +135,8 @@ func (s *BusinessTestSuite) TestCreateBusinessAccount() {
 		Document: businessRequest.Document,
 		AccountType: bankly.PaymentAccount,
 	}
+
+	time.Sleep(time.Second)
 
 	account, err := s.business.CreateBusinessAccount(businessAccountRequest)
 	s.assert.NoError(err)
