@@ -51,9 +51,7 @@ func (c *Business) CreateBusiness(businessRequest BusinessRequest) error {
 		return err
 	}
 
-	req.Header.Add("Authorization", token)
-	req.Header.Add("Content-type", "application/json")
-	req.Header.Add("api-version", c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -100,9 +98,7 @@ func (c *Business) UpdateBusiness(businessDocument string, businessUpdateRequest
 		return err
 	}
 
-	req.Header.Add("Authorization", token)
-	req.Header.Add("Content-type", "application/json")
-	req.Header.Add("api-version", c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -155,9 +151,7 @@ func (c *Business) CreateBusinessAccount(businessAccountRequest BusinessAccountR
 		return nil, err
 	}
 
-	req.Header.Add("Authorization", token)
-	req.Header.Add("Content-type", "application/json")
-	req.Header.Add("api-version", c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -218,9 +212,7 @@ func (c *Business) FindBusiness(document string) (*BusinessResponse, error) {
 		return nil, err
 	}
 
-	req.Header.Add("Authorization", token)
-	req.Header.Add("Content-type", "application/json")
-	req.Header.Add("api-version", c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -278,9 +270,7 @@ func (c *Business) FindBusinessAccounts(document string) ([]AccountResponse, err
 		return nil, err
 	}
 
-	req.Header.Add("Authorization", token)
-	req.Header.Add("Content-type", "application/json")
-	req.Header.Add("api-version", c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
