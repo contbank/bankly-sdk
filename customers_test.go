@@ -65,7 +65,7 @@ func (s *CustomersTestSuite) TestCreateAccountErrorMoreThanOneAccountPerHolder()
 	account, err := s.customers.CreateAccount("54012948083", bankly.PaymentAccount)
 
 	s.assert.Error(err)
-	s.assert.EqualError(err, "It's not possible to create more than one account per holder")
+	s.assert.Equal(err, bankly.ErrHolderAlreadyHaveAAccount)
 	s.assert.Nil(account)
 }
 
@@ -73,7 +73,7 @@ func (s *CustomersTestSuite) TestCreateAccountErrorDoesntHaveAnApprovedRegistrat
 	account, err := s.customers.CreateAccount(grok.GeneratorCPF(), bankly.PaymentAccount)
 
 	s.assert.Error(err)
-	s.assert.EqualError(err, "Account holder does not exist or does not have an approved registration yet")
+	s.assert.Equal(err, bankly.ErrAccountHolderNotExists)
 	s.assert.Nil(account)
 }
 
@@ -93,6 +93,8 @@ func (s *CustomersTestSuite) TestCreateAndFindAccount() {
 	err := s.createRegistrationWithParams(randSurname, document, cellphone, email)
 	s.assert.NoError(err)
 
+	time.Sleep(time.Second)
+
 	account, err := s.customers.CreateAccount(document, bankly.PaymentAccount)
 	s.assert.NoError(err)
 	s.assert.NotNil(account)
@@ -104,7 +106,7 @@ func (s *CustomersTestSuite) TestCreateAndFindAccount() {
 
 func (s *CustomersTestSuite) createRegistrationWithParams(surname string, document string, cellphone string, email string) error {
 	return s.customers.CreateRegistration(bankly.CustomersRequest{
-		Documment: document,
+		Document: document,
 		Phone: &bankly.Phone{
 			CountryCode: "55",
 			Number:      cellphone,
