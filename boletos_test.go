@@ -167,7 +167,7 @@ func (s *BoletosTestSuite) TestPayBoleto() {
 	res, err := s.boletos.CreateBoleto(boleto)
 	s.assert.NoError(err)
 
-	req := &bankly.PayBoleto{
+	req := &bankly.PayBoletoRequest{
 		AuthenticationCode: res.AuthenticationCode,
 		Account: &bankly.Account{
 			Number: res.Account.Number,
@@ -186,10 +186,12 @@ func (s *BoletosTestSuite) TestPayBoleto() {
 		},
 	}
 
+	time.Sleep(3 * time.Second)
+
 	r, err := s.boletos.FindBoleto(findReq)
 	s.assert.NoError(err)
 	s.assert.NotNil(r)
-	s.assert.Equal("Registered", r.Status)
+	s.assert.Equal("Settled", r.Status)
 	s.assert.NotEmpty(r.Payments)
 }
 

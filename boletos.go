@@ -30,8 +30,6 @@ func NewBoletos(session Session) *Boletos {
 	}
 }
 
-const ErrScouterQuantity = "SCOUTER_QUANTITY"
-
 //CreateBoleto ...
 func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
 	err := Validator.Struct(model)
@@ -93,7 +91,7 @@ func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
 		return body, nil
 	}
 
-	var bodyErr *BoletoErrorResponse
+	var bodyErr []*BoletoErrorResponse
 
 	err = json.Unmarshal(respBody, &bodyErr)
 
@@ -101,12 +99,16 @@ func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
 		return nil, err
 	}
 
-	if bodyErr.Code == ErrScouterQuantity {
-		return nil, errors.New(ErrScouterQuantity)
-	}
+	if len(bodyErr) > 0 {
+		err := bodyErr[0]
 
-	if bodyErr.Message != nil {
-		return nil, errors.New(*bodyErr.Message)
+		if err.Code == ScouterQuantityKey {
+			return nil, ErrScouterQuantity
+		}
+
+		if err.Message != nil {
+			return nil, errors.New(*err.Message)
+		}
 	}
 
 	return nil, errors.New("error create boletos")
@@ -416,7 +418,7 @@ func (b *Boletos) CancelBoleto(model *CancelBoletoRequest) error {
 }
 
 //PayBoleto simulates a boleto beeing payed
-func (b *Boletos) PayBoleto(model *PayBoleto) error {
+func (b *Boletos) PayBoleto(model *PayBoletoRequest) error {
 	err := Validator.Struct(model)
 
 	if err != nil {
@@ -463,8 +465,30 @@ func (b *Boletos) PayBoleto(model *PayBoleto) error {
 
 	defer resp.Body.Close()
 
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
 	if resp.StatusCode == http.StatusOK {
 		return nil
+	}
+
+	var bodyErr []*BoletoErrorResponse
+
+	err = json.Unmarshal(respBody, &bodyErr)
+
+	if err != nil {
+		return err
+	}
+
+	if len(bodyErr) > 0 {
+		err := bodyErr[0]
+
+		if err.Code == BoletoInvalidStatusKey {
+			return ErrBoletoInvalidStatus
+		}
+
+		if err.Message != nil {
+			return errors.New(*err.Message)
+		}
 	}
 
 	return errors.New("error pay boleto")

@@ -290,7 +290,7 @@ type BoletoAmount struct {
 
 //BoletoPayment ...
 type BoletoPayment struct {
-	Id             string    `json:"id,omitempty"`
+	ID             string    `json:"id,omitempty"`
 	Amount         float64   `json:"amount,omitempty"`
 	PaymentChannel string    `json:"paymentChannel,omitempty"`
 	PaidOutDate    time.Time `json:"paidOutDate,omitempty"`
@@ -355,8 +355,8 @@ type CancelBoletoRequest struct {
 	Account            *Account `validate:"required" json:"account,omitempty"`
 }
 
-//ExecutePayment ...
-type PayBoleto struct {
+//PayBoletoRequest ...
+type PayBoletoRequest struct {
 	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
 	Account            *Account `validate:"required" json:"account,omitempty"`
 }
