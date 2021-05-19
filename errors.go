@@ -1,8 +1,9 @@
 package bankly
 
 import (
-	"github.com/contbank/grok"
 	"net/http"
+
+	"github.com/contbank/grok"
 )
 
 var (
@@ -44,33 +45,33 @@ type BanklyError ErrorModel
 
 type Error struct {
 	banklyError BanklyError
-	grokError 	*grok.Error
+	grokError   *grok.Error
 }
 
-var errorList = []Error {
-	Error {
-		banklyError: BanklyError { Code : "INVALID_PERSONAL_BUSINESS_SIZE" },
-		grokError : ErrInvalidBusinessSize,
+var errorList = []Error{
+	{
+		banklyError: BanklyError{Code: "INVALID_PERSONAL_BUSINESS_SIZE"},
+		grokError:   ErrInvalidBusinessSize,
 	},
-	Error {
-		banklyError: BanklyError { Code : "EMAIL_ALREADY_IN_USE" },
-		grokError : ErrEmailAlreadyInUse,
+	{
+		banklyError: BanklyError{Code: "EMAIL_ALREADY_IN_USE"},
+		grokError:   ErrEmailAlreadyInUse,
 	},
-	Error {
-		banklyError: BanklyError { Code : "PHONE_ALREADY_IN_USE" },
-		grokError : ErrPhoneAlreadyInUse,
+	{
+		banklyError: BanklyError{Code: "PHONE_ALREADY_IN_USE"},
+		grokError:   ErrPhoneAlreadyInUse,
 	},
-	Error {
-		banklyError: BanklyError { Code : "CUSTOMER_REGISTRATION_CANNOT_BE_REPLACED" },
-		grokError : ErrCustomerRegistrationCannotBeReplaced,
+	{
+		banklyError: BanklyError{Code: "CUSTOMER_REGISTRATION_CANNOT_BE_REPLACED"},
+		grokError:   ErrCustomerRegistrationCannotBeReplaced,
 	},
-	Error {
-		banklyError: BanklyError { Code : "ACCOUNT_HOLDER_NOT_EXISTS" },
-		grokError : ErrAccountHolderNotExists,
+	{
+		banklyError: BanklyError{Code: "ACCOUNT_HOLDER_NOT_EXISTS"},
+		grokError:   ErrAccountHolderNotExists,
 	},
-	Error {
-		banklyError: BanklyError { Code : "HOLDER_ALREADY_HAVE_A_ACCOUNT" },
-		grokError : ErrHolderAlreadyHaveAAccount,
+	{
+		banklyError: BanklyError{Code: "HOLDER_ALREADY_HAVE_A_ACCOUNT"},
+		grokError:   ErrHolderAlreadyHaveAAccount,
 	},
 }
 
@@ -78,29 +79,29 @@ type BanklyTransferError KeyValueErrorModel
 
 type TransferError struct {
 	banklyTransferError BanklyTransferError
-	grokError 			*grok.Error
+	grokError           *grok.Error
 }
 
-var transferErrorList = []TransferError {
-	TransferError {
-		banklyTransferError	: BanklyTransferError { Key : "x-correlation-id" },
-		grokError 			: ErrInvalidCorrelationId,
+var transferErrorList = []TransferError{
+	{
+		banklyTransferError: BanklyTransferError{Key: "x-correlation-id"},
+		grokError:           ErrInvalidCorrelationId,
 	},
-	TransferError {
-		banklyTransferError	: BanklyTransferError { Key : "$.amount" },
-		grokError 			: ErrInvalidAmount,
+	{
+		banklyTransferError: BanklyTransferError{Key: "$.amount"},
+		grokError:           ErrInvalidAmount,
 	},
-	TransferError {
-		banklyTransferError	: BanklyTransferError { Key : "INSUFFICIENT_BALANCE" },
-		grokError 			: ErrInsufficientBalance,
+	{
+		banklyTransferError: BanklyTransferError{Key: "INSUFFICIENT_BALANCE"},
+		grokError:           ErrInsufficientBalance,
 	},
-	TransferError {
-		banklyTransferError	: BanklyTransferError { Key : "CASH_OUT_NOT_ALLOWED_OUT_OF_BUSINESS_PERIOD" },
-		grokError 			: ErrOutOfServicePeriod,
+	{
+		banklyTransferError: BanklyTransferError{Key: "CASH_OUT_NOT_ALLOWED_OUT_OF_BUSINESS_PERIOD"},
+		grokError:           ErrOutOfServicePeriod,
 	},
-	TransferError {
-		banklyTransferError	: BanklyTransferError { Key : "CASHOUT_LIMIT_NOT_ENOUGH" },
-		grokError 			: ErrCashoutLimitNotEnough,
+	{
+		banklyTransferError: BanklyTransferError{Key: "CASHOUT_LIMIT_NOT_ENOUGH"},
+		grokError:           ErrCashoutLimitNotEnough,
 	},
 }
 
@@ -110,14 +111,14 @@ func FindError(errorModel ErrorModel) *grok.Error {
 			return v.grokError
 		}
 	}
-	return grok.NewError(http.StatusBadRequest, errorModel.Code + " - " + errorModel.Messages[0])
+	return grok.NewError(http.StatusBadRequest, errorModel.Code+" - "+errorModel.Messages[0])
 }
 
 func FindTransferError(transferErrorResponse TransferErrorResponse) *grok.Error {
 	// get the error code if errors list is null
 	if len(transferErrorResponse.Errors) == 0 && transferErrorResponse.Code != "" {
-		transferErrorResponse.Errors = []KeyValueErrorModel {
-			KeyValueErrorModel {
+		transferErrorResponse.Errors = []KeyValueErrorModel{
+			{
 				Key: transferErrorResponse.Code,
 			},
 		}
@@ -129,5 +130,5 @@ func FindTransferError(transferErrorResponse TransferErrorResponse) *grok.Error 
 			return v.grokError
 		}
 	}
-	return grok.NewError(http.StatusBadRequest, errorModel.Key + " - " + errorModel.Value)
+	return grok.NewError(http.StatusBadRequest, errorModel.Key+" - "+errorModel.Value)
 }

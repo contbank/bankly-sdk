@@ -13,6 +13,8 @@ const (
 	TransfersPath = "fund-transfers"
 	// BusinessPath ...
 	BusinessPath = "business"
+	//BanksPath ...
+	BanksPath = "banklist"
 )
 
 const (
@@ -34,7 +36,7 @@ type ErrorLoginResponse struct {
 
 // CustomersRequest ...
 type CustomersRequest struct {
-	Document    string     `validate:"required,cpf" json:"documentNumber,omitempty"`
+	Document     string    `validate:"required,cpf" json:"documentNumber,omitempty"`
 	RegisterName string    `validate:"required" json:"registerName,omitempty"`
 	SocialName   string    `json:"socialName,omitempty"`
 	Phone        *Phone    `validate:"required,dive" json:"phone,omitempty"`
@@ -83,14 +85,14 @@ type Phone struct {
 
 // Address ...
 type Address struct {
-	ZipCode        string  `validate:"required" json:"zipCode,omitempty"`
-	AddressLine    string  `validate:"required" json:"addressLine,omitempty"`
-	BuildingNumber string  `validate:"required" json:"buildingNumber,omitempty"`
-	Complement     string  `json:"complement,omitempty"`
-	Neighborhood   string  `validate:"required" json:"neighborhood,omitempty"`
-	City           string  `validate:"required" json:"city,omitempty"`
-	State          string  `validate:"required" json:"state,omitempty"`
-	Country        string  `validate:"required" json:"country,omitempty"`
+	ZipCode        string `validate:"required" json:"zipCode,omitempty"`
+	AddressLine    string `validate:"required" json:"addressLine,omitempty"`
+	BuildingNumber string `validate:"required" json:"buildingNumber,omitempty"`
+	Complement     string `json:"complement,omitempty"`
+	Neighborhood   string `validate:"required" json:"neighborhood,omitempty"`
+	City           string `validate:"required" json:"city,omitempty"`
+	State          string `validate:"required" json:"state,omitempty"`
+	Country        string `validate:"required" json:"country,omitempty"`
 }
 
 // ErrorResponse ...
@@ -101,11 +103,11 @@ type ErrorResponse struct {
 
 // TransferErrorResponse ...
 type TransferErrorResponse struct {
-	Code         	string   			   `json:"code,omitempty"`
-	Message      	string   			   `json:"message,omitempty"`
-	Layer      	 	string   			   `json:"layer,omitempty"`
-	ApplicationName	string   			   `json:"applicationName,omitempty"`
-	Errors 			[]KeyValueErrorModel   `json:"errors,omitempty"`
+	Code            string               `json:"code,omitempty"`
+	Message         string               `json:"message,omitempty"`
+	Layer           string               `json:"layer,omitempty"`
+	ApplicationName string               `json:"applicationName,omitempty"`
+	Errors          []KeyValueErrorModel `json:"errors,omitempty"`
 }
 
 // ErrorModel ...
@@ -117,17 +119,17 @@ type ErrorModel struct {
 
 // KeyValueErrorModel ...
 type KeyValueErrorModel struct {
-	Key         string   `json:"key,omitempty"`
-	Value 		string   `json:"value,omitempty"`
+	Key   string `json:"key,omitempty"`
+	Value string `json:"value,omitempty"`
 }
 
 // AccountResponse ...
 type AccountResponse struct {
-	Balance 	*BalanceRespone `json:"balance,omitempty"`
-	Status  	string          `json:"status,omitempty"`
-	Branch  	string          `json:"branch,omitempty"`
-	Number  	string          `json:"number,omitempty"`
-	Bank 		*Bank    		`json:"bank,omitempty"`
+	Balance *BalanceRespone `json:"balance,omitempty"`
+	Status  string          `json:"status,omitempty"`
+	Branch  string          `json:"branch,omitempty"`
+	Number  string          `json:"number,omitempty"`
+	Bank    *Bank           `json:"bank,omitempty"`
 }
 
 // BalanceRespone ...
@@ -162,11 +164,11 @@ type SenderRequest struct {
 // RecipientRequest ...
 type RecipientRequest struct {
 	TransfersAccountType TransfersAccountType `validate:"required" json:"accountType"`
-	BankCode      		 string        	      `validate:"required" json:"bankCode"`
-	Branch        		 string        	      `validate:"required" json:"branch"`
-	Account       		 string        	      `validate:"required" json:"account"`
-	Document      		 string        	      `validate:"required" json:"document"`
-	Name          		 string        	      `validate:"required" json:"name"`
+	BankCode             string               `validate:"required" json:"bankCode"`
+	Branch               string               `validate:"required" json:"branch"`
+	Account              string               `validate:"required" json:"account"`
+	Document             string               `validate:"required" json:"document"`
+	Name                 string               `validate:"required" json:"name"`
 }
 
 // TransfersAccountType ...
@@ -181,47 +183,47 @@ const (
 
 // TransfersResponse ...
 type TransfersResponse struct {
-	ContinuationToken       string 						`json:"continuationToken"`
-	Data					[]TransferByCodeResponse	`json:"data"`
+	ContinuationToken string                   `json:"continuationToken"`
+	Data              []TransferByCodeResponse `json:"data"`
 }
 
 // TransferByCodeResponse ...
 type TransferByCodeResponse struct {
-	CompanyKey 				string				`json:"companyKey"`
-	AuthenticationCode 		string				`json:"authenticationCode"`
-	Amount 					float64				`json:"amount"`
-	CorrelationId 			string				`json:"correlationId"`
-	Sender 					*SenderResponse		`json:"sender"`
-	Recipient 				*RecipientResponse	`json:"recipient"`
-	Channel 				string				`json:"channel"`
-	Operation 				string				`json:"operation"`
-	Identifier 				string				`json:"identifier"`
-	Status 					string				`json:"status"`
-	CreatedAt 				time.Time			`json:"createdAt"`
-	UpdatedAt 				time.Time			`json:"updatedAt"`
+	CompanyKey         string             `json:"companyKey"`
+	AuthenticationCode string             `json:"authenticationCode"`
+	Amount             float64            `json:"amount"`
+	CorrelationId      string             `json:"correlationId"`
+	Sender             *SenderResponse    `json:"sender"`
+	Recipient          *RecipientResponse `json:"recipient"`
+	Channel            string             `json:"channel"`
+	Operation          string             `json:"operation"`
+	Identifier         string             `json:"identifier"`
+	Status             string             `json:"status"`
+	CreatedAt          time.Time          `json:"createdAt"`
+	UpdatedAt          time.Time          `json:"updatedAt"`
 }
 
 // BusinessRequest ...
 type BusinessRequest struct {
-	Document     			string    				`validate:"required,cnpj" json:"documentNumber,omitempty"`
-	BusinessName  			string    				`validate:"required" json:"businessName,omitempty"`
-	TradingName	  			string    				`json:"tradingName,omitempty"`
-	BusinessEmail 			string    				`json:"businessEmail,omitempty"`
-	BusinessType  			BusinessType 			`validate:"required" json:"businessType"`
-	BusinessSize 			BusinessSize 			`validate:"required" json:"businessSize"`
-	BusinessAddress 		*Address  				`validate:"required,dive" json:"businessAddress,omitempty"`
-	LegalRepresentative		*LegalRepresentative	`validate:"required,dive" json:"legalRepresentative,omitempty"`
+	Document            string               `validate:"required,cnpj" json:"documentNumber,omitempty"`
+	BusinessName        string               `validate:"required" json:"businessName,omitempty"`
+	TradingName         string               `json:"tradingName,omitempty"`
+	BusinessEmail       string               `json:"businessEmail,omitempty"`
+	BusinessType        BusinessType         `validate:"required" json:"businessType"`
+	BusinessSize        BusinessSize         `validate:"required" json:"businessSize"`
+	BusinessAddress     *Address             `validate:"required,dive" json:"businessAddress,omitempty"`
+	LegalRepresentative *LegalRepresentative `validate:"required,dive" json:"legalRepresentative,omitempty"`
 }
 
 // BusinessUpdateRequest ...
 type BusinessUpdateRequest struct {
-	BusinessName  			string    				`validate:"required" json:"businessName,omitempty"`
-	TradingName	  			string    				`json:"tradingName,omitempty"`
-	BusinessEmail 			string    				`json:"businessEmail,omitempty"`
-	BusinessType  			BusinessType 			`validate:"required" json:"businessType"`
-	BusinessSize 			BusinessSize 			`validate:"required" json:"businessSize"`
-	BusinessAddress 		*Address  				`validate:"required,dive" json:"businessAddress,omitempty"`
-	LegalRepresentative		*LegalRepresentative	`validate:"required,dive" json:"legalRepresentative,omitempty"`
+	BusinessName        string               `validate:"required" json:"businessName,omitempty"`
+	TradingName         string               `json:"tradingName,omitempty"`
+	BusinessEmail       string               `json:"businessEmail,omitempty"`
+	BusinessType        BusinessType         `validate:"required" json:"businessType"`
+	BusinessSize        BusinessSize         `validate:"required" json:"businessSize"`
+	BusinessAddress     *Address             `validate:"required,dive" json:"businessAddress,omitempty"`
+	LegalRepresentative *LegalRepresentative `validate:"required,dive" json:"legalRepresentative,omitempty"`
 }
 
 // CustomerUpdateRequest ...
@@ -239,8 +241,8 @@ type CustomerUpdateRequest struct {
 type BusinessType string
 
 const (
-	BusinessTypeMEI BusinessType = "MEI"
-	BusinessTypeEI BusinessType = "EI"
+	BusinessTypeMEI    BusinessType = "MEI"
+	BusinessTypeEI     BusinessType = "EI"
 	BusinessTypeEIRELI BusinessType = "EIRELI"
 )
 
@@ -249,7 +251,7 @@ type BusinessSize string
 
 const (
 	BusinessSizeMEI BusinessSize = "MEI"
-	BusinessSizeME BusinessSize = "ME"
+	BusinessSizeME  BusinessSize = "ME"
 	BusinessSizeEPP BusinessSize = "EPP"
 )
 
@@ -257,7 +259,7 @@ const (
 type ResultLevel string
 
 const (
-	ResultLevelBasic ResultLevel = "BASIC"
+	ResultLevelBasic    ResultLevel = "BASIC"
 	ResultLevelDetailed ResultLevel = "DETAILED"
 )
 
@@ -275,16 +277,16 @@ type LegalRepresentative struct {
 
 // BusinessResponse ...
 type BusinessResponse struct {
-	ResultLevel 	ResultLevel 	`json:"resultLevel,omitempty"`
-	Document    	string 			`json:"documentNumber,omitempty"`
-	BusinessName 	string 			`json:"businessName,omitempty"`
-	TradingName	 	string 			`json:"tradingName,omitempty"`
-	BusinessEmail   string    		`json:"businessEmail,omitempty"`
-	Status	 	 	string 			`json:"status,omitempty"`
-	BusinessType 	BusinessType 	`json:"businessType"`
-	BusinessSize 	BusinessSize 	`json:"businessSize"`
-	CreatedAt    	time.Time 		`json:"createdAt"`
-	UpdatedAt    	time.Time 		`json:"updatedAt"`
+	ResultLevel   ResultLevel  `json:"resultLevel,omitempty"`
+	Document      string       `json:"documentNumber,omitempty"`
+	BusinessName  string       `json:"businessName,omitempty"`
+	TradingName   string       `json:"tradingName,omitempty"`
+	BusinessEmail string       `json:"businessEmail,omitempty"`
+	Status        string       `json:"status,omitempty"`
+	BusinessType  BusinessType `json:"businessType"`
+	BusinessSize  BusinessSize `json:"businessSize"`
+	CreatedAt     time.Time    `json:"createdAt"`
+	UpdatedAt     time.Time    `json:"updatedAt"`
 }
 
 // BusinessAccountRequest ...
@@ -293,49 +295,61 @@ type BusinessAccountRequest struct {
 	AccountType AccountType `validate:"required" json:"accountType"`
 }
 
+//FilterBankListRequest ...
+type FilterBankListRequest struct {
+	IDs      []string
+	Name     *string
+	Product  *string
+	Page     *int
+	PageSize *int
+}
+
+//BankDataResponse ...
+type BankDataResponse struct {
+	Name        string   `json:"name,omitempty"`
+	ISPB        string   `json:"ispb,omitempty"`
+	Code        string   `json:"code,omitempty"`
+	ShortName   string   `json:"shortName,omitempty"`
+	IsSPIDirect bool     `json:"isSPIDirect,omitempty"`
+	Products    []string `json:"products,omitempty"`
+}
+
 // TransferRequest
 type TransferRequest struct {
-	Amount     	 	float64     `validate:"required" json:"amount,omitempty"`
-	Description 	string      `validate:"required" json:"description,omitempty"`
-	Sender			*Sender     `validate:"required,dive" json:"sender,omitempty"`
-	Recipient      	*Recipient  `validate:"required,dive" json:"recipient,omitempty"`
+	Amount      float64    `validate:"required" json:"amount,omitempty"`
+	Description string     `validate:"required" json:"description,omitempty"`
+	Sender      *Sender    `validate:"required,dive" json:"sender,omitempty"`
+	Recipient   *Recipient `validate:"required,dive" json:"recipient,omitempty"`
 }
 
 // Sender
 type Sender struct {
-	Branch 		string      `validate:"required" json:"branch,omitempty"`
-	Account 	string      `validate:"required" json:"account,omitempty"`
-	Document 	string      `validate:"required" json:"document,omitempty"`
-	Name 		string      `validate:"required" json:"name,omitempty"`
+	Branch   string `validate:"required" json:"branch,omitempty"`
+	Account  string `validate:"required" json:"account,omitempty"`
+	Document string `validate:"required" json:"document,omitempty"`
+	Name     string `validate:"required" json:"name,omitempty"`
 }
 
 // SenderResponse
 type SenderResponse struct {
-	Document 	string      		`json:"document,omitempty"`
-	Name 		string      		`json:"name,omitempty"`
-	Account 	*AccountResponse	`json:"account,omitempty"`
-}
-
-// Bank
-type Bank struct {
-	ISPB	string  `json:"ispb,omitempty"`
-	Name 	string  `json:"name,omitempty"`
-	Code	string	`json:"compe,omitempty"`
+	Document string           `json:"document,omitempty"`
+	Name     string           `json:"name,omitempty"`
+	Account  *AccountResponse `json:"account,omitempty"`
 }
 
 // Recipient
 type Recipient struct {
-	BankCode 		string      			`validate:"required" json:"bankCode,omitempty"`
-	Branch 			string      			`validate:"required" json:"branch,omitempty"`
-	Account 		string      			`validate:"required" json:"account,omitempty"`
-	Document 		string      			`validate:"required" json:"document,omitempty"`
-	Name 			string      			`validate:"required" json:"name,omitempty"`
-	AccountType     *TransfersAccountType  	`validate:"required,dive" json:"accountType,omitempty"`
+	BankCode    string                `validate:"required" json:"bankCode,omitempty"`
+	Branch      string                `validate:"required" json:"branch,omitempty"`
+	Account     string                `validate:"required" json:"account,omitempty"`
+	Document    string                `validate:"required" json:"document,omitempty"`
+	Name        string                `validate:"required" json:"name,omitempty"`
+	AccountType *TransfersAccountType `validate:"required,dive" json:"accountType,omitempty"`
 }
 
 // RecipientResponse
 type RecipientResponse struct {
-	Document 		string      			`json:"document,omitempty"`
-	Name 			string      			`json:"name,omitempty"`
-	Account 	    *AccountResponse		`json:"account,omitempty"`
+	Document string           `json:"document,omitempty"`
+	Name     string           `json:"name,omitempty"`
+	Account  *AccountResponse `json:"account,omitempty"`
 }

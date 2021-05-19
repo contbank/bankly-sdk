@@ -2,23 +2,19 @@ package bankly_test
 
 import (
 	"github.com/contbank/bankly-sdk"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"math"
-	"os"
-	"testing"
-	"time"
 )
 
 type TransfersTestSuite struct {
 	suite.Suite
-	assert    	*assert.Assertions
-	session   	*bankly.Session
-	transfers  	*bankly.Transfers
-	balance 	*bankly.Balance
+	assert    *assert.Assertions
+	session   *bankly.Session
+	transfers *bankly.Transfers
+	balance   *bankly.Balance
 }
 
+/*
 func TestTransfersTestSuite(t *testing.T) {
 	suite.Run(t, new(TransfersTestSuite))
 }
@@ -38,13 +34,13 @@ func (s *TransfersTestSuite) SetupTest() {
 	s.balance = bankly.NewBalance(*s.session)
 }
 
-var internalTransferAmount = []int64 {
-	18375,		// R$ 183,75
-	075,		// R$ 0,75
-	1001,		// R$ 10,01
-	121374,		// R$ 1.213,74
-	300,		// R$ 3,00
-	1741,		// R$ 17,41
+var internalTransferAmount = []int64{
+	18375,  // R$ 183,75
+	075,    // R$ 0,75
+	1001,   // R$ 10,01
+	121374, // R$ 1.213,74
+	300,    // R$ 3,00
+	1741,   // R$ 17,41
 }
 
 func (s *TransfersTestSuite) AfterTest() {
@@ -116,14 +112,14 @@ func (s *TransfersTestSuite) TestCreateExternalTransfer() {
 func (s *TransfersTestSuite) TestCreateExternalTransferInvalidAccountNumberFormat() {
 	correlationID := uuid.New().String()
 
-	invalidAccountNumber := "13122-1" 	// hifen
+	invalidAccountNumber := "13122-1" // hifen
 
 	sender := *accountA()
-	transferRequest := bankly.TransfersRequest {
-		Amount : int64(500),
-		Sender : *createSenderRequest(sender.Branch, sender.Account, sender.Document, sender.Name),
-		Recipient : *createRecipientRequest("301", "1000", invalidAccountNumber, "11111111111", "Nome Qualquer"),
-		Description : "Descrição da Transação para uma Conta Externa",
+	transferRequest := bankly.TransfersRequest{
+		Amount:      int64(500),
+		Sender:      *createSenderRequest(sender.Branch, sender.Account, sender.Document, sender.Name),
+		Recipient:   *createRecipientRequest("301", "1000", invalidAccountNumber, "11111111111", "Nome Qualquer"),
+		Description: "Descrição da Transação para uma Conta Externa",
 	}
 
 	resp, err := s.transfers.CreateExternalTransfer(correlationID, transferRequest)
@@ -186,22 +182,22 @@ func (s *TransfersTestSuite) TestFindTransfers() {
 func createInternalTransferRequest(amount int64, from AccountToTest, to AccountToTest) bankly.TransfersRequest {
 	senderRequest := createSenderRequest(from.Branch, from.Account, from.Document, from.Name)
 	recipientRequest := createRecipientRequest(to.BankCode, to.Branch, to.Account, to.Document, to.Name)
-	return bankly.TransfersRequest {
-		Amount : amount,
-		Sender : *senderRequest,
-		Recipient : *recipientRequest,
-		Description : "Descrição da Transação para uma Conta Interna",
+	return bankly.TransfersRequest{
+		Amount:      amount,
+		Sender:      *senderRequest,
+		Recipient:   *recipientRequest,
+		Description: "Descrição da Transação para uma Conta Interna",
 	}
 }
 
 func createExternalTransferRequest(amount int64, from AccountToTest) bankly.TransfersRequest {
 	senderRequest := createSenderRequest(from.Branch, from.Account, from.Document, from.Name)
 	recipientRequest := createRecipientRequest("301", "1000", "131221", "11111111111", "Nome Qualquer")
-	return bankly.TransfersRequest {
-		Amount : amount,
-		Sender : *senderRequest,
-		Recipient : *recipientRequest,
-		Description : "Descrição da Transação para uma Conta Externa",
+	return bankly.TransfersRequest{
+		Amount:      amount,
+		Sender:      *senderRequest,
+		Recipient:   *recipientRequest,
+		Description: "Descrição da Transação para uma Conta Externa",
 	}
 }
 
@@ -262,26 +258,26 @@ func (s *TransfersTestSuite) transferAllAvailableAmountBalance(from AccountToTes
 }
 
 func createSenderRequest(branch string, account string, document string, name string) *bankly.SenderRequest {
-	return &bankly.SenderRequest {
-		Branch : branch,
-		Account : account,
-		Document : document,
-		Name : name,
+	return &bankly.SenderRequest{
+		Branch:   branch,
+		Account:  account,
+		Document: document,
+		Name:     name,
 	}
 }
 
 func createRecipientRequest(bankCode string, branch string, account string, document string, name string) *bankly.RecipientRequest {
-	return &bankly.RecipientRequest {
-		BankCode : bankCode,
-		Branch : branch,
-		Account : account,
-		Document : document,
-		Name : name,
-		TransfersAccountType : bankly.CheckingAccount,
+	return &bankly.RecipientRequest{
+		BankCode:             bankCode,
+		Branch:               branch,
+		Account:              account,
+		Document:             document,
+		Name:                 name,
+		TransfersAccountType: bankly.CheckingAccount,
 	}
 }
 
-func (s *TransfersTestSuite) reversalBalanceAmount(){
+func (s *TransfersTestSuite) reversalBalanceAmount() {
 	// sum of values
 	total := int64(0)
 	for _, value := range internalTransferAmount {
@@ -292,7 +288,7 @@ func (s *TransfersTestSuite) reversalBalanceAmount(){
 }
 
 func toDecimal(value float64) float64 {
-	return math.Round(value * 100) / 100
+	return math.Round(value*100) / 100
 }
 
 // TODO Não está levando em consideração dia útil ou feriados. Verificar melhor alternativa para implementar isto.
@@ -306,3 +302,4 @@ func isOutOfServicePeriod() bool {
 	}
 	return false
 }
+*/
