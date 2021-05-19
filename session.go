@@ -53,9 +53,16 @@ func NewSession(config Config) (*Session, error) {
 		config.APIVersion = String("1.0")
 	}
 
-	err = validateCredentials()
-	if err != nil {
-		return nil, err
+	if config.ClientID == nil {
+		config.ClientID = String(os.Getenv("BANKLY_CLIENT_ID"))
+	}
+
+	if config.ClientSecret == nil {
+		config.ClientID = String(os.Getenv("BANKLY_CLIENT_SECRET"))
+	}
+
+	if *config.ClientID == "" || *config.ClientSecret == "" {
+		return nil, errors.New("Invalid client id or client secret")
 	}
 
 	var session = &Session{
@@ -67,11 +74,4 @@ func NewSession(config Config) (*Session, error) {
 	}
 
 	return session, nil
-}
-
-func validateCredentials() (error){
-	if os.Getenv("BANKLY_CLIENT_ID") == "" || os.Getenv("BANKLY_CLIENT_SECRET") == "" {
-		return errors.New("Invalid client id or client secret")
-	}
-	return nil
 }
