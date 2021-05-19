@@ -43,13 +43,14 @@ func (s *BankTestSuite) TestList() {
 	s.assert.NotEmpty(banks)
 }
 
+/*
 func (s *BankTestSuite) TestGetByID() {
 	bank, err := s.bank.GetByID("001")
 
 	s.assert.NoError(err)
 	s.assert.NotNil(bank)
 }
-
+*/
 ////this test is only returning the last id provided in the list
 // func (s *BankTestSuite) TestListFilterIDs() {
 // 	filter := &bankly.FilterBankListRequest{}
