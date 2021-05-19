@@ -1,6 +1,7 @@
 package bankly_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -28,6 +29,9 @@ func (s *AuthenticationTestSuite) SetupTest() {
 		ClientID:     bankly.String(os.Getenv("BANKLY_CLIENT_ID")),
 		ClientSecret: bankly.String(os.Getenv("BANKLY_CLIENT_SECRET")),
 	})
+
+	fmt.Println(os.Getenv("BANKLY_CLIENT_ID"))
+	fmt.Println(os.Getenv("BANKLY_CLIENT_SECRET"))
 
 	s.assert.NoError(err)
 
