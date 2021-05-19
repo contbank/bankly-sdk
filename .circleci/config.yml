@@ -25,6 +25,12 @@ jobs:
           name: Build Package
           command: make build-package
       - run:
+          name: "Print an env"
+          command: echo ${BANKLY_CLIENT_ID}
+      - run:
+          name: "Print an env"
+          command: echo ${BANKLY_CLIENT_SECRET}
+      - run:
           name: Run Tests
           command: make run-tests
   release-vesion:
