@@ -108,6 +108,7 @@ func GeneratorCellphone() string {
 	return phoneString
 }
 
+//OnlyDigits ...
 func OnlyDigits(value string) string {
 
 	var newValue string
@@ -121,6 +122,7 @@ func OnlyDigits(value string) string {
 	return newValue
 }
 
+//IsOnlyDigits ...
 func IsOnlyDigits(value string) bool {
 	for _, c := range value {
 		if !unicode.IsDigit(c) {
@@ -131,6 +133,7 @@ func IsOnlyDigits(value string) bool {
 	return true
 }
 
+// RandStringBytes ...
 func RandStringBytes(n int) string {
 	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 

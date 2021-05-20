@@ -236,7 +236,7 @@ func (s *BoletosTestSuite) createCustomerAndAccount() (string, *bankly.Account) 
 	email := "email_de_teste_" + surname + "@contbank.com"
 
 	req := bankly.CustomersRequest{
-		Documment: document,
+		Document: document,
 		Phone: &bankly.Phone{
 			CountryCode: "55",
 			Number:      cellphone,
