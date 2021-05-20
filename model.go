@@ -61,6 +61,22 @@ const (
 	PaymentAccount AccountType = "PAYMENT_ACCOUNT"
 )
 
+// CustomerStatus
+type CustomerStatus string
+
+const (
+	// CustomerStatusPendingApproval
+	CustomerStatusPendingApproval CustomerStatus = "PENDING_APPROVAL"
+	// CustomerStatusApproved
+	CustomerStatusApproved CustomerStatus = "APPROVED"
+	// CustomerStatusReproved
+	CustomerStatusReproved CustomerStatus = "REPROVED"
+	// CustomerStatusCanceled
+	CustomerStatusCanceled CustomerStatus = "CANCELED"
+	// CustomerStatusBlacklisted
+	CustomerStatusBlacklisted CustomerStatus = "BLACKLISTED"
+)
+
 // CustomersResponse ...
 type CustomersResponse struct {
 	DocumentNumber             string    `json:"documentNumber"`

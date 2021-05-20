@@ -140,8 +140,8 @@ func (s *CustomersTestSuite) TestCreateAndFindAccount() {
 
 func (s *CustomersTestSuite) TestUpdateRegistration() {
 
-	// TODO Verificar com o Bankly o motivo do FindRegistration estar retornando apenas alguns dados.
-	s.T().Skip("Aguardar retorno do Bankly para o FindRegistration, que está retornando dados incompletos.")
+	// TODO O PATCH da Customers não está funcionando na Bankly. Aguardando retorno deles para ativar este teste
+	s.T().Skip("O PATCH da Customers não está funcionando na Bankly. Aguardando retorno deles para ativar este teste.")
 
 	document := grok.GeneratorCPF()
 	cellphone := grok.GeneratorCellphone()
