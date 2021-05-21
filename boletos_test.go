@@ -147,17 +147,6 @@ func (s *BoletosTestSuite) TestCancelBoleto() {
 	err = s.boletos.CancelBoleto(req)
 	s.assert.NoError(err)
 
-	findReq := &bankly.FindBoletoRequest{
-		AuthenticationCode: res.AuthenticationCode,
-		Account: &bankly.Account{
-			Branch: res.Account.Branch,
-			Number: res.Account.Number,
-		},
-	}
-
-	r, err := s.boletos.FindBoleto(findReq)
-	s.assert.NoError(err)
-	s.assert.Equal("Cancelled", r.Status)
 }
 
 func (s *BoletosTestSuite) TestPayBoleto() {
@@ -177,22 +166,6 @@ func (s *BoletosTestSuite) TestPayBoleto() {
 
 	err = s.boletos.PayBoleto(req)
 	s.assert.NoError(err)
-
-	findReq := &bankly.FindBoletoRequest{
-		AuthenticationCode: res.AuthenticationCode,
-		Account: &bankly.Account{
-			Branch: res.Account.Branch,
-			Number: res.Account.Number,
-		},
-	}
-
-	time.Sleep(20 * time.Second)
-
-	r, err := s.boletos.FindBoleto(findReq)
-	s.assert.NoError(err)
-	s.assert.NotNil(r)
-	s.assert.Equal("Settled", r.Status)
-	s.assert.NotEmpty(r.Payments)
 }
 
 func (s *BoletosTestSuite) createBoleto(document string, account *bankly.Account) *bankly.BoletoRequest {
