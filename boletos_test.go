@@ -186,7 +186,7 @@ func (s *BoletosTestSuite) TestPayBoleto() {
 		},
 	}
 
-	time.Sleep(3 * time.Second)
+	time.Sleep(20 * time.Second)
 
 	r, err := s.boletos.FindBoleto(findReq)
 	s.assert.NoError(err)
