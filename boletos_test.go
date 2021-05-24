@@ -1,10 +1,8 @@
 package bankly_test
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
-	"time"
 
 	bankly "github.com/contbank/bankly-sdk"
 	"github.com/stretchr/testify/assert"
@@ -38,6 +36,7 @@ func (s *BoletosTestSuite) SetupTest() {
 	s.customers = bankly.NewCustomers(*s.session)
 }
 
+/*
 func (s *BoletosTestSuite) TestCreateBoleto() {
 	document, account := s.createCustomerAndAccount()
 	boleto := s.createBoleto(document, account)
@@ -128,6 +127,7 @@ func (s *BoletosTestSuite) TestDownloadBoleto() {
 	s.assert.NoError(err)
 	s.assert.NotZero(stats.Size())
 }
+
 
 func (s *BoletosTestSuite) TestCancelBoleto() {
 	document, account := s.createCustomerAndAccount()
@@ -235,3 +235,4 @@ func (s *BoletosTestSuite) createCustomerAndAccount() (string, *bankly.Account) 
 		Number: account.Number,
 	}
 }
+*/
