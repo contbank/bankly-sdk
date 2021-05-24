@@ -101,7 +101,7 @@ func (a Authentication) Token() (string, error) {
 		return "", err
 	}
 
-	a.session.Cache.Set("token", fmt.Sprintf("%s %s", response.TokenType, response.AccessToken), time.Second*time.Duration(int64(response.ExpiresIn)))
+	a.session.Cache.Set("token", fmt.Sprintf("%s %s", response.TokenType, response.AccessToken), time.Second*time.Duration(int64(response.ExpiresIn-10)))
 
 	return fmt.Sprintf("%s %s", response.TokenType, response.AccessToken), nil
 }
