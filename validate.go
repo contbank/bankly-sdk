@@ -21,6 +21,7 @@ func NewValidator() *validator.Validate {
 
 	validate.RegisterValidation("cnpj", CNPJ)
 	validate.RegisterValidation("cpf", CPF)
+	validate.RegisterValidation("cpfcnpj", CPFCNPJ)
 
 	return validate
 }
@@ -61,4 +62,9 @@ func CPF(fl validator.FieldLevel) bool {
 	default:
 		return false
 	}
+}
+
+//CPFCNPJ ...
+func CPFCNPJ(fl validator.FieldLevel) bool {
+	return CPF(fl) || CNPJ(fl)
 }

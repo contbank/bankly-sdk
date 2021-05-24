@@ -31,7 +31,6 @@ func NewBalance(session Session) *Balance {
 //Balance ...
 func (c *Balance) Balance(account string) (*AccountResponse, error) {
 	u, err := url.Parse(c.session.APIEndpoint)
-
 	if err != nil {
 		return nil, err
 	}
@@ -47,23 +46,18 @@ func (c *Balance) Balance(account string) (*AccountResponse, error) {
 	endpoint := u.String()
 
 	req, err := http.NewRequest("GET", endpoint, nil)
-
 	if err != nil {
 		return nil, err
 	}
 
 	token, err := c.authentication.Token()
-
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Add("Authorization", token)
-	req.Header.Add("Content-type", "application/json")
-	req.Header.Add("api-version", c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion)
 
 	resp, err := c.httpClient.Do(req)
-
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +70,6 @@ func (c *Balance) Balance(account string) (*AccountResponse, error) {
 		var response *AccountResponse
 
 		err = json.Unmarshal(respBody, &response)
-
 		if err != nil {
 			return nil, err
 		}
@@ -91,7 +84,6 @@ func (c *Balance) Balance(account string) (*AccountResponse, error) {
 	var bodyErr *ErrorResponse
 
 	err = json.Unmarshal(respBody, &bodyErr)
-
 	if err != nil {
 		return nil, err
 	}

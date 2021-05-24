@@ -1,14 +1,14 @@
 package bankly_test
 
 import (
-	"github.com/contbank/grok"
 	"math/rand"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/contbank/bankly-sdk"
+	bankly "github.com/contbank/bankly-sdk"
+	"github.com/contbank/grok"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
@@ -47,10 +47,10 @@ const (
 )
 
 func (s *CustomersTestSuite) TestCreateRegistration() {
-	randSurname := randStringBytes(10)
+	randSurname := bankly.RandStringBytes(10)
 	email := "email_de_teste_" + randSurname + "@contbank.com"
 
-	err := s.createRegistrationWithParams(randSurname, grok.GeneratorCPF(), grok.GeneratorCellphone(), email)
+	err := s.createRegistrationWithParams(randSurname, bankly.GeneratorCPF(), bankly.GeneratorCellphone(), email)
 
 	s.assert.NoError(err)
 }
@@ -70,7 +70,7 @@ func (s *CustomersTestSuite) TestFindRegistration() {
 }
 
 func (s *CustomersTestSuite) TestFindRegistrationErrorNotFound() {
-	response, err := s.customers.FindRegistration(grok.GeneratorCPF())
+	response, err := s.customers.FindRegistration(bankly.GeneratorCPF())
 
 	s.assert.Error(err)
 	s.assert.Contains(err.Error(), "not found")
@@ -86,7 +86,7 @@ func (s *CustomersTestSuite) TestCreateAccountErrorMoreThanOneAccountPerHolder()
 }
 
 func (s *CustomersTestSuite) TestCreateAccountErrorDoesntHaveAnApprovedRegistrationYet() {
-	account, err := s.customers.CreateAccount(grok.GeneratorCPF(), bankly.PaymentAccount)
+	account, err := s.customers.CreateAccount(bankly.GeneratorCPF(), bankly.PaymentAccount)
 
 	s.assert.Error(err)
 	s.assert.Equal(err, bankly.ErrAccountHolderNotExists)
@@ -117,9 +117,9 @@ func (s *CustomersTestSuite) TestCreateAndFindRegistration() {
 }
 
 func (s *CustomersTestSuite) TestCreateAndFindAccount() {
-	document := grok.GeneratorCPF()
-	cellphone := grok.GeneratorCellphone()
-	randSurname := randStringBytes(10)
+	document := bankly.GeneratorCPF()
+	cellphone := bankly.GeneratorCellphone()
+	randSurname := bankly.RandStringBytes(10)
 	email := "email_de_teste_" + randSurname + "@contbank.com"
 
 	err := s.createRegistrationWithParams(randSurname, document, cellphone, email)
@@ -140,8 +140,8 @@ func (s *CustomersTestSuite) TestCreateAndFindAccount() {
 
 func (s *CustomersTestSuite) TestUpdateRegistration() {
 
-	// TODO Verificar com o Bankly o motivo do FindRegistration estar retornando apenas alguns dados.
-	s.T().Skip("Aguardar retorno do Bankly para o FindRegistration, que está retornando dados incompletos.")
+	// TODO O PATCH da Customers não está funcionando na Bankly. Aguardando retorno deles para ativar este teste
+	s.T().Skip("O PATCH da Customers não está funcionando na Bankly. Aguardando retorno deles para ativar este teste.")
 
 	document := grok.GeneratorCPF()
 	cellphone := grok.GeneratorCellphone()
@@ -159,14 +159,14 @@ func (s *CustomersTestSuite) TestUpdateRegistration() {
 
 	// update customer
 	newRegisterName := "NOVO NOME DA PESSOA VIA UPDATE REQUEST"
-	customerUpdateRequest := &bankly.CustomerUpdateRequest {
+	customerUpdateRequest := &bankly.CustomerUpdateRequest{
 		RegisterName: newRegisterName,
-		SocialName: registrationResponse.SocialName,
-		BirthDate: registrationResponse.BirthDate,
-		MotherName: registrationResponse.MotherName,
-		Phone: &registrationResponse.Phone,
-		Email: registrationResponse.Email,
-		Address: &registrationResponse.Address,
+		SocialName:   registrationResponse.SocialName,
+		BirthDate:    registrationResponse.BirthDate,
+		MotherName:   registrationResponse.MotherName,
+		Phone:        &registrationResponse.Phone,
+		Email:        registrationResponse.Email,
+		Address:      &registrationResponse.Address,
 	}
 	s.customers.UpdateRegistration(document, *customerUpdateRequest)
 	s.assert.NoError(err)

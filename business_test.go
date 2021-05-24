@@ -1,21 +1,21 @@
 package bankly_test
 
 import (
-	"github.com/contbank/grok"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/contbank/bankly-sdk"
+	bankly "github.com/contbank/bankly-sdk"
+	"github.com/contbank/grok"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
 type BusinessTestSuite struct {
 	suite.Suite
-	assert    *assert.Assertions
-	session   *bankly.Session
-	business  *bankly.Business
+	assert   *assert.Assertions
+	session  *bankly.Session
+	business *bankly.Business
 }
 
 func TestBusinessTestSuite(t *testing.T) {
@@ -76,7 +76,7 @@ func (s *BusinessTestSuite) TestUpdateBusinessName() {
 
 	// update business
 	newBusinessName := "NOVO EMAIL DA EMPRESA VIA UPDATE REQUEST"
-	businessUpdateRequest := &bankly.BusinessUpdateRequest {
+	businessUpdateRequest := &bankly.BusinessUpdateRequest{
 		BusinessName: newBusinessName,
 	}
 	err = s.business.UpdateBusiness(businessRequest.Document, *businessUpdateRequest)
@@ -104,10 +104,10 @@ func (s *BusinessTestSuite) TestUpdateBusinessEmailAndBusinessTypeAndBusinessTyp
 
 	// update business
 	newEmail := "novo_email_" + businessRequest.Document + "@contbank.com"
-	businessUpdateRequest := &bankly.BusinessUpdateRequest {
+	businessUpdateRequest := &bankly.BusinessUpdateRequest{
 		BusinessEmail: newEmail,
-		BusinessType: bankly.BusinessTypeEI,
-		BusinessSize: bankly.BusinessSizeME,
+		BusinessType:  bankly.BusinessTypeEI,
+		BusinessSize:  bankly.BusinessSizeME,
 	}
 	err = s.business.UpdateBusiness(businessRequest.Document, *businessUpdateRequest)
 	s.assert.NoError(err)
@@ -131,8 +131,8 @@ func (s *BusinessTestSuite) TestCreateBusinessAccount() {
 	s.assert.NoError(err)
 	s.assert.Nil(err)
 
-	businessAccountRequest := bankly.BusinessAccountRequest {
-		Document: businessRequest.Document,
+	businessAccountRequest := bankly.BusinessAccountRequest{
+		Document:    businessRequest.Document,
 		AccountType: bankly.PaymentAccount,
 	}
 
@@ -144,8 +144,8 @@ func (s *BusinessTestSuite) TestCreateBusinessAccount() {
 }
 
 func (s *BusinessTestSuite) TestCreateBusinessAccountErrorDoesntHaveAnApprovedRegistration() {
-	businessAccountRequest := bankly.BusinessAccountRequest {
-		Document: grok.GeneratorCNPJ(),
+	businessAccountRequest := bankly.BusinessAccountRequest{
+		Document:    bankly.GeneratorCNPJ(),
 		AccountType: bankly.PaymentAccount,
 	}
 	account, err := s.business.CreateBusinessAccount(businessAccountRequest)
@@ -171,39 +171,39 @@ func (s *BusinessTestSuite) TestFindBusinessAccounts() {
 
 func createBusinessRequest(document string, businessType bankly.BusinessType, businessSize bankly.BusinessSize) bankly.BusinessRequest {
 
-	randomName := randStringBytes(10)
+	randomName := bankly.RandStringBytes(10)
 	email := "email_de_teste_" + randomName + "@contbank.com"
 
-	return bankly.BusinessRequest {
-		Document: grok.OnlyDigits(document),
-		BusinessName: "Nome da Empresa " + randomName,
-		TradingName: "Nome Fantasia " + randomName,
-		BusinessEmail: email,
-		BusinessType: businessType,
-		BusinessSize: businessSize,
-		BusinessAddress: createAddress(),
+	return bankly.BusinessRequest{
+		Document:            bankly.OnlyDigits(document),
+		BusinessName:        "Nome da Empresa " + randomName,
+		TradingName:         "Nome Fantasia " + randomName,
+		BusinessEmail:       email,
+		BusinessType:        businessType,
+		BusinessSize:        businessSize,
+		BusinessAddress:     createAddress(),
 		LegalRepresentative: createLegalRepresentative(),
 	}
 }
 
 func createLegalRepresentative() *bankly.LegalRepresentative {
 	randSurname := randStringBytes(10)
-	return &bankly.LegalRepresentative {
-		Document: grok.GeneratorCPF(),
+	return &bankly.LegalRepresentative{
+		Document:     grok.GeneratorCPF(),
 		RegisterName: "Nome do Representante Legal " + randSurname,
-		Phone: &bankly.Phone {
+		Phone: &bankly.Phone{
 			CountryCode: "55",
-			Number:      grok.GeneratorCellphone(),
+			Number:      bankly.GeneratorCellphone(),
 		},
-		Address: createAddress(),
-		BirthDate:    time.Date(1990, time.June, 29, 0, 0, 0, 0, time.UTC),
-		MotherName:   "Nome da Mãe do Representante Legal " + randSurname,
-		Email:        "email_legal_representative_" + randSurname + "@contbank.com",
+		Address:    createAddress(),
+		BirthDate:  time.Date(1990, time.June, 29, 0, 0, 0, 0, time.UTC),
+		MotherName: "Nome da Mãe do Representante Legal " + randSurname,
+		Email:      "email_legal_representative_" + randSurname + "@contbank.com",
 	}
 }
 
 func createAddress() *bankly.Address {
-	return &bankly.Address {
+	return &bankly.Address{
 		ZipCode:        "05410900",
 		City:           "São Paulo",
 		AddressLine:    "Rua Qualquer XYZ",
