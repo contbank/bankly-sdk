@@ -3,6 +3,9 @@ package bankly
 import (
 	"errors"
 	"os"
+	"time"
+
+	"github.com/patrickmn/go-cache"
 )
 
 //Config ...
@@ -12,15 +15,7 @@ type Config struct {
 	ClientID      *string `validate:"required"`
 	ClientSecret  *string `validate:"required"`
 	APIVersion    *string
-	Cache         *Redis
-}
-
-//Redis ...
-type Redis struct {
-	Endpoint string
-	Port     string
-	User     string
-	Pass     string
+	Cache         *cache.Cache
 }
 
 //Session ...
@@ -30,7 +25,7 @@ type Session struct {
 	ClientID      string
 	ClientSecret  string
 	APIVersion    string
-	Cache         *Redis
+	Cache         cache.Cache
 }
 
 //NewSession ...
@@ -65,12 +60,17 @@ func NewSession(config Config) (*Session, error) {
 		return nil, errors.New("Invalid client id or client secret")
 	}
 
+	if config.Cache == nil {
+		config.Cache = cache.New(10*time.Minute, 1*time.Second)
+	}
+
 	var session = &Session{
 		LoginEndpoint: *config.LoginEndpoint,
 		APIEndpoint:   *config.APIEndpoint,
 		ClientID:      *config.ClientID,
 		ClientSecret:  *config.ClientSecret,
 		APIVersion:    *config.APIVersion,
+		Cache:         *config.Cache,
 	}
 
 	return session, nil

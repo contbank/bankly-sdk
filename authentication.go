@@ -91,11 +91,17 @@ func (a *Authentication) login() (*AuthenticationResponse, error) {
 
 //Token ...
 func (a Authentication) Token() (string, error) {
+	if token, found := a.session.Cache.Get("token"); found {
+		return token.(string), nil
+	}
+
 	response, err := a.login()
 
 	if err != nil {
 		return "", err
 	}
+
+	a.session.Cache.Set("token", fmt.Sprintf("%s %s", response.TokenType, response.AccessToken), time.Second*time.Duration(int64(response.ExpiresIn)))
 
 	return fmt.Sprintf("%s %s", response.TokenType, response.AccessToken), nil
 }
