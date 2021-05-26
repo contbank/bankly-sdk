@@ -190,6 +190,8 @@ func (c *Customers) UpdateRegistration(document string, customerUpdateRequest Cu
 	respBody, _ := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode == http.StatusAccepted {
 		return nil
+	} else if resp.StatusCode == http.StatusMethodNotAllowed {
+		return ErrMethodNotAllowed
 	}
 
 	var bodyErr *ErrorResponse
