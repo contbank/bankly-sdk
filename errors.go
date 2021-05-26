@@ -39,6 +39,10 @@ var (
 	ErrOutOfServicePeriod = grok.NewError(http.StatusBadRequest, "out of service period")
 	// ErrCashoutLimitNotEnough
 	ErrCashoutLimitNotEnough = grok.NewError(http.StatusBadRequest, "cashout limit not enough")
+	// ErrInvalidParameter
+	ErrInvalidParameter = grok.NewError(http.StatusBadRequest, "invalid parameter")
+	// ErrInvalidAPIEndpoint
+	ErrInvalidAPIEndpoint = grok.NewError(http.StatusBadRequest, "invalid api endpoint")
 )
 
 type BanklyError ErrorModel
@@ -72,6 +76,10 @@ var errorList = []Error{
 	{
 		banklyError: BanklyError{Code: "HOLDER_ALREADY_HAVE_A_ACCOUNT"},
 		grokError:   ErrHolderAlreadyHaveAAccount,
+	},
+	{
+		banklyError: BanklyError{Code: "INVALID_PARAMETER"},
+		grokError:   ErrInvalidParameter,
 	},
 }
 

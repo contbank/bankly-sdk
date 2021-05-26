@@ -65,8 +65,8 @@ func (s *BusinessTestSuite) TestCreateBusinessErrorInvalidTypeMEIAndSizeME() {
 
 func (s *BusinessTestSuite) TestUpdateBusinessName() {
 
-	// TODO Retirar skip quando o Bankly liberar o PATCH
-	s.T().Skip("Aguardando o mock do bankly para reativar este teste")
+	// TODO O PATCH da Business não está funcionando na Bankly. Aguardando retorno deles para ativar este teste.
+	s.T().Skip("O PATCH da Business não está funcionando na Bankly. Aguardando retorno deles para ativar este teste.")
 
 	// create business
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeMEI)
@@ -93,8 +93,8 @@ func (s *BusinessTestSuite) TestUpdateBusinessName() {
 
 func (s *BusinessTestSuite) TestUpdateBusinessEmailAndBusinessTypeAndBusinessType() {
 
-	// TODO Retirar skip quando o Bankly liberar o PATCH
-	s.T().Skip("Aguardando o mock do bankly para reativar este teste")
+	// TODO O PATCH da Business não está funcionando na Bankly. Aguardando retorno deles para ativar este teste.
+	s.T().Skip("O PATCH da Business não está funcionando na Bankly. Aguardando retorno deles para ativar este teste.")
 
 	// create business
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeMEI)

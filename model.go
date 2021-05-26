@@ -1,6 +1,8 @@
 package bankly
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	// LoginPath ..
@@ -13,10 +15,12 @@ const (
 	TransfersPath = "fund-transfers"
 	// BusinessPath ...
 	BusinessPath = "business"
-	//BoletosPath ...
+	// BoletosPath ...
 	BoletosPath = "bankslip"
-	//BanksPath ...
+	// BanksPath ...
 	BanksPath = "banklist"
+	// DocumentAnalysisPath ...
+	DocumentAnalysisPath = "/document-analysis"
 )
 
 const (
@@ -299,6 +303,7 @@ type ResultLevel string
 const (
 	ResultLevelBasic    ResultLevel = "BASIC"
 	ResultLevelDetailed ResultLevel = "DETAILED"
+	ResultLevelOnlyStatus ResultLevel = "ONLY_STATUS"
 )
 
 // LegalRepresentative ...
@@ -495,4 +500,114 @@ type RecipientResponse struct {
 	Document string           `json:"document,omitempty"`
 	Name     string           `json:"name,omitempty"`
 	Account  *AccountResponse `json:"account,omitempty"`
+}
+
+type DocumentType string
+
+const (
+	// DocumentTypeRG ...
+	DocumentTypeRG DocumentType = "RG"
+	// DocumentTypeCNH ...
+	DocumentTypeCNH DocumentType = "CNH"
+	// DocumentTypeSELFIE ...
+	DocumentTypeSELFIE DocumentType = "SELFIE"
+)
+
+type DocumentSide string
+
+const (
+	// DocumentSideFront ...
+	DocumentSideFront DocumentSide = "FRONT"
+	// DocumentSideBack ...
+	DocumentSideBack DocumentSide = "BACK"
+)
+
+// DocumentAnalysisRequest ...
+type DocumentAnalysisRequest struct {
+	DocumentType		DocumentType		`json:"documentType,omitempty"`
+	DocumentSide		DocumentSide		`json:"documentSide,omitempty"`
+	Image				string				`json:"image,omitempty"`
+}
+
+// DocumentAnalysisRequestedResponse ...
+type DocumentAnalysisRequestedResponse struct {
+	Token		string		`json:"token,omitempty"`
+}
+
+// DocumentAnalysisResponse ...
+type DocumentAnalysisResponse struct {
+	Token				string				`json:"token,omitempty"`
+	Status				string				`json:"status,omitempty"`
+	DocumentType		string				`json:"documentType,omitempty"`
+	DocumentSide		string				`json:"documentSide,omitempty"`
+	FaceMatch			*FaceMatch  		`json:"faceMatch,omitempty"`
+	FaceDetails			*FaceDetails		`json:"faceDetails,omitempty"`
+	DocumentDetails		*DocumentDetails	`json:"documentDetails,omitempty"`
+	Liveness			*Liveness			`json:"liveness,omitempty"`
+	AnalyzedAt			string				`json:"analyzedAt,omitempty"`
+}
+
+type FaceMatch struct {
+	Status				string 				`json:"status,omitempty"`
+	Similarity			int 				`json:"similarity,omitempty"`
+	Confidence			int 				`json:"confidence,omitempty"`
+}
+
+type FaceDetails struct {
+	Status				string 			  	`json:"status,omitempty"`
+	Confidence			float32 			`json:"confidence,omitempty"`
+	AgeRange			*AgeRange   	  	`json:"ageRange,omitempty"`
+	Gender				*Gender     	  	`json:"gender,omitempty"`
+	Sunglasses			*Sunglasses       	`json:"sunglasses,omitempty"`
+	EyesOpen			*EyesOpen     	  	`json:"eyesOpen,omitempty"`
+	Emotions			[]*Emotions       	`json:"emotions,omitempty"`
+}
+
+type AgeRange struct {
+	Low		int		`json:"low,omitempty"`
+	High	int		`json:"high,omitempty"`
+}
+
+type Gender struct {
+	Value			string 		`json:"value,omitempty"`
+	Confidence		float32 	`json:"confidence,omitempty"`
+}
+
+type Sunglasses struct {
+	Value			bool 		`json:"value,omitempty"`
+	Confidence		float32 	`json:"confidence,omitempty"`
+}
+
+type EyesOpen struct {
+	Value			bool 		`json:"value,omitempty"`
+	Confidence		float32 	`json:"confidence,omitempty"`
+}
+
+type Emotions struct {
+	Value			string 		`json:"value,omitempty"`
+	Confidence		float32 	`json:"confidence,omitempty"`
+}
+
+type DocumentDetails struct {
+	Status								string 		`json:"status,omitempty"`
+	IdentifiedDocumentType				string 		`json:"identifiedDocumentType,omitempty"`
+	IdNumber							string 		`json:"idNumber,omitempty"`
+	CpfNumber							string 		`json:"cpfNumber,omitempty"`
+	BirthDate							string 		`json:"birthDate,omitempty"`
+	FatherName							string 		`json:"fatherName,omitempty"`
+	MotherName							string 		`json:"motherName,omitempty"`
+	RegisterName						string 		`json:"registerName,omitempty"`
+	ValidDate							string 		`json:"validDate,omitempty"`
+	DriveLicenseCategory				string 		`json:"driveLicenseCategory,omitempty"`
+	DriveLicenseNumber					string 		`json:"driveLicenseNumber,omitempty"`
+	DriveLicenseFirstQualifyingDate		string 		`json:"driveLicenseFirstQualifyingDate,omitempty"`
+	FederativeUnit						string 		`json:"federativeUnit,omitempty"`
+	IssuedBy							string 		`json:"issuedBy,omitempty"`
+	IssuePlace							string 		`json:"issuePlace,omitempty"`
+	IssueDate							string 		`json:"issueDate,omitempty"`
+}
+
+type Liveness struct {
+	Status			string 		`json:"status,omitempty"`
+	Confidence		float32 	`json:"confidence,omitempty"`
 }
