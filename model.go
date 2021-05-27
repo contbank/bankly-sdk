@@ -167,7 +167,7 @@ type AccountResponse struct {
 	Status  string          `json:"status,omitempty"`
 	Branch  string          `json:"branch,omitempty"`
 	Number  string          `json:"number,omitempty"`
-	Bank    *Bank           `json:"bank,omitempty"`
+	Bank    *BankData       `json:"bank,omitempty"`
 }
 
 // BalanceRespone ...
