@@ -1,9 +1,10 @@
 package bankly_test
 
 import (
-	"github.com/contbank/grok"
 	"os"
 	"testing"
+
+	"github.com/contbank/grok"
 
 	"github.com/contbank/bankly-sdk"
 
@@ -13,8 +14,8 @@ import (
 
 type DocumentAnalysisTestSuite struct {
 	suite.Suite
-	assert  		 *assert.Assertions
-	session 		 *bankly.Session
+	assert           *assert.Assertions
+	session          *bankly.Session
 	documentAnalysis *bankly.DocumentAnalysis
 }
 
@@ -38,14 +39,11 @@ func (s *DocumentAnalysisTestSuite) SetupTest() {
 
 func (s *DocumentAnalysisTestSuite) TestSendDocumentAnalysis() {
 
-	// TODO Aguardando retorno do Bankly sobre envio em Base64.
-	s.T().Skip("Aguardando retorno do Bankly sobre envio em Base64.")
-
 	documentNumber := grok.GeneratorCPF()
 	request := bankly.DocumentAnalysisRequest{
 		DocumentType: bankly.DocumentTypeSELFIE,
 		DocumentSide: bankly.DocumentSideFront,
-		Image: getSelfieBase64(),
+		Image:        getSelfieBase64(),
 	}
 
 	balance, err := s.documentAnalysis.SendDocumentAnalysis(documentNumber, request)
@@ -62,4 +60,3 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis() {
 	s.assert.NoError(err)
 	s.assert.NotNil(balance)
 }
-

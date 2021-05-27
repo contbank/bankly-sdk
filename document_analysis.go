@@ -4,13 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/contbank/grok"
@@ -43,11 +47,31 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(documentNumber string, request D
 		return nil, err
 	}
 
-	// TODO Aguardando retorno do Bankly em relação ao envio em base64
-	// TODO Enviando Jpeg ou PNG, está retornando "Invalid media type. Use image/png, image/jpg or image/jpeg media type"
-	buffer, writer := createMultipartFormData(request,"test_images/selfie1.jpeg")
+	payload := &bytes.Buffer{}
+	writer := multipart.NewWriter(payload)
+	file, errFile1 := os.Open("/Users/firmiano/Downloads/WhatsApp Image 2021-05-24 at 21.39.36 (5).jpeg")
+	defer file.Close()
 
-	req, err := http.NewRequest("PUT", *endpoint, &buffer)
+	contentType, _ := getFileContentType(file)
+
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
+		escapeQuotes("image"), escapeQuotes("/Users/firmiano/Downloads/WhatsApp Image 2021-05-24 at 21.39.36 (5).jpeg")))
+	h.Set("Content-Type", contentType)
+
+	part1, errFile1 := writer.CreatePart(h)
+	_, errFile1 = io.Copy(part1, file)
+	if errFile1 != nil {
+		fmt.Println(errFile1)
+	}
+	_ = writer.WriteField("documentType", "RG")
+	_ = writer.WriteField("documentSide", "FRONT")
+	err = writer.Close()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	req, err := http.NewRequest("PUT", *endpoint, payload)
 	if err != nil {
 		logrus.
 			WithError(err).
@@ -65,7 +89,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(documentNumber string, request D
 
 	req.Header.Add("Authorization", token)
 	req.Header.Add("api-version", c.session.APIVersion)
-	req.Header.Add("Content-type", writer.FormDataContentType())
+	req.Header.Add("Content-Type", writer.FormDataContentType())
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -78,7 +102,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(documentNumber string, request D
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-	if resp.StatusCode == http.StatusCreated {
+	if resp.StatusCode == http.StatusAccepted {
 		var bodyResp *DocumentAnalysisRequestedResponse
 
 		err = json.Unmarshal(respBody, &bodyResp)
@@ -201,34 +225,44 @@ func createMultipartFormData(request DocumentAnalysisRequest, fileName string) (
 	var b bytes.Buffer
 	var err error
 
-	w := multipart.NewWriter(&b)
+	payload := &bytes.Buffer{}
+	w := multipart.NewWriter(payload)
 	var writerImage io.Writer
 
-	file := mustOpen(fileName)
-	if writerImage, err = w.CreateFormFile("image", file.Name()); err != nil {
+	file, _ := os.Open(fileName)
+	defer file.Close()
+
+	if writerImage, err = w.CreateFormFile("image", filepath.Base(fileName)); err != nil {
 		logrus.WithError(err).Errorf("error creating image file writer: %v", err)
 	}
 	if _, err = io.Copy(writerImage, file); err != nil {
 		logrus.WithError(err).Errorf("error with io.Copy: %v", err)
 	}
 
-	y1, _ := w.CreateFormField("documentType")
-	y1.Write([]byte(request.DocumentType))
-
-	y2, _ := w.CreateFormField("documentSide")
-	y2.Write([]byte(request.DocumentSide))
-
+	_ = w.WriteField("documentType", "RG")
+	_ = w.WriteField("documentSide", "FRONT")
 	w.Close()
 
 	return b, w
 }
 
-// mustOpen ...
-func mustOpen(f string) *os.File {
-	r, err := os.Open(f)
+var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
+
+func escapeQuotes(s string) string {
+	return quoteEscaper.Replace(s)
+}
+
+func getFileContentType(out *os.File) (string, error) {
+
+	// Only the first 512 bytes are used to sniff the content type.
+	buffer := make([]byte, 512)
+
+	_, err := out.Read(buffer)
 	if err != nil {
-		os.Getwd()
-		panic(err)
+		return "", err
 	}
-	return r
+
+	contentType := http.DetectContentType(buffer)
+
+	return contentType, nil
 }
