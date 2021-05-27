@@ -94,7 +94,7 @@ func (c *Bank) GetByID(id string) (*BankDataResponse, error) {
 		return nil, errors.New(bodyErr.Errors[0].Messages[0])
 	}
 
-	return nil, errors.New("error balance")
+	return nil, errors.New("error bank")
 }
 
 //List returns a list with all available financial instituitions
@@ -181,5 +181,5 @@ func (c *Bank) List(filter *FilterBankListRequest) ([]*BankDataResponse, error) 
 		return nil, errors.New(bodyErr.Errors[0].Messages[0])
 	}
 
-	return nil, errors.New("error balance")
+	return nil, errors.New("error bank")
 }

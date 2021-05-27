@@ -167,7 +167,7 @@ type AccountResponse struct {
 	Status  string          `json:"status,omitempty"`
 	Branch  string          `json:"branch,omitempty"`
 	Number  string          `json:"number,omitempty"`
-	Bank    *Bank           `json:"bank,omitempty"`
+	Bank    *BankData       `json:"bank,omitempty"`
 }
 
 // BalanceRespone ...
@@ -446,6 +446,14 @@ type FilterBankListRequest struct {
 	Page     *int
 	PageSize *int
 }
+
+// BankData ...
+type BankData struct {
+	ISPB	string  `json:"ispb,omitempty"`
+	Name 	string  `json:"name,omitempty"`
+	Code	string	`json:"compe,omitempty"`
+}
+
 
 //BankDataResponse ...
 type BankDataResponse struct {
