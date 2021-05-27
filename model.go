@@ -447,6 +447,14 @@ type FilterBankListRequest struct {
 	PageSize *int
 }
 
+// BankData ...
+type BankData struct {
+	ISPB	string  `json:"ispb,omitempty"`
+	Name 	string  `json:"name,omitempty"`
+	Code	string	`json:"compe,omitempty"`
+}
+
+
 //BankDataResponse ...
 type BankDataResponse struct {
 	Name        string   `json:"name,omitempty"`
