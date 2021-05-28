@@ -45,6 +45,10 @@ var (
 	ErrInvalidAPIEndpoint = grok.NewError(http.StatusBadRequest, "invalid api endpoint")
 	// ErrMethodNotAllowed ...
 	ErrMethodNotAllowed = grok.NewError(http.StatusMethodNotAllowed, "method not allowed")
+	// ErrSendDocumentAnalysis ...
+	ErrSendDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "send document analysis error")
+	// ErrGetDocumentAnalysis ...
+	ErrGetDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "get document analysis error")
 )
 
 type BanklyError ErrorModel

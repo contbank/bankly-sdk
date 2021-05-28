@@ -3,7 +3,6 @@ package bankly
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,7 +12,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -39,36 +37,19 @@ func NewDocumentAnalysis(session Session) *DocumentAnalysis {
 	}
 }
 
+// TODO JOACIR : Estou alterando o request.Image para obter a partir do Storage.
+
 // SendDocumentAnalysis ...
-func (c *DocumentAnalysis) SendDocumentAnalysis(documentNumber string, request DocumentAnalysisRequest) (*DocumentAnalysisRequestedResponse, error) {
+func (c *DocumentAnalysis) SendDocumentAnalysis(documentNumber string, request DocumentAnalysisRequest) (*DocumentAnalysisResponse, error) {
 
 	endpoint, err := c.getDocumentAnalysisAPIEndpoint(documentNumber, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	payload := &bytes.Buffer{}
-	writer := multipart.NewWriter(payload)
-	file, errFile1 := os.Open("/Users/firmiano/Downloads/WhatsApp Image 2021-05-24 at 21.39.36 (5).jpeg")
-	defer file.Close()
-
-	contentType, _ := getFileContentType(file)
-
-	h := make(textproto.MIMEHeader)
-	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
-		escapeQuotes("image"), escapeQuotes("/Users/firmiano/Downloads/WhatsApp Image 2021-05-24 at 21.39.36 (5).jpeg")))
-	h.Set("Content-Type", contentType)
-
-	part1, errFile1 := writer.CreatePart(h)
-	_, errFile1 = io.Copy(part1, file)
-	if errFile1 != nil {
-		fmt.Println(errFile1)
-	}
-	_ = writer.WriteField("documentType", "RG")
-	_ = writer.WriteField("documentSide", "FRONT")
-	err = writer.Close()
+	payload, writer, err := createSendImagePayload(request)
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
 	req, err := http.NewRequest("PUT", *endpoint, payload)
@@ -113,7 +94,13 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(documentNumber string, request D
 			return nil, err
 		}
 
-		return bodyResp, nil
+		response := &DocumentAnalysisResponse {
+			DocumentNumber: documentNumber,
+			DocumentType: string(request.DocumentType),
+			DocumentSide: string(request.DocumentSide),
+			Token: bodyResp.Token,
+		}
+		return response, nil
 	}
 
 	var bodyErr *ErrorResponse
@@ -130,7 +117,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(documentNumber string, request D
 		return nil, FindError(bodyErr.Errors[0])
 	}
 
-	return nil, errors.New("error send document analysis")
+	return nil, ErrSendDocumentAnalysis
 }
 
 // FindDocumentAnalysis ...
@@ -145,11 +132,13 @@ func (c *DocumentAnalysis) FindDocumentAnalysis(documentNumber string, documentA
 
 	req, err := http.NewRequest("GET", *endpoint, nil)
 	if err != nil {
+		logrus.WithError(err).Error("error new request")
 		return nil, err
 	}
 
 	token, err := c.authentication.Token()
 	if err != nil {
+		logrus.WithError(err).Error("error token")
 		return nil, err
 	}
 
@@ -157,6 +146,7 @@ func (c *DocumentAnalysis) FindDocumentAnalysis(documentNumber string, documentA
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		logrus.WithError(err).Error("error request")
 		return nil, err
 	}
 
@@ -169,9 +159,11 @@ func (c *DocumentAnalysis) FindDocumentAnalysis(documentNumber string, documentA
 
 		err = json.Unmarshal(respBody, &response)
 		if err != nil {
+			logrus.WithError(err).Error("error unmarshal")
 			return nil, err
 		}
 
+		response[0].DocumentNumber = documentNumber
 		return response[0], nil
 	}
 
@@ -183,6 +175,7 @@ func (c *DocumentAnalysis) FindDocumentAnalysis(documentNumber string, documentA
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
+		logrus.WithError(err).Error("error unmarshal")
 		return nil, err
 	}
 
@@ -190,10 +183,10 @@ func (c *DocumentAnalysis) FindDocumentAnalysis(documentNumber string, documentA
 		return nil, FindError(bodyErr.Errors[0])
 	}
 
-	return nil, errors.New("error get document analysis")
+	return nil, ErrGetDocumentAnalysis
 }
 
-// getDocumentAnalysisAPIEndpoint
+// getDocumentAnalysisAPIEndpoint ...
 func (c *DocumentAnalysis) getDocumentAnalysisAPIEndpoint(document string, resultLevel *ResultLevel,
 	documentAnalysisToken *string) (*string, error) {
 
@@ -220,30 +213,59 @@ func (c *DocumentAnalysis) getDocumentAnalysisAPIEndpoint(document string, resul
 	return &endpoint, nil
 }
 
-// createMultipartFormData ...
-func createMultipartFormData(request DocumentAnalysisRequest, fileName string) (bytes.Buffer, *multipart.Writer) {
-	var b bytes.Buffer
-	var err error
-
+// createSendImagePayload ...
+func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *multipart.Writer, error) {
 	payload := &bytes.Buffer{}
-	w := multipart.NewWriter(payload)
-	var writerImage io.Writer
 
-	file, _ := os.Open(fileName)
+	writer := multipart.NewWriter(payload)
+	file, errFile := os.Open(request.Image)
 	defer file.Close()
 
-	if writerImage, err = w.CreateFormFile("image", filepath.Base(fileName)); err != nil {
-		logrus.WithError(err).Errorf("error creating image file writer: %v", err)
-	}
-	if _, err = io.Copy(writerImage, file); err != nil {
-		logrus.WithError(err).Errorf("error with io.Copy: %v", err)
+	contentType, errorContentType := getFileContentType(file)
+	if errorContentType != nil {
+		logrus.WithError(errorContentType).Error("error document type field")
+		return nil, nil, errorContentType
 	}
 
-	_ = w.WriteField("documentType", "RG")
-	_ = w.WriteField("documentSide", "FRONT")
-	w.Close()
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
+		escapeQuotes("image"), escapeQuotes(request.Image)))
+	h.Set("Content-Type", contentType)
 
-	return b, w
+	part1, errFile := writer.CreatePart(h)
+	_, errFile = io.Copy(part1, file)
+	if errFile != nil {
+		logrus.
+			WithError(errorContentType).
+			Error("error create file part")
+		return nil, nil, errFile
+	}
+
+	errorField := writer.WriteField("documentType", string(request.DocumentType))
+	if errorField != nil {
+		logrus.
+			WithError(errorField).
+			Error("error document type field")
+		return nil, nil, errorField
+	}
+
+	errorField = writer.WriteField("documentSide", string(request.DocumentSide))
+	if errorField != nil {
+		logrus.
+			WithError(errorField).
+			Error("error document side field")
+		return nil, nil, errorField
+	}
+
+	errorClose := writer.Close()
+	if errorClose != nil {
+		logrus.
+			WithError(errorClose).
+			Error("error writer close")
+		return nil, nil, errorClose
+	}
+
+	return payload, writer, nil
 }
 
 var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
@@ -253,7 +275,6 @@ func escapeQuotes(s string) string {
 }
 
 func getFileContentType(out *os.File) (string, error) {
-
 	// Only the first 512 bytes are used to sniff the content type.
 	buffer := make([]byte, 512)
 

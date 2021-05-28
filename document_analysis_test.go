@@ -3,6 +3,7 @@ package bankly_test
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/contbank/grok"
 
@@ -39,24 +40,151 @@ func (s *DocumentAnalysisTestSuite) SetupTest() {
 
 func (s *DocumentAnalysisTestSuite) TestSendDocumentAnalysis() {
 
+	docType := bankly.DocumentTypeSELFIE
+	docSide := bankly.DocumentSideFront
 	documentNumber := grok.GeneratorCPF()
+
 	request := bankly.DocumentAnalysisRequest{
-		DocumentType: bankly.DocumentTypeSELFIE,
-		DocumentSide: bankly.DocumentSideFront,
-		Image:        getSelfieBase64(),
+		DocumentType: docType,
+		DocumentSide: docSide,
+		Image:        "test_images/selfie1.jpeg",
 	}
 
-	balance, err := s.documentAnalysis.SendDocumentAnalysis(documentNumber, request)
+	response, err := s.documentAnalysis.SendDocumentAnalysis(documentNumber, request)
 
 	s.assert.NoError(err)
-	s.assert.NotNil(balance)
+	s.assert.NotNil(response)
+	s.assert.Equal(docType, bankly.DocumentType(response.DocumentType))
+	s.assert.Equal(docSide, bankly.DocumentSide(response.DocumentSide))
+	s.assert.Equal(documentNumber, response.DocumentNumber)
 }
 
-func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis() {
-	documentNumber := "48195413315"
-	documentAnalysisToken := "EXZePni82uzF5ndyXInNXPN_PmUIeGcy"
-	balance, err := s.documentAnalysis.FindDocumentAnalysis(documentNumber, documentAnalysisToken)
+func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_SELFIE_FRONT() {
+	// create document analysis
+	docType := bankly.DocumentTypeSELFIE
+	docSide := bankly.DocumentSideFront
+	documentNumber := grok.GeneratorCPF()
+	resp := s.createDocumentAnalysis(documentNumber, docType, docSide)
 
+	time.Sleep(time.Millisecond)
+
+	// find document analysis
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(documentNumber, resp.Token)
+
+	s.assert.NoError(errDocAnalysis)
+	s.assert.NotNil(respDocAnalysis)
+	s.assert.Equal(docType, bankly.DocumentType(respDocAnalysis.DocumentType))
+	s.assert.Equal(docSide, bankly.DocumentSide(respDocAnalysis.DocumentSide))
+	s.assert.Equal(documentNumber, respDocAnalysis.DocumentNumber)
+}
+
+func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_SELFIE_BACK() {
+	// create document analysis
+	docType := bankly.DocumentTypeSELFIE
+	docSide := bankly.DocumentSideBack
+	documentNumber := grok.GeneratorCPF()
+	resp := s.createDocumentAnalysis(documentNumber, docType, docSide)
+
+	time.Sleep(time.Millisecond)
+
+	// find document analysis
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(documentNumber, resp.Token)
+
+	s.assert.NoError(errDocAnalysis)
+	s.assert.NotNil(respDocAnalysis)
+	s.assert.Equal(docType, bankly.DocumentType(respDocAnalysis.DocumentType))
+	s.assert.Equal(docSide, bankly.DocumentSide(respDocAnalysis.DocumentSide))
+	s.assert.Equal(documentNumber, respDocAnalysis.DocumentNumber)
+}
+
+func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_CNH_FRONT() {
+	// create document analysis
+	docType := bankly.DocumentTypeCNH
+	docSide := bankly.DocumentSideFront
+	documentNumber := grok.GeneratorCPF()
+	resp := s.createDocumentAnalysis(documentNumber, docType, docSide)
+
+	time.Sleep(time.Millisecond)
+
+	// find document analysis
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(documentNumber, resp.Token)
+
+	s.assert.NoError(errDocAnalysis)
+	s.assert.NotNil(respDocAnalysis)
+	s.assert.Equal(docType, bankly.DocumentType(respDocAnalysis.DocumentType))
+	s.assert.Equal(docSide, bankly.DocumentSide(respDocAnalysis.DocumentSide))
+	s.assert.Equal(documentNumber, respDocAnalysis.DocumentNumber)
+}
+
+func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_CNH_BACK() {
+	// create document analysis
+	docType := bankly.DocumentTypeCNH
+	docSide := bankly.DocumentSideBack
+	documentNumber := grok.GeneratorCPF()
+	resp := s.createDocumentAnalysis(documentNumber, docType, docSide)
+
+	time.Sleep(time.Millisecond)
+
+	// find document analysis
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(documentNumber, resp.Token)
+
+	s.assert.NoError(errDocAnalysis)
+	s.assert.NotNil(respDocAnalysis)
+	s.assert.Equal(docType, bankly.DocumentType(respDocAnalysis.DocumentType))
+	s.assert.Equal(docSide, bankly.DocumentSide(respDocAnalysis.DocumentSide))
+	s.assert.Equal(documentNumber, respDocAnalysis.DocumentNumber)
+}
+
+func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_RG_FRONT() {
+	// create document analysis
+	docType := bankly.DocumentTypeRG
+	docSide := bankly.DocumentSideFront
+	documentNumber := grok.GeneratorCPF()
+	resp := s.createDocumentAnalysis(documentNumber, docType, docSide)
+
+	time.Sleep(time.Millisecond)
+
+	// find document analysis
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(documentNumber, resp.Token)
+
+	s.assert.NoError(errDocAnalysis)
+	s.assert.NotNil(respDocAnalysis)
+	s.assert.Equal(docType, bankly.DocumentType(respDocAnalysis.DocumentType))
+	s.assert.Equal(docSide, bankly.DocumentSide(respDocAnalysis.DocumentSide))
+	s.assert.Equal(documentNumber, respDocAnalysis.DocumentNumber)
+}
+
+func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_RG_BACK() {
+	// create document analysis
+	docType := bankly.DocumentTypeRG
+	docSide := bankly.DocumentSideBack
+	documentNumber := grok.GeneratorCPF()
+	resp := s.createDocumentAnalysis(documentNumber, docType, docSide)
+
+	time.Sleep(time.Millisecond)
+
+	// find document analysis
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(documentNumber, resp.Token)
+
+	s.assert.NoError(errDocAnalysis)
+	s.assert.NotNil(respDocAnalysis)
+	s.assert.Equal(docType, bankly.DocumentType(respDocAnalysis.DocumentType))
+	s.assert.Equal(docSide, bankly.DocumentSide(respDocAnalysis.DocumentSide))
+	s.assert.Equal(documentNumber, respDocAnalysis.DocumentNumber)
+}
+
+func (s *DocumentAnalysisTestSuite) createDocumentAnalysis(documentNumber string,
+	docType bankly.DocumentType, docSide bankly.DocumentSide) *bankly.DocumentAnalysisResponse {
+
+	request := bankly.DocumentAnalysisRequest{
+		DocumentType : docType,
+		DocumentSide : docSide,
+		Image : "test_images/selfie1.jpeg",
+	}
+	resp, err := s.documentAnalysis.SendDocumentAnalysis(documentNumber, request)
 	s.assert.NoError(err)
-	s.assert.NotNil(balance)
+	s.assert.NotNil(resp)
+	s.assert.NotNil(resp.Token)
+
+	return resp
 }

@@ -531,11 +531,12 @@ type DocumentAnalysisRequest struct {
 
 // DocumentAnalysisRequestedResponse ...
 type DocumentAnalysisRequestedResponse struct {
-	Token		string		`json:"token,omitempty"`
+	Token				string		`json:"token,omitempty"`
 }
 
 // DocumentAnalysisResponse ...
 type DocumentAnalysisResponse struct {
+	DocumentNumber		string				`json:"document_number,omitempty"`
 	Token				string				`json:"token,omitempty"`
 	Status				string				`json:"status,omitempty"`
 	DocumentType		string				`json:"documentType,omitempty"`
