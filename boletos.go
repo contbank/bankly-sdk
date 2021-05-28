@@ -10,6 +10,8 @@ import (
 	"net/url"
 	"path"
 	"time"
+
+	"github.com/contbank/grok"
 )
 
 //Boletos ...
@@ -32,10 +34,10 @@ func NewBoletos(session Session) *Boletos {
 
 //CreateBoleto ...
 func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
-	err := Validator.Struct(model)
+	err := grok.Validator.Struct(model)
 
 	if err != nil {
-		return nil, err
+		return nil, grok.FromValidationErros(err)
 	}
 
 	u, err := url.Parse(b.session.APIEndpoint)
@@ -364,10 +366,10 @@ func (b *Boletos) DownloadBoleto(authenticationCode string, w io.Writer) error {
 
 //CancelBoleto ...
 func (b *Boletos) CancelBoleto(model *CancelBoletoRequest) error {
-	err := Validator.Struct(model)
+	err := grok.Validator.Struct(model)
 
 	if err != nil {
-		return err
+		return grok.FromValidationErros(err)
 	}
 
 	u, err := url.Parse(b.session.APIEndpoint)
@@ -419,10 +421,10 @@ func (b *Boletos) CancelBoleto(model *CancelBoletoRequest) error {
 
 //PayBoleto simulates a boleto beeing payed
 func (b *Boletos) PayBoleto(model *PayBoletoRequest) error {
-	err := Validator.Struct(model)
+	err := grok.Validator.Struct(model)
 
 	if err != nil {
-		return err
+		return grok.FromValidationErros(err)
 	}
 
 	u, err := url.Parse(b.session.APIEndpoint)

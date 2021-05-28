@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/contbank/grok"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
 	"time"
+
+	"github.com/contbank/grok"
+	"github.com/sirupsen/logrus"
 )
 
 //Customers ...
@@ -33,9 +34,9 @@ func NewCustomers(session Session) *Customers {
 
 //CreateRegistration ...
 func (c *Customers) CreateRegistration(customer CustomersRequest) error {
-	err := Validator.Struct(customer)
+	err := grok.Validator.Struct(customer)
 	if err != nil {
-		return err
+		return grok.FromValidationErros(err)
 	}
 
 	endpoint, err := c.getCustomerAPIEndpoint(customer.Document, false, nil)
@@ -348,7 +349,7 @@ func (c *Customers) getCustomerAPIEndpoint(document string, isAccountPath bool, 
 }
 
 // setRequestHeader
-func setRequestHeader(request *http.Request, token string, apiVersion string) (*http.Request) {
+func setRequestHeader(request *http.Request, token string, apiVersion string) *http.Request {
 	request.Header.Add("Authorization", token)
 	request.Header.Add("Content-type", "application/json")
 	request.Header.Add("api-version", apiVersion)
