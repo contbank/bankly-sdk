@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
 	"strconv"
 	"time"
+
+	"github.com/contbank/grok"
+	"github.com/sirupsen/logrus"
 )
 
 //Transfers ...
@@ -35,7 +37,7 @@ func NewTransfers(session Session) *Transfers {
 func (t *Transfers) CreateTransfer(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
 	logrus.
 		WithFields(logrus.Fields{
-			"correlation_id" : correlationID,
+			"correlation_id": correlationID,
 		}).
 		Info("create transfer")
 	return t.createTransferOperation(correlationID, model)
@@ -45,7 +47,7 @@ func (t *Transfers) CreateTransfer(correlationID string, model TransfersRequest)
 func (t *Transfers) CreateInternalTransfer(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
 	logrus.
 		WithFields(logrus.Fields{
-			"correlation_id" : correlationID,
+			"correlation_id": correlationID,
 		}).
 		Info("create internal transfer")
 	// TODO quando transação interna, necessário validar algo? limite de transação é maior do que quando externa?
@@ -57,7 +59,7 @@ func (t *Transfers) CreateInternalTransfer(correlationID string, model Transfers
 func (t *Transfers) CreateExternalTransfer(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
 	logrus.
 		WithFields(logrus.Fields{
-			"correlation_id" : correlationID,
+			"correlation_id": correlationID,
 		}).
 		Info("create external transfer")
 	return t.createTransferOperation(correlationID, model)
@@ -66,12 +68,12 @@ func (t *Transfers) CreateExternalTransfer(correlationID string, model Transfers
 // createTransferOperation ...
 func (t *Transfers) createTransferOperation(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
 
-	err := Validator.Struct(model)
+	err := grok.Validator.Struct(model)
 	if err != nil {
 		logrus.
 			WithError(err).
 			Error("error validating model")
-		return nil, err
+		return nil, grok.FromValidationErros(err)
 	}
 
 	endpoint, err := t.getTransferAPIEndpoint(nil, nil, nil, nil)

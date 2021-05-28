@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/contbank/grok"
 	"github.com/patrickmn/go-cache"
 )
 
@@ -30,10 +31,10 @@ type Session struct {
 
 //NewSession ...
 func NewSession(config Config) (*Session, error) {
-	err := Validator.Struct(config)
+	err := grok.Validator.Struct(config)
 
 	if err != nil {
-		return nil, err
+		return nil, grok.FromValidationErros(err)
 	}
 
 	if config.APIEndpoint == nil {
