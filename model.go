@@ -81,22 +81,39 @@ const (
 	CustomerStatusBlacklisted CustomerStatus = "BLACKLISTED"
 )
 
+type DocumentAnalysisStatus string
+
+const (
+	// DocumentAnalysisStatusAnalyzing...
+	DocumentAnalysisStatusAnalyzing DocumentAnalysisStatus = "ANALYZING"
+	// DocumentAnalysisStatusAnalysisCompleted ...
+	DocumentAnalysisStatusAnalysisCompleted DocumentAnalysisStatus = "ANALYSIS_COMPLETED"
+	// DocumentAnalysisStatusUnexpectedError ...
+	DocumentAnalysisStatusUnexpectedError DocumentAnalysisStatus = "UNEXPECTED_ERROR"
+	// DocumentAnalysisStatusForbiddenWord ...
+	DocumentAnalysisStatusForbiddenWord DocumentAnalysisStatus = "FORBIDDEN_WORD"
+	// DocumentAnalysisStatusDataRecused ...
+	DocumentAnalysisStatusDataRecused DocumentAnalysisStatus = "DATA_RECUSED"
+	// DocumentAnalysisStatusPhotoRecused ...
+	DocumentAnalysisStatusPhotoRecused DocumentAnalysisStatus = "PHOTO_RECUSED"
+)
+
 // CustomersResponse ...
 type CustomersResponse struct {
-	DocumentNumber             string    `json:"documentNumber"`
-	RegisterName               string    `json:"registerName"`
-	SocialName                 string    `json:"socialName"`
-	Email                      string    `json:"email"`
-	Phone                      Phone     `json:"phone"`
-	Address                    Address   `json:"address"`
-	MotherName                 string    `json:"motherName"`
-	BirthDate                  time.Time `json:"birthDate"`
-	IsPoliticallyExposedPerson bool      `json:"isPoliticallyExposedPerson"`
-	Reasons                    []string  `json:"reasons"`
-	Status                     string    `json:"status"`
-	Profile                    string    `json:"profile"`
-	CreatedAt                  time.Time `json:"createdAt"`
-	UpdatedAt                  time.Time `json:"updatedAt"`
+	DocumentNumber             string    				`json:"documentNumber"`
+	RegisterName               string    				`json:"registerName"`
+	SocialName                 string    				`json:"socialName"`
+	Email                      string    				`json:"email"`
+	Phone                      Phone     				`json:"phone"`
+	Address                    Address   				`json:"address"`
+	MotherName                 string    				`json:"motherName"`
+	BirthDate                  time.Time 				`json:"birthDate"`
+	IsPoliticallyExposedPerson bool      				`json:"isPoliticallyExposedPerson"`
+	Reasons                    []string  				`json:"reasons"`
+	Status                     CustomerStatus   		`json:"status"`
+	Profile                    string    				`json:"profile"`
+	CreatedAt                  time.Time 				`json:"createdAt"`
+	UpdatedAt                  time.Time 				`json:"updatedAt"`
 }
 
 // Phone ...
@@ -536,16 +553,16 @@ type DocumentAnalysisRequestedResponse struct {
 
 // DocumentAnalysisResponse ...
 type DocumentAnalysisResponse struct {
-	DocumentNumber		string				`json:"document_number,omitempty"`
-	Token				string				`json:"token,omitempty"`
-	Status				string				`json:"status,omitempty"`
-	DocumentType		string				`json:"documentType,omitempty"`
-	DocumentSide		string				`json:"documentSide,omitempty"`
-	FaceMatch			*FaceMatch  		`json:"faceMatch,omitempty"`
-	FaceDetails			*FaceDetails		`json:"faceDetails,omitempty"`
-	DocumentDetails		*DocumentDetails	`json:"documentDetails,omitempty"`
-	Liveness			*Liveness			`json:"liveness,omitempty"`
-	AnalyzedAt			string				`json:"analyzedAt,omitempty"`
+	DocumentNumber		string					`json:"document_number,omitempty"`
+	Token				string					`json:"token,omitempty"`
+	Status				DocumentAnalysisStatus	`json:"status,omitempty"`
+	DocumentType		string					`json:"documentType,omitempty"`
+	DocumentSide		string					`json:"documentSide,omitempty"`
+	FaceMatch			*FaceMatch  			`json:"faceMatch,omitempty"`
+	FaceDetails			*FaceDetails			`json:"faceDetails,omitempty"`
+	DocumentDetails		*DocumentDetails		`json:"documentDetails,omitempty"`
+	Liveness			*Liveness				`json:"liveness,omitempty"`
+	AnalyzedAt			string					`json:"analyzedAt,omitempty"`
 }
 
 type FaceMatch struct {

@@ -155,7 +155,7 @@ func (c *Customers) UpdateRegistration(document string, customerUpdateRequest Cu
 
 	method := "PUT"
 	customerResponse, err := c.FindRegistration(document)
-	if customerResponse.Status == string(CustomerStatusApproved) {
+	if customerResponse.Status == CustomerStatusApproved {
 		method = "PATCH"
 	}
 
