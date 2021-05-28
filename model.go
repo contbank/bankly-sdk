@@ -543,7 +543,7 @@ const (
 type DocumentAnalysisRequest struct {
 	DocumentType		DocumentType		`json:"documentType,omitempty"`
 	DocumentSide		DocumentSide		`json:"documentSide,omitempty"`
-	Image				string				`json:"image,omitempty"`
+	URLImage			string				`json:"image,omitempty"`
 }
 
 // DocumentAnalysisRequestedResponse ...

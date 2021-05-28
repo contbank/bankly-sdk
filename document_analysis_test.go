@@ -47,7 +47,7 @@ func (s *DocumentAnalysisTestSuite) TestSendDocumentAnalysis() {
 	request := bankly.DocumentAnalysisRequest{
 		DocumentType: docType,
 		DocumentSide: docSide,
-		Image:        "test_images/selfie1.jpeg",
+		URLImage:        "test_images/selfie1.jpeg",
 	}
 
 	response, err := s.documentAnalysis.SendDocumentAnalysis(documentNumber, request)
@@ -179,7 +179,7 @@ func (s *DocumentAnalysisTestSuite) createDocumentAnalysis(documentNumber string
 	request := bankly.DocumentAnalysisRequest{
 		DocumentType : docType,
 		DocumentSide : docSide,
-		Image : "test_images/selfie1.jpeg",
+		URLImage : "test_images/selfie1.jpeg",
 	}
 	resp, err := s.documentAnalysis.SendDocumentAnalysis(documentNumber, request)
 	s.assert.NoError(err)

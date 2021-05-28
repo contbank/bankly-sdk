@@ -218,7 +218,7 @@ func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *mu
 	payload := &bytes.Buffer{}
 
 	writer := multipart.NewWriter(payload)
-	file, errFile := os.Open(request.Image)
+	file, errFile := os.Open(request.URLImage)
 	defer file.Close()
 
 	contentType, errorContentType := getFileContentType(file)
@@ -229,7 +229,7 @@ func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *mu
 
 	h := make(textproto.MIMEHeader)
 	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
-		escapeQuotes("image"), escapeQuotes(request.Image)))
+		escapeQuotes("image"), escapeQuotes(request.URLImage)))
 	h.Set("Content-Type", contentType)
 
 	part1, errFile := writer.CreatePart(h)
