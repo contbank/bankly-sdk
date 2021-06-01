@@ -26,36 +26,31 @@ const (
 const (
 	// InternalBankCode ...
 	InternalBankCode string = "332"
+	// DocumentAnalysisBucket
+	DocumentAnalysisBucket string = "temp.documentanalysis"
+	// DocumentAnalysisTempDir
+	DocumentAnalysisTempDir string = "temp_document_analysis_dir"
 )
 
-// AuthenticationResponse ...
-type AuthenticationResponse struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int    `json:"expires_in"`
-	TokenType   string `json:"token_type"`
-}
+type DocumentType string
 
-// ErrorLoginResponse ...
-type ErrorLoginResponse struct {
-	Message string `json:"error"`
-}
+const (
+	// DocumentTypeRG ...
+	DocumentTypeRG DocumentType = "RG"
+	// DocumentTypeCNH ...
+	DocumentTypeCNH DocumentType = "CNH"
+	// DocumentTypeSELFIE ...
+	DocumentTypeSELFIE DocumentType = "SELFIE"
+)
 
-// CustomersRequest ...
-type CustomersRequest struct {
-	Document     string    `validate:"required,cpf" json:"documentNumber,omitempty"`
-	RegisterName string    `validate:"required" json:"registerName,omitempty"`
-	SocialName   string    `json:"socialName,omitempty"`
-	Phone        *Phone    `validate:"required,dive" json:"phone,omitempty"`
-	Address      *Address  `validate:"required,dive" json:"address,omitempty"`
-	BirthDate    time.Time `validate:"required" json:"birthDate,omitempty"`
-	MotherName   string    `validate:"required" json:"motherName,omitempty"`
-	Email        string    `validate:"required" json:"email,omitempty"`
-}
+type DocumentSide string
 
-// CustomersAccountRequest ...
-type CustomersAccountRequest struct {
-	AccountType AccountType `validate:"required" json:"accountType"`
-}
+const (
+	// DocumentSideFront ...
+	DocumentSideFront DocumentSide = "FRONT"
+	// DocumentSideBack ...
+	DocumentSideBack DocumentSide = "BACK"
+)
 
 // AccountType ...
 type AccountType string
@@ -97,6 +92,35 @@ const (
 	// DocumentAnalysisStatusPhotoRecused ...
 	DocumentAnalysisStatusPhotoRecused DocumentAnalysisStatus = "PHOTO_RECUSED"
 )
+
+// AuthenticationResponse ...
+type AuthenticationResponse struct {
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	TokenType   string `json:"token_type"`
+}
+
+// ErrorLoginResponse ...
+type ErrorLoginResponse struct {
+	Message string `json:"error"`
+}
+
+// CustomersRequest ...
+type CustomersRequest struct {
+	Document     string    `validate:"required,cpf" json:"documentNumber,omitempty"`
+	RegisterName string    `validate:"required" json:"registerName,omitempty"`
+	SocialName   string    `json:"socialName,omitempty"`
+	Phone        *Phone    `validate:"required,dive" json:"phone,omitempty"`
+	Address      *Address  `validate:"required,dive" json:"address,omitempty"`
+	BirthDate    time.Time `validate:"required" json:"birthDate,omitempty"`
+	MotherName   string    `validate:"required" json:"motherName,omitempty"`
+	Email        string    `validate:"required" json:"email,omitempty"`
+}
+
+// CustomersAccountRequest ...
+type CustomersAccountRequest struct {
+	AccountType AccountType `validate:"required" json:"accountType"`
+}
 
 // CustomersResponse ...
 type CustomersResponse struct {
@@ -518,26 +542,6 @@ type RecipientResponse struct {
 	Name     string           `json:"name,omitempty"`
 	Account  *AccountResponse `json:"account,omitempty"`
 }
-
-type DocumentType string
-
-const (
-	// DocumentTypeRG ...
-	DocumentTypeRG DocumentType = "RG"
-	// DocumentTypeCNH ...
-	DocumentTypeCNH DocumentType = "CNH"
-	// DocumentTypeSELFIE ...
-	DocumentTypeSELFIE DocumentType = "SELFIE"
-)
-
-type DocumentSide string
-
-const (
-	// DocumentSideFront ...
-	DocumentSideFront DocumentSide = "FRONT"
-	// DocumentSideBack ...
-	DocumentSideBack DocumentSide = "BACK"
-)
 
 // DocumentAnalysisRequest ...
 type DocumentAnalysisRequest struct {

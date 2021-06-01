@@ -1,6 +1,8 @@
 package bankly_test
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"os"
 	"testing"
 	"time"
@@ -16,8 +18,10 @@ import (
 type DocumentAnalysisTestSuite struct {
 	suite.Suite
 	assert           *assert.Assertions
-	session          *bankly.Session
+	bankSession      *bankly.Session
+	s3session  		 *session.Session
 	documentAnalysis *bankly.DocumentAnalysis
+	s3manager  	     *bankly.S3Manager
 }
 
 func TestDocumentAnalysisTestSuite(t *testing.T) {
@@ -27,15 +31,37 @@ func TestDocumentAnalysisTestSuite(t *testing.T) {
 func (s *DocumentAnalysisTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 
-	session, err := bankly.NewSession(bankly.Config{
+	newSession, err := bankly.NewSession(bankly.Config{
 		ClientID:     bankly.String(os.Getenv("BANKLY_CLIENT_ID")),
 		ClientSecret: bankly.String(os.Getenv("BANKLY_CLIENT_SECRET")),
 	})
 
 	s.assert.NoError(err)
 
-	s.session = session
-	s.documentAnalysis = bankly.NewDocumentAnalysis(*s.session)
+	s.bankSession = newSession
+
+	s.s3session = session.Must(session.NewSession(&aws.Config{
+		Region:           bankly.String(os.Getenv("AWS_S3_REGION")),
+		Endpoint:         bankly.String(os.Getenv("AWS_S3_ENDPOINT")),
+		S3ForcePathStyle: aws.Bool(true),
+	}))
+	s.s3manager = bankly.NewS3Manager(s.s3session)
+
+	s.documentAnalysis = bankly.NewDocumentAnalysis(*s.bankSession, *s.s3manager)
+}
+
+func (s *DocumentAnalysisTestSuite) TestDocumentAnalysisBucketExists(){
+	buckets, error := s.s3manager.ListBuckets()
+
+	exists := false
+	for _, bucketName := range buckets {
+		if bucketName == bankly.DocumentAnalysisBucket {
+			exists = true
+		}
+	}
+
+	s.assert.NoError(error)
+	s.assert.True(exists)
 }
 
 func (s *DocumentAnalysisTestSuite) TestSendDocumentAnalysis() {
@@ -45,9 +71,10 @@ func (s *DocumentAnalysisTestSuite) TestSendDocumentAnalysis() {
 	documentNumber := grok.GeneratorCPF()
 
 	request := bankly.DocumentAnalysisRequest{
-		DocumentType: docType,
-		DocumentSide: docSide,
-		URLImage:        "test_images/selfie1.jpeg",
+		DocumentType : docType,
+		DocumentSide : docSide,
+		//// URLImage : "test_images/selfie1.jpeg",
+		URLImage : "https://s3-us-west-2.amazonaws.com/temp.documentanalysis/contbank.png",
 	}
 
 	response, err := s.documentAnalysis.SendDocumentAnalysis(documentNumber, request)

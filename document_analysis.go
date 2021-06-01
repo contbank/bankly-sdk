@@ -24,16 +24,18 @@ type DocumentAnalysis struct {
 	session        Session
 	httpClient     *http.Client
 	authentication *Authentication
+	s3manager 	   S3Manager
 }
 
 // NewDocumentAnalysis ...
-func NewDocumentAnalysis(session Session) *DocumentAnalysis {
+func NewDocumentAnalysis(session Session, manager S3Manager) *DocumentAnalysis {
 	return &DocumentAnalysis{
 		session: session,
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
 		authentication: NewAuthentication(session),
+		s3manager: manager,
 	}
 }
 
@@ -47,7 +49,24 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(documentNumber string, request D
 		return nil, err
 	}
 
-	payload, writer, err := createSendImagePayload(request)
+	// TODO remover
+	//// request.URLImage = "/home/joacir/Desenvolvimento/Workspaces/CONTBANK/test_images/selfie1.jpeg"
+
+	tempFile, errTempFile := c.downloadTempFile(documentNumber, request)
+	if errTempFile != nil {
+		logrus.
+			WithFields(logrus.Fields{
+				"request" : request,
+			}).
+			Error(errTempFile)
+		return nil, errTempFile
+	}
+
+	defer func() {
+		os.Remove(tempFile.Name())
+	}()
+
+	payload, writer, err := createSendImagePayload(request, tempFile)
 	if err != nil {
 		return nil, err
 	}
@@ -213,17 +232,49 @@ func (c *DocumentAnalysis) getDocumentAnalysisAPIEndpoint(document string, resul
 	return &endpoint, nil
 }
 
+// downloadTempFile ...
+func (c *DocumentAnalysis) downloadTempFile(documentNumber string, request DocumentAnalysisRequest) (*os.File, error) {
+	tempWriter, errTempDir := createTempFile(DocumentAnalysisTempDir, documentNumber)
+	if errTempDir != nil {
+		return nil, errTempDir
+	}
+
+	objectSize, errDownloader := c.s3manager.Download(request.URLImage, DocumentAnalysisBucket, tempWriter)
+	if errDownloader != nil {
+		return nil, errDownloader
+	} else if objectSize == nil || *objectSize <= 0 {
+		return nil, ErrDownloadDocumentAnalysis
+	}
+
+	logrus.
+		WithFields(logrus.Fields{
+			"object_name" : tempWriter.Name(),
+			"object_size" : objectSize,
+		}).
+		Infof("temporary image success download")
+
+	tempWriter.Close()
+
+	return tempWriter, nil
+}
+
 // createSendImagePayload ...
-func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *multipart.Writer, error) {
+func createSendImagePayload(request DocumentAnalysisRequest, file *os.File) (*bytes.Buffer, *multipart.Writer, error) {
+	if file == nil {
+		return nil, nil, ErrInvalidFile
+	}
+
 	payload := &bytes.Buffer{}
 
 	writer := multipart.NewWriter(payload)
-	file, errFile := os.Open(request.URLImage)
+	file, errFile := os.Open(file.Name())
 	defer file.Close()
 
 	contentType, errorContentType := getFileContentType(file)
 	if errorContentType != nil {
-		logrus.WithError(errorContentType).Error("error document type field")
+		logrus.
+			WithError(errorContentType).
+			Error("error document type field")
 		return nil, nil, errorContentType
 	}
 
@@ -286,4 +337,8 @@ func getFileContentType(out *os.File) (string, error) {
 	contentType := http.DetectContentType(buffer)
 
 	return contentType, nil
+}
+
+func createTempFile(dir string, identifier string) (*os.File, error) {
+	return ioutil.TempFile(dir, "doc_" + identifier + "_")
 }
