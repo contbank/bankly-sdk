@@ -55,37 +55,3 @@ func (s *BankStatementTestSuite) TestFilterBankStatements() {
 	s.assert.NoError(err)
 	s.assert.NotEmpty(r)
 }
-
-func (s *BankStatementTestSuite) createBoleto(document string, account *bankly.Account) *bankly.BoletoRequest {
-	return &bankly.BoletoRequest{
-		Alias:       bankly.String(bankly.RandStringBytes(12)),
-		Document:    document,
-		Amount:      1547.55,
-		DueDate:     time.Now().Add(48 * time.Hour),
-		EmissionFee: false,
-		Type:        bankly.Levy,
-		Account:     account,
-		Payer:       s.createPayer(),
-	}
-}
-
-func (s *BankStatementTestSuite) createPayer() *bankly.Payer {
-	return &bankly.Payer{
-		Name:      bankly.RandStringBytes(9),
-		TradeName: bankly.RandStringBytes(15),
-		Document:  bankly.GeneratorCPF(),
-		Address:   s.createAddress(),
-	}
-}
-
-func (s *BankStatementTestSuite) createAddress() *bankly.Address {
-	return &bankly.Address{
-		ZipCode:        "03503030",
-		City:           "São Paulo",
-		AddressLine:    "Rua Fulano de Tal",
-		BuildingNumber: "1000",
-		Neighborhood:   "Chácara Califórnia",
-		State:          "SP",
-		Country:        "BR",
-	}
-}
