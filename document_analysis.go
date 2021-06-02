@@ -157,7 +157,7 @@ func (c *DocumentAnalysis) FindDocumentAnalysis(documentNumber string, documentA
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
 	if resp.StatusCode == http.StatusOK {
-		var response []*DocumentAnalysisResponse
+		var response []*BanklyDocumentAnalysisResponse
 
 		err = json.Unmarshal(respBody, &response)
 		if err != nil {
@@ -165,8 +165,7 @@ func (c *DocumentAnalysis) FindDocumentAnalysis(documentNumber string, documentA
 			return nil, err
 		}
 
-		response[0].DocumentNumber = documentNumber
-		return response[0], nil
+		return ParseDocumentAnalysisResponse(documentNumber, response[0]), nil
 	}
 
 	if resp.StatusCode == http.StatusNotFound {

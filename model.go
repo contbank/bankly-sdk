@@ -649,6 +649,7 @@ type Liveness struct {
 	Confidence		float32 	`json:"confidence,omitempty"`
 }
 
+// ParseDocumentAnalysisResponse ....
 func ParseDocumentAnalysisResponse(documentNumber string, banklyResponse *BanklyDocumentAnalysisResponse) *DocumentAnalysisResponse {
 	if banklyResponse == nil {
 		return nil

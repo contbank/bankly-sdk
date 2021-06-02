@@ -79,6 +79,8 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_SELFIE_FRONT() {
 	s.assert.NotNil(respDocAnalysis)
 	s.assert.NotEmpty(respDocAnalysis.Token)
 	s.assert.NotEmpty(respDocAnalysis.Status)
+	s.assert.Equal(docType, bankly.DocumentType(respDocAnalysis.DocumentType))
+	s.assert.Equal(docSide, bankly.DocumentSide(respDocAnalysis.DocumentSide))
 	s.assert.Equal(documentNumber, respDocAnalysis.DocumentNumber)
 }
 
@@ -98,6 +100,8 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_SELFIE_BACK() {
 	s.assert.NotNil(respDocAnalysis)
 	s.assert.NotEmpty(respDocAnalysis.Token)
 	s.assert.NotEmpty(respDocAnalysis.Status)
+	s.assert.Equal(docType, bankly.DocumentType(respDocAnalysis.DocumentType))
+	s.assert.Equal(docSide, bankly.DocumentSide(respDocAnalysis.DocumentSide))
 	s.assert.Equal(documentNumber, respDocAnalysis.DocumentNumber)
 }
 
@@ -117,6 +121,8 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_CNH_FRONT() {
 	s.assert.NotNil(respDocAnalysis)
 	s.assert.NotEmpty(respDocAnalysis.Token)
 	s.assert.NotEmpty(respDocAnalysis.Status)
+	s.assert.Equal(docType, bankly.DocumentType(respDocAnalysis.DocumentType))
+	s.assert.Equal(docSide, bankly.DocumentSide(respDocAnalysis.DocumentSide))
 	s.assert.Equal(documentNumber, respDocAnalysis.DocumentNumber)
 }
 
@@ -136,6 +142,8 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_CNH_BACK() {
 	s.assert.NotNil(respDocAnalysis)
 	s.assert.NotEmpty(respDocAnalysis.Token)
 	s.assert.NotEmpty(respDocAnalysis.Status)
+	s.assert.Equal(docType, bankly.DocumentType(respDocAnalysis.DocumentType))
+	s.assert.Equal(docSide, bankly.DocumentSide(respDocAnalysis.DocumentSide))
 	s.assert.Equal(documentNumber, respDocAnalysis.DocumentNumber)
 }
 
@@ -155,6 +163,8 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_RG_FRONT() {
 	s.assert.NotNil(respDocAnalysis)
 	s.assert.NotEmpty(respDocAnalysis.Token)
 	s.assert.NotEmpty(respDocAnalysis.Status)
+	s.assert.Equal(docType, bankly.DocumentType(respDocAnalysis.DocumentType))
+	s.assert.Equal(docSide, bankly.DocumentSide(respDocAnalysis.DocumentSide))
 	s.assert.Equal(documentNumber, respDocAnalysis.DocumentNumber)
 }
 
@@ -164,6 +174,8 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_RG_BACK() {
 	docSide := bankly.DocumentSideBack
 	documentNumber := grok.GeneratorCPF()
 	resp := s.createDocumentAnalysis(documentNumber, docType, docSide)
+	s.assert.NotNil(resp)
+	s.assert.NotEmpty(resp.Token)
 
 	time.Sleep(time.Millisecond)
 
@@ -174,7 +186,34 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_RG_BACK() {
 	s.assert.NotNil(respDocAnalysis)
 	s.assert.NotEmpty(respDocAnalysis.Token)
 	s.assert.NotEmpty(respDocAnalysis.Status)
+	s.assert.Equal(docType, bankly.DocumentType(respDocAnalysis.DocumentType))
+	s.assert.Equal(docSide, bankly.DocumentSide(respDocAnalysis.DocumentSide))
 	s.assert.Equal(documentNumber, respDocAnalysis.DocumentNumber)
+}
+
+func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysisError_INVALID_DOCUMENT() {
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(grok.GeneratorCPF(), "TOKEN")
+
+	s.assert.Error(errDocAnalysis)
+	s.assert.Nil(respDocAnalysis)
+}
+
+func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysisError_INVALID_TOKEN() {
+	// create document analysis
+	docType := bankly.DocumentTypeRG
+	docSide := bankly.DocumentSideBack
+	documentNumber := grok.GeneratorCPF()
+	resp := s.createDocumentAnalysis(documentNumber, docType, docSide)
+	s.assert.NotNil(resp)
+	s.assert.NotEmpty(resp.Token)
+
+	time.Sleep(time.Millisecond)
+
+	// find document analysis
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(documentNumber, "INVALID_TOKEN")
+
+	s.assert.Error(errDocAnalysis)
+	s.assert.Nil(respDocAnalysis)
 }
 
 func (s *DocumentAnalysisTestSuite) createDocumentAnalysis(documentNumber string,
