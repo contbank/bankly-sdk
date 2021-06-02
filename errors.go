@@ -25,19 +25,19 @@ var (
 	ErrAccountHolderNotExists = grok.NewError(http.StatusBadRequest, "account holder not exists")
 	// ErrHolderAlreadyHaveAAccount ...
 	ErrHolderAlreadyHaveAAccount = grok.NewError(http.StatusConflict, "holder already have a account")
-	// ErrInvalidCorrelationId
+	// ErrInvalidCorrelationId ...
 	ErrInvalidCorrelationId = grok.NewError(http.StatusBadRequest, "invalid correlation id")
-	// ErrInvalidAmount
+	// ErrInvalidAmount ...
 	ErrInvalidAmount = grok.NewError(http.StatusBadRequest, "invalid amount")
-	// ErrInsufficientBalance
+	// ErrInsufficientBalance ...
 	ErrInsufficientBalance = grok.NewError(http.StatusBadRequest, "insufficient balance")
-	// ErrInvalidAuthenticationCodeOrAccount
+	// ErrInvalidAuthenticationCodeOrAccount ...
 	ErrInvalidAuthenticationCodeOrAccount = grok.NewError(http.StatusBadRequest, "invalid authentication code or account number")
-	// ErrInvalidAccountNumber
+	// ErrInvalidAccountNumber ...
 	ErrInvalidAccountNumber = grok.NewError(http.StatusBadRequest, "invalid account number")
-	// ErrOutOfServicePeriod
+	// ErrOutOfServicePeriod ...
 	ErrOutOfServicePeriod = grok.NewError(http.StatusBadRequest, "out of service period")
-	// ErrCashoutLimitNotEnough
+	// ErrCashoutLimitNotEnough ...
 	ErrCashoutLimitNotEnough = grok.NewError(http.StatusBadRequest, "cashout limit not enough")
 	// ErrInvalidParameter
 	ErrInvalidParameter = grok.NewError(http.StatusBadRequest, "invalid parameter")
@@ -51,8 +51,10 @@ var (
 	ErrGetDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "get document analysis error")
 )
 
+// BanklyError ...
 type BanklyError ErrorModel
 
+// Error ..
 type Error struct {
 	banklyError BanklyError
 	grokError   *grok.Error
@@ -89,8 +91,10 @@ var errorList = []Error{
 	},
 }
 
+// BanklyTransferError ..
 type BanklyTransferError KeyValueErrorModel
 
+// TransferError ..
 type TransferError struct {
 	banklyTransferError BanklyTransferError
 	grokError           *grok.Error
@@ -119,15 +123,23 @@ var transferErrorList = []TransferError{
 	},
 }
 
+// FindError ..
 func FindError(errorModel ErrorModel) *grok.Error {
 	for _, v := range errorList {
 		if v.banklyError.Code == errorModel.Code {
 			return v.grokError
 		}
 	}
-	return grok.NewError(http.StatusBadRequest, errorModel.Code+" - "+errorModel.Messages[0])
+
+	var message string
+	if len(errorModel.Messages) > 0 {
+		message = errorModel.Messages[0]
+	}
+
+	return grok.NewError(http.StatusBadRequest, errorModel.Code+" - "+message)
 }
 
+// FindTransferError ..
 func FindTransferError(transferErrorResponse TransferErrorResponse) *grok.Error {
 	// get the error code if errors list is null
 	if len(transferErrorResponse.Errors) == 0 && transferErrorResponse.Code != "" {

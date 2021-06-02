@@ -39,9 +39,9 @@ func NewDocumentAnalysis(session Session) *DocumentAnalysis {
 
 // SendDocumentAnalysis ...
 func (c *DocumentAnalysis) SendDocumentAnalysis(request DocumentAnalysisRequest) (*DocumentAnalysisResponse, error) {
-	err := Validator.Struct(request)
+	err := grok.Validator.Struct(request)
 	if err != nil {
-		return nil, err
+		return nil, grok.FromValidationErros(err)
 	}
 
 	endpoint, err := c.getDocumentAnalysisAPIEndpoint(request.Document, nil, nil)
@@ -96,11 +96,11 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(request DocumentAnalysisRequest)
 			return nil, err
 		}
 
-		response := &DocumentAnalysisResponse {
+		response := &DocumentAnalysisResponse{
 			DocumentNumber: request.Document,
-			DocumentType: string(request.DocumentType),
-			DocumentSide: string(request.DocumentSide),
-			Token: bodyResp.Token,
+			DocumentType:   string(request.DocumentType),
+			DocumentSide:   string(request.DocumentSide),
+			Token:          bodyResp.Token,
 		}
 		return response, nil
 	}
