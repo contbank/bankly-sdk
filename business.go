@@ -111,6 +111,8 @@ func (c *Business) UpdateBusiness(businessDocument string, businessUpdateRequest
 	respBody, _ := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode == http.StatusAccepted {
 		return nil
+	} else if resp.StatusCode == http.StatusMethodNotAllowed {
+		return ErrMethodNotAllowed
 	}
 
 	var bodyErr *ErrorResponse

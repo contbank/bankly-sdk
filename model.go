@@ -1,6 +1,9 @@
 package bankly
 
-import "time"
+import (
+	"os"
+	"time"
+)
 
 const (
 	// LoginPath ..
@@ -13,15 +16,78 @@ const (
 	TransfersPath = "fund-transfers"
 	// BusinessPath ...
 	BusinessPath = "business"
-	//BoletosPath ...
+	// BoletosPath ...
 	BoletosPath = "bankslip"
-	//BanksPath ...
+	// BanksPath ...
 	BanksPath = "banklist"
+	// DocumentAnalysisPath ...
+	DocumentAnalysisPath = "/document-analysis"
 )
 
 const (
 	// InternalBankCode ...
 	InternalBankCode string = "332"
+)
+
+type DocumentType string
+
+const (
+	// DocumentTypeRG ...
+	DocumentTypeRG DocumentType = "RG"
+	// DocumentTypeCNH ...
+	DocumentTypeCNH DocumentType = "CNH"
+	// DocumentTypeSELFIE ...
+	DocumentTypeSELFIE DocumentType = "SELFIE"
+)
+
+type DocumentSide string
+
+const (
+	// DocumentSideFront ...
+	DocumentSideFront DocumentSide = "FRONT"
+	// DocumentSideBack ...
+	DocumentSideBack DocumentSide = "BACK"
+)
+
+// AccountType ...
+type AccountType string
+
+const (
+	// PaymentAccount ...
+	PaymentAccount AccountType = "PAYMENT_ACCOUNT"
+)
+
+// CustomerStatus
+type CustomerStatus string
+
+const (
+	// CustomerStatusPendingApproval
+	CustomerStatusPendingApproval CustomerStatus = "PENDING_APPROVAL"
+	// CustomerStatusApproved
+	CustomerStatusApproved CustomerStatus = "APPROVED"
+	// CustomerStatusReproved
+	CustomerStatusReproved CustomerStatus = "REPROVED"
+	// CustomerStatusCanceled
+	CustomerStatusCanceled CustomerStatus = "CANCELED"
+	// CustomerStatusBlacklisted
+	CustomerStatusBlacklisted CustomerStatus = "BLACKLISTED"
+)
+
+type DocumentAnalysisStatus string
+
+const (
+	// DocumentAnalysisStatusAnalyzing...
+	DocumentAnalysisStatusAnalyzing DocumentAnalysisStatus = "ANALYZING"
+	// DocumentAnalysisStatusAnalysisCompleted ...
+	DocumentAnalysisStatusAnalysisCompleted DocumentAnalysisStatus = "ANALYSIS_COMPLETED"
+	// DocumentAnalysisStatusUnexpectedError ...
+	DocumentAnalysisStatusUnexpectedError DocumentAnalysisStatus = "UNEXPECTED_ERROR"
+	// DocumentAnalysisStatusForbiddenWord ...
+	DocumentAnalysisStatusForbiddenWord DocumentAnalysisStatus = "FORBIDDEN_WORD"
+	// DocumentAnalysisStatusDataRecused ...
+	DocumentAnalysisStatusDataRecused DocumentAnalysisStatus = "DATA_RECUSED"
+	// DocumentAnalysisStatusPhotoRecused ...
+	DocumentAnalysisStatusPhotoRecused DocumentAnalysisStatus = "PHOTO_RECUSED"
 )
 
 // AuthenticationResponse ...
@@ -53,46 +119,22 @@ type CustomersAccountRequest struct {
 	AccountType AccountType `validate:"required" json:"accountType"`
 }
 
-// AccountType ...
-type AccountType string
-
-const (
-	// PaymentAccount ...
-	PaymentAccount AccountType = "PAYMENT_ACCOUNT"
-)
-
-// CustomerStatus
-type CustomerStatus string
-
-const (
-	// CustomerStatusPendingApproval
-	CustomerStatusPendingApproval CustomerStatus = "PENDING_APPROVAL"
-	// CustomerStatusApproved
-	CustomerStatusApproved CustomerStatus = "APPROVED"
-	// CustomerStatusReproved
-	CustomerStatusReproved CustomerStatus = "REPROVED"
-	// CustomerStatusCanceled
-	CustomerStatusCanceled CustomerStatus = "CANCELED"
-	// CustomerStatusBlacklisted
-	CustomerStatusBlacklisted CustomerStatus = "BLACKLISTED"
-)
-
 // CustomersResponse ...
 type CustomersResponse struct {
-	DocumentNumber             string    `json:"documentNumber"`
-	RegisterName               string    `json:"registerName"`
-	SocialName                 string    `json:"socialName"`
-	Email                      string    `json:"email"`
-	Phone                      Phone     `json:"phone"`
-	Address                    Address   `json:"address"`
-	MotherName                 string    `json:"motherName"`
-	BirthDate                  time.Time `json:"birthDate"`
-	IsPoliticallyExposedPerson bool      `json:"isPoliticallyExposedPerson"`
-	Reasons                    []string  `json:"reasons"`
-	Status                     string    `json:"status"`
-	Profile                    string    `json:"profile"`
-	CreatedAt                  time.Time `json:"createdAt"`
-	UpdatedAt                  time.Time `json:"updatedAt"`
+	DocumentNumber             string    				`json:"documentNumber"`
+	RegisterName               string    				`json:"registerName"`
+	SocialName                 string    				`json:"socialName"`
+	Email                      string    				`json:"email"`
+	Phone                      Phone     				`json:"phone"`
+	Address                    Address   				`json:"address"`
+	MotherName                 string    				`json:"motherName"`
+	BirthDate                  time.Time 				`json:"birthDate"`
+	IsPoliticallyExposedPerson bool      				`json:"isPoliticallyExposedPerson"`
+	Reasons                    []string  				`json:"reasons"`
+	Status                     CustomerStatus   		`json:"status"`
+	Profile                    string    				`json:"profile"`
+	CreatedAt                  time.Time 				`json:"createdAt"`
+	UpdatedAt                  time.Time 				`json:"updatedAt"`
 }
 
 // Phone ...
@@ -306,6 +348,7 @@ type ResultLevel string
 const (
 	ResultLevelBasic    ResultLevel = "BASIC"
 	ResultLevelDetailed ResultLevel = "DETAILED"
+	ResultLevelOnlyStatus ResultLevel = "ONLY_STATUS"
 )
 
 // LegalRepresentative ...
@@ -509,4 +552,128 @@ type RecipientResponse struct {
 	Document string           `json:"document,omitempty"`
 	Name     string           `json:"name,omitempty"`
 	Account  *AccountResponse `json:"account,omitempty"`
+}
+
+// DocumentAnalysisRequest ...
+type DocumentAnalysisRequest struct {
+	Document			string				`validate:"required" json:"document,omitempty"`
+	DocumentType		DocumentType		`validate:"required" json:"document_type,omitempty"`
+	DocumentSide		DocumentSide		`validate:"required" json:"document_side,omitempty"`
+	ImageFile			os.File				`validate:"required" json:"image_file,omitempty"`
+}
+
+// DocumentAnalysisRequestedResponse ...
+type DocumentAnalysisRequestedResponse struct {
+	Token				string		`json:"token,omitempty"`
+}
+
+// DocumentAnalysisResponse ...
+type DocumentAnalysisResponse struct {
+	DocumentNumber		string					`json:"document_number,omitempty"`
+	Token				string					`json:"token,omitempty"`
+	Status				DocumentAnalysisStatus	`json:"status,omitempty"`
+	DocumentType		string					`json:"document_type,omitempty"`
+	DocumentSide		string					`json:"document_side,omitempty"`
+	FaceMatch			*FaceMatch  			`json:"face_match,omitempty"`
+	FaceDetails			*FaceDetails			`json:"face_details,omitempty"`
+	DocumentDetails		*DocumentDetails		`json:"document_details,omitempty"`
+	Liveness			*Liveness				`json:"liveness,omitempty"`
+	AnalyzedAt			string					`json:"analyzed_at,omitempty"`
+}
+
+// BanklyDocumentAnalysisResponse ...
+type BanklyDocumentAnalysisResponse struct {
+	Token				string					`json:"token,omitempty"`
+	Status				DocumentAnalysisStatus	`json:"status,omitempty"`
+	DocumentType		string					`json:"documentType,omitempty"`
+	DocumentSide		string					`json:"documentSide,omitempty"`
+	FaceMatch			*FaceMatch  			`json:"faceMatch,omitempty"`
+	FaceDetails			*FaceDetails			`json:"faceDetails,omitempty"`
+	DocumentDetails		*DocumentDetails		`json:"documentDetails,omitempty"`
+	Liveness			*Liveness				`json:"liveness,omitempty"`
+	AnalyzedAt			string					`json:"analyzedAt,omitempty"`
+}
+
+type FaceMatch struct {
+	Status				string 				`json:"status,omitempty"`
+	Similarity			int 				`json:"similarity,omitempty"`
+	Confidence			int 				`json:"confidence,omitempty"`
+}
+
+type FaceDetails struct {
+	Status				string 			  	`json:"status,omitempty"`
+	Confidence			float32 			`json:"confidence,omitempty"`
+	AgeRange			*AgeRange   	  	`json:"ageRange,omitempty"`
+	Gender				*Gender     	  	`json:"gender,omitempty"`
+	Sunglasses			*Sunglasses       	`json:"sunglasses,omitempty"`
+	EyesOpen			*EyesOpen     	  	`json:"eyesOpen,omitempty"`
+	Emotions			[]*Emotions       	`json:"emotions,omitempty"`
+}
+
+type AgeRange struct {
+	Low		int		`json:"low,omitempty"`
+	High	int		`json:"high,omitempty"`
+}
+
+type Gender struct {
+	Value			string 		`json:"value,omitempty"`
+	Confidence		float32 	`json:"confidence,omitempty"`
+}
+
+type Sunglasses struct {
+	Value			bool 		`json:"value,omitempty"`
+	Confidence		float32 	`json:"confidence,omitempty"`
+}
+
+type EyesOpen struct {
+	Value			bool 		`json:"value,omitempty"`
+	Confidence		float32 	`json:"confidence,omitempty"`
+}
+
+type Emotions struct {
+	Value			string 		`json:"value,omitempty"`
+	Confidence		float32 	`json:"confidence,omitempty"`
+}
+
+type DocumentDetails struct {
+	Status								string 		`json:"status,omitempty"`
+	IdentifiedDocumentType				string 		`json:"identifiedDocumentType,omitempty"`
+	IdNumber							string 		`json:"idNumber,omitempty"`
+	CpfNumber							string 		`json:"cpfNumber,omitempty"`
+	BirthDate							string 		`json:"birthDate,omitempty"`
+	FatherName							string 		`json:"fatherName,omitempty"`
+	MotherName							string 		`json:"motherName,omitempty"`
+	RegisterName						string 		`json:"registerName,omitempty"`
+	ValidDate							string 		`json:"validDate,omitempty"`
+	DriveLicenseCategory				string 		`json:"driveLicenseCategory,omitempty"`
+	DriveLicenseNumber					string 		`json:"driveLicenseNumber,omitempty"`
+	DriveLicenseFirstQualifyingDate		string 		`json:"driveLicenseFirstQualifyingDate,omitempty"`
+	FederativeUnit						string 		`json:"federativeUnit,omitempty"`
+	IssuedBy							string 		`json:"issuedBy,omitempty"`
+	IssuePlace							string 		`json:"issuePlace,omitempty"`
+	IssueDate							string 		`json:"issueDate,omitempty"`
+}
+
+type Liveness struct {
+	Status			string 		`json:"status,omitempty"`
+	Confidence		float32 	`json:"confidence,omitempty"`
+}
+
+// ParseDocumentAnalysisResponse ....
+func ParseDocumentAnalysisResponse(documentNumber string, banklyResponse *BanklyDocumentAnalysisResponse) *DocumentAnalysisResponse {
+	if banklyResponse == nil {
+		return nil
+	}
+	return &DocumentAnalysisResponse {
+		DocumentNumber : documentNumber,
+		Token : banklyResponse.Token,
+		Status : banklyResponse.Status,
+		DocumentType : banklyResponse.DocumentType,
+		DocumentSide : banklyResponse.DocumentSide,
+		FaceMatch : banklyResponse.FaceMatch,
+		FaceDetails : banklyResponse.FaceDetails,
+		DocumentDetails : banklyResponse.DocumentDetails,
+		Liveness : banklyResponse.Liveness,
+		AnalyzedAt : banklyResponse.AnalyzedAt,
+	}
 }

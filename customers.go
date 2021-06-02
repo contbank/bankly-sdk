@@ -156,7 +156,7 @@ func (c *Customers) UpdateRegistration(document string, customerUpdateRequest Cu
 
 	method := "PUT"
 	customerResponse, err := c.FindRegistration(document)
-	if customerResponse.Status == string(CustomerStatusApproved) {
+	if customerResponse.Status == CustomerStatusApproved {
 		method = "PATCH"
 	}
 
@@ -191,6 +191,8 @@ func (c *Customers) UpdateRegistration(document string, customerUpdateRequest Cu
 	respBody, _ := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode == http.StatusAccepted {
 		return nil
+	} else if resp.StatusCode == http.StatusMethodNotAllowed {
+		return ErrMethodNotAllowed
 	}
 
 	var bodyErr *ErrorResponse
