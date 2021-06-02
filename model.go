@@ -123,7 +123,7 @@ type Account struct {
 type Payer struct {
 	Name      string   `validate:"required" json:"name,omitempty"`
 	TradeName string   `validate:"required" json:"tradeName,omitempty"`
-	Document  string   `validate:"required,cpfcnpj" json:"document,omitempty"`
+	Document  string   `validate:"required,cnpjcpf" json:"document,omitempty"`
 	Address   *Address `validate:"required" json:"address,omitempty"`
 }
 
@@ -344,7 +344,7 @@ const (
 //BoletoRequest ...
 type BoletoRequest struct {
 	Alias       *string    `json:"alias,omitempty"`
-	Document    string     `validate:"required,cpfcnpj" json:"documentNumber,omitempty"`
+	Document    string     `validate:"required,cnpjcpf" json:"documentNumber,omitempty"`
 	Amount      float64    `validate:"required" json:"amount,omitempty"`
 	DueDate     time.Time  `validate:"required" json:"dueDate,omitempty"`
 	EmissionFee bool       `json:"emissionFee,omitempty"`
@@ -449,11 +449,10 @@ type FilterBankListRequest struct {
 
 // BankData ...
 type BankData struct {
-	ISPB	string  `json:"ispb,omitempty"`
-	Name 	string  `json:"name,omitempty"`
-	Code	string	`json:"compe,omitempty"`
+	ISPB string `json:"ispb,omitempty"`
+	Name string `json:"name,omitempty"`
+	Code string `json:"compe,omitempty"`
 }
-
 
 //BankDataResponse ...
 type BankDataResponse struct {
