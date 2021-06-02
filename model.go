@@ -27,10 +27,6 @@ const (
 const (
 	// InternalBankCode ...
 	InternalBankCode string = "332"
-	// DocumentAnalysisBucket
-	DocumentAnalysisBucket string = "temp.documentanalysis"
-	// DocumentAnalysisTempDir
-	DocumentAnalysisTempDir string = "temp_document_analysis_dir"
 )
 
 type DocumentType string

@@ -49,10 +49,6 @@ var (
 	ErrSendDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "send document analysis error")
 	// ErrGetDocumentAnalysis ...
 	ErrGetDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "get document analysis error")
-	// ErrDownloadDocumentAnalysis ...
-	ErrDownloadDocumentAnalysis = grok.NewError(http.StatusInternalServerError, "error downloading document")
-	// ErrInvalidFile ...
-	ErrInvalidFile = grok.NewError(http.StatusInternalServerError, "invalid file")
 )
 
 type BanklyError ErrorModel
