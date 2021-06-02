@@ -17,6 +17,8 @@ const (
 	BoletosPath = "bankslip"
 	//BanksPath ...
 	BanksPath = "banklist"
+	//BankStatementsPath ...
+	BankStatementsPath = "events"
 )
 
 const (
@@ -123,7 +125,7 @@ type Account struct {
 type Payer struct {
 	Name      string   `validate:"required" json:"name,omitempty"`
 	TradeName string   `validate:"required" json:"tradeName,omitempty"`
-	Document  string   `validate:"required,cpfcnpj" json:"document,omitempty"`
+	Document  string   `validate:"required,cnpjcpf" json:"document,omitempty"`
 	Address   *Address `validate:"required" json:"address,omitempty"`
 }
 
@@ -344,7 +346,7 @@ const (
 //BoletoRequest ...
 type BoletoRequest struct {
 	Alias       *string    `json:"alias,omitempty"`
-	Document    string     `validate:"required,cpfcnpj" json:"documentNumber,omitempty"`
+	Document    string     `validate:"required,cnpjcpf" json:"documentNumber,omitempty"`
 	Amount      float64    `validate:"required" json:"amount,omitempty"`
 	DueDate     time.Time  `validate:"required" json:"dueDate,omitempty"`
 	EmissionFee bool       `json:"emissionFee,omitempty"`
@@ -449,11 +451,10 @@ type FilterBankListRequest struct {
 
 // BankData ...
 type BankData struct {
-	ISPB	string  `json:"ispb,omitempty"`
-	Name 	string  `json:"name,omitempty"`
-	Code	string	`json:"compe,omitempty"`
+	ISPB string `json:"ispb,omitempty"`
+	Name string `json:"name,omitempty"`
+	Code string `json:"compe,omitempty"`
 }
-
 
 //BankDataResponse ...
 type BankDataResponse struct {
@@ -503,4 +504,30 @@ type RecipientResponse struct {
 	Document string           `json:"document,omitempty"`
 	Name     string           `json:"name,omitempty"`
 	Account  *AccountResponse `json:"account,omitempty"`
+}
+
+// Statement ...
+type Statement struct {
+	AggregateID    string                 `json:"aggregateId,omitempty"`
+	Type           string                 `json:"type,omitempty"`
+	Category       string                 `json:"category,omitempty"`
+	DocumentNumber string                 `json:"documentNumber,omitempty"`
+	Branch         string                 `json:"bankBranch,omitempty"`
+	Account        string                 `json:"bankAccount,omitempty"`
+	Amount         float64                `json:"amount,omitempty"`
+	Name           string                 `json:"name,omitempty"`
+	Timestamp      time.Time              `json:"timestamp,omitempty"`
+	Data           map[string]interface{} `json:"data,omitempty"`
+}
+
+// FilterBankStatementRequest ...
+type FilterBankStatementRequest struct {
+	Branch         string `validate:"required"`
+	Account        string `validate:"required"`
+	IncludeDetails bool
+	CardProxy      []string
+	BeginDateTime  *time.Time
+	EndDateTime    *time.Time
+	Page           int64 `validate:"required"`
+	PageSize       int64 `validate:"required"`
 }
