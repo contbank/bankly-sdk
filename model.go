@@ -1,6 +1,7 @@
 package bankly
 
 import (
+	"os"
 	"time"
 )
 
@@ -545,9 +546,10 @@ type RecipientResponse struct {
 
 // DocumentAnalysisRequest ...
 type DocumentAnalysisRequest struct {
-	DocumentType		DocumentType		`json:"documentType,omitempty"`
-	DocumentSide		DocumentSide		`json:"documentSide,omitempty"`
-	URLImage			string				`json:"image,omitempty"`
+	Document			string				`validate:"required" json:"document,omitempty"`
+	DocumentType		DocumentType		`validate:"required" json:"document_type,omitempty"`
+	DocumentSide		DocumentSide		`validate:"required" json:"document_side,omitempty"`
+	ImageFile			os.File				`validate:"required" json:"image_file,omitempty"`
 }
 
 // DocumentAnalysisRequestedResponse ...
@@ -558,6 +560,19 @@ type DocumentAnalysisRequestedResponse struct {
 // DocumentAnalysisResponse ...
 type DocumentAnalysisResponse struct {
 	DocumentNumber		string					`json:"document_number,omitempty"`
+	Token				string					`json:"token,omitempty"`
+	Status				DocumentAnalysisStatus	`json:"status,omitempty"`
+	DocumentType		string					`json:"document_type,omitempty"`
+	DocumentSide		string					`json:"document_side,omitempty"`
+	FaceMatch			*FaceMatch  			`json:"face_match,omitempty"`
+	FaceDetails			*FaceDetails			`json:"face_details,omitempty"`
+	DocumentDetails		*DocumentDetails		`json:"document_details,omitempty"`
+	Liveness			*Liveness				`json:"liveness,omitempty"`
+	AnalyzedAt			string					`json:"analyzed_at,omitempty"`
+}
+
+// BanklyDocumentAnalysisResponse ...
+type BanklyDocumentAnalysisResponse struct {
 	Token				string					`json:"token,omitempty"`
 	Status				DocumentAnalysisStatus	`json:"status,omitempty"`
 	DocumentType		string					`json:"documentType,omitempty"`
@@ -632,4 +647,22 @@ type DocumentDetails struct {
 type Liveness struct {
 	Status			string 		`json:"status,omitempty"`
 	Confidence		float32 	`json:"confidence,omitempty"`
+}
+
+func ParseDocumentAnalysisResponse(documentNumber string, banklyResponse *BanklyDocumentAnalysisResponse) *DocumentAnalysisResponse {
+	if banklyResponse == nil {
+		return nil
+	}
+	return &DocumentAnalysisResponse {
+		DocumentNumber : documentNumber,
+		Token : banklyResponse.Token,
+		Status : banklyResponse.Status,
+		DocumentType : banklyResponse.DocumentType,
+		DocumentSide : banklyResponse.DocumentSide,
+		FaceMatch : banklyResponse.FaceMatch,
+		FaceDetails : banklyResponse.FaceDetails,
+		DocumentDetails : banklyResponse.DocumentDetails,
+		Liveness : banklyResponse.Liveness,
+		AnalyzedAt : banklyResponse.AnalyzedAt,
+	}
 }
