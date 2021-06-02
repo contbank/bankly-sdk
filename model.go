@@ -113,6 +113,13 @@ type Address struct {
 	Country        string  `validate:"required" json:"country,omitempty"`
 }
 
+type BoletoAddress struct {
+	AddressLine string `validate:"required" json:"addressLine,omitempty"`
+	ZipCode     string `validate:"required" json:"zipCode,omitempty"`
+	State       string `validate:"required" json:"state,omitempty"`
+	City        string `validate:"required" json:"city,omitempty"`
+}
+
 // Account ...
 type Account struct {
 	Number string `validate:"required" json:"number,omitempty"`
@@ -121,10 +128,10 @@ type Account struct {
 
 // Payer ...
 type Payer struct {
-	Name      string   `validate:"required" json:"name,omitempty"`
-	TradeName string   `validate:"required" json:"tradeName,omitempty"`
-	Document  string   `validate:"required,cnpjcpf" json:"document,omitempty"`
-	Address   *Address `validate:"required" json:"address,omitempty"`
+	Name      string         `validate:"required" json:"name,omitempty"`
+	TradeName string         `validate:"required" json:"tradeName,omitempty"`
+	Document  string         `validate:"required,cnpjcpf" json:"document,omitempty"`
+	Address   *BoletoAddress `validate:"required" json:"address,omitempty"`
 }
 
 // ErrorResponse ...
