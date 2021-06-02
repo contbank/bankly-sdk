@@ -41,7 +41,7 @@ func NewDocumentAnalysis(session Session) *DocumentAnalysis {
 func (c *DocumentAnalysis) SendDocumentAnalysis(request DocumentAnalysisRequest) (*DocumentAnalysisResponse, error) {
 	err := grok.Validator.Struct(request)
 	if err != nil {
-		return nil, err
+		return nil, grok.FromValidationErros(err)
 	}
 
 	endpoint, err := c.getDocumentAnalysisAPIEndpoint(request.Document, nil, nil)
