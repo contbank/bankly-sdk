@@ -196,6 +196,7 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysisError_INVALID_DOCUME
 
 	s.assert.Error(errDocAnalysis)
 	s.assert.Nil(respDocAnalysis)
+	s.assert.Contains(errDocAnalysis.Error(), "not found")
 }
 
 func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysisError_INVALID_TOKEN() {
@@ -214,6 +215,7 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysisError_INVALID_TOKEN(
 
 	s.assert.Error(errDocAnalysis)
 	s.assert.Nil(respDocAnalysis)
+	s.assert.Contains(errDocAnalysis.Error(), "not found")
 }
 
 func (s *DocumentAnalysisTestSuite) createDocumentAnalysis(documentNumber string,
