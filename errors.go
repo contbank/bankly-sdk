@@ -39,6 +39,16 @@ var (
 	ErrOutOfServicePeriod = grok.NewError(http.StatusBadRequest, "out of service period")
 	// ErrCashoutLimitNotEnough ...
 	ErrCashoutLimitNotEnough = grok.NewError(http.StatusBadRequest, "cashout limit not enough")
+	// ErrInvalidParameter
+	ErrInvalidParameter = grok.NewError(http.StatusBadRequest, "invalid parameter")
+	// ErrInvalidAPIEndpoint
+	ErrInvalidAPIEndpoint = grok.NewError(http.StatusBadRequest, "invalid api endpoint")
+	// ErrMethodNotAllowed ...
+	ErrMethodNotAllowed = grok.NewError(http.StatusMethodNotAllowed, "method not allowed")
+	// ErrSendDocumentAnalysis ...
+	ErrSendDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "send document analysis error")
+	// ErrGetDocumentAnalysis ...
+	ErrGetDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "get document analysis error")
 )
 
 // BanklyError ...
@@ -74,6 +84,10 @@ var errorList = []Error{
 	{
 		banklyError: BanklyError{Code: "HOLDER_ALREADY_HAVE_A_ACCOUNT"},
 		grokError:   ErrHolderAlreadyHaveAAccount,
+	},
+	{
+		banklyError: BanklyError{Code: "INVALID_PARAMETER"},
+		grokError:   ErrInvalidParameter,
 	},
 }
 

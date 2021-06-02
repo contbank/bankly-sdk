@@ -140,7 +140,7 @@ func (s *CustomersTestSuite) TestCreateAndFindAccount() {
 
 func (s *CustomersTestSuite) TestUpdateRegistration() {
 
-	// TODO O PATCH da Customers não está funcionando na Bankly. Aguardando retorno deles para ativar este teste
+	// TODO O PATCH da Customers não está funcionando na Bankly. Aguardando retorno deles para ativar este teste.
 	s.T().Skip("O PATCH da Customers não está funcionando na Bankly. Aguardando retorno deles para ativar este teste.")
 
 	document := grok.GeneratorCPF()
