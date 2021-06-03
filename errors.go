@@ -39,9 +39,9 @@ var (
 	ErrOutOfServicePeriod = grok.NewError(http.StatusBadRequest, "out of service period")
 	// ErrCashoutLimitNotEnough ...
 	ErrCashoutLimitNotEnough = grok.NewError(http.StatusBadRequest, "cashout limit not enough")
-	// ErrInvalidParameter
+	// ErrInvalidParameter ...
 	ErrInvalidParameter = grok.NewError(http.StatusBadRequest, "invalid parameter")
-	// ErrInvalidAPIEndpoint
+	// ErrInvalidAPIEndpoint ...
 	ErrInvalidAPIEndpoint = grok.NewError(http.StatusBadRequest, "invalid api endpoint")
 	// ErrMethodNotAllowed ...
 	ErrMethodNotAllowed = grok.NewError(http.StatusMethodNotAllowed, "method not allowed")
@@ -49,6 +49,10 @@ var (
 	ErrSendDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "send document analysis error")
 	// ErrGetDocumentAnalysis ...
 	ErrGetDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "get document analysis error")
+	// ErrScouterQuantity ...
+	ErrScouterQuantity = grok.NewError(http.StatusUnprocessableEntity, "max boleto amount per day reached")
+	// ErrBoletoInvalidStatus ...
+	ErrBoletoInvalidStatus = grok.NewError(http.StatusUnprocessableEntity, "boleto was in an invalid status")
 )
 
 // BanklyError ...
@@ -61,6 +65,14 @@ type Error struct {
 }
 
 var errorList = []Error{
+	{
+		banklyError: BanklyError{Code: "SCOUTER_QUANTITY"},
+		grokError:   ErrScouterQuantity,
+	},
+	{
+		banklyError: BanklyError{Code: "BANKSLIP_SETTLEMENT_STATUS_VALIDATE"},
+		grokError:   ErrBoletoInvalidStatus,
+	},
 	{
 		banklyError: BanklyError{Code: "INVALID_PERSONAL_BUSINESS_SIZE"},
 		grokError:   ErrInvalidBusinessSize,
