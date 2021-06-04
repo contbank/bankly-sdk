@@ -1,6 +1,7 @@
 package bankly_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/contbank/bankly-sdk"
@@ -24,8 +25,8 @@ func (s *PaymentTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 
 	session, err := bankly.NewSession(bankly.Config{
-		ClientID:     bankly.String("0a9f5c95-4b73-44b5-b3dd-03569c570630"),
-		ClientSecret: bankly.String("V$^YzR$sI#Qhh4b!e0cHu6B1*r#*vkVj"),
+		ClientID:     bankly.String(os.Getenv("BANKLY_CLIENT_ID")),
+		ClientSecret: bankly.String(os.Getenv("BANKLY_CLIENT_SECRET")),
 	})
 
 	s.assert.NoError(err)
@@ -34,32 +35,32 @@ func (s *PaymentTestSuite) SetupTest() {
 	s.payment = bankly.NewPayment(*s.session)
 }
 
-func (s *PaymentTestSuite) TestValidatePayment() {
-	r, err := s.payment.ValidatePayment(&bankly.ValidatePaymentRequest{
-		Code: "23793380296096975582095006333306584750000002400",
-	})
+// func (s *PaymentTestSuite) TestValidatePayment() {
+// 	r, err := s.payment.ValidatePayment(&bankly.ValidatePaymentRequest{
+// 		Code: "23793380296096975582095006333306584750000002400",
+// 	})
 
-	s.assert.NoError(err)
-	s.assert.NotNil(r)
-}
+// 	s.assert.NoError(err)
+// 	s.assert.NotNil(r)
+// }
 
-func (s *PaymentTestSuite) TestConfirmPayment() {
-	r, err := s.payment.ValidatePayment(&bankly.ValidatePaymentRequest{
-		Code: "23793380296096975582095006333306584750000002400",
-	})
+// func (s *PaymentTestSuite) TestConfirmPayment() {
+// 	r, err := s.payment.ValidatePayment(&bankly.ValidatePaymentRequest{
+// 		Code: "23793380296096975582095006333306584750000002400",
+// 	})
 
-	s.assert.NoError(err)
-	s.assert.NotNil(r)
+// 	s.assert.NoError(err)
+// 	s.assert.NotNil(r)
 
-	description := "test payment"
-	r2, err := s.payment.ConfirmPayment(&bankly.ConfirmPaymentRequest{
-		ID:          r.ID,
-		Amount:      r.Amount,
-		Description: &description,
-		BankBranch:  "0001",
-		BankAccount: "184152",
-	})
+// 	description := "test payment"
+// 	r2, err := s.payment.ConfirmPayment(&bankly.ConfirmPaymentRequest{
+// 		ID:          r.ID,
+// 		Amount:      r.Amount,
+// 		Description: &description,
+// 		BankBranch:  "0001",
+// 		BankAccount: "184152",
+// 	})
 
-	s.assert.NoError(err)
-	s.assert.NotNil(r2)
-}
+// 	s.assert.NoError(err)
+// 	s.assert.NotNil(r2)
+// }
