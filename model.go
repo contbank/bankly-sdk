@@ -175,7 +175,7 @@ type Account struct {
 // Payer ...
 type Payer struct {
 	Name      string         `validate:"required" json:"name,omitempty"`
-	TradeName string         `validate:"required" json:"tradeName,omitempty"`
+	TradeName string         `json:"tradeName,omitempty"`
 	Document  string         `validate:"required,cnpjcpf" json:"document,omitempty"`
 	Address   *BoletoAddress `validate:"required" json:"address,omitempty"`
 }
