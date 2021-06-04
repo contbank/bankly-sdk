@@ -35,7 +35,7 @@ func (s *BalanceTestSuite) SetupTest() {
 	s.balance = bankly.NewBalance(*s.session)
 }
 
-func (s *BalanceTestSuite) TestFindAccounts() {
+func (s *BalanceTestSuite) TestBalance() {
 	balance, err := s.balance.Balance("184152")
 
 	s.assert.NoError(err)

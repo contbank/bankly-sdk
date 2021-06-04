@@ -6,6 +6,8 @@ import (
 	"github.com/contbank/grok"
 )
 
+const ScouterQuantityCode = "SCOUTER_QUANTITY"
+
 var (
 	// ErrEntryNotFound ...
 	ErrEntryNotFound = grok.NewError(http.StatusNotFound, "not found")
@@ -39,9 +41,9 @@ var (
 	ErrOutOfServicePeriod = grok.NewError(http.StatusBadRequest, "out of service period")
 	// ErrCashoutLimitNotEnough ...
 	ErrCashoutLimitNotEnough = grok.NewError(http.StatusBadRequest, "cashout limit not enough")
-	// ErrInvalidParameter
+	// ErrInvalidParameter ...
 	ErrInvalidParameter = grok.NewError(http.StatusBadRequest, "invalid parameter")
-	// ErrInvalidAPIEndpoint
+	// ErrInvalidAPIEndpoint ...
 	ErrInvalidAPIEndpoint = grok.NewError(http.StatusBadRequest, "invalid api endpoint")
 	// ErrMethodNotAllowed ...
 	ErrMethodNotAllowed = grok.NewError(http.StatusMethodNotAllowed, "method not allowed")
@@ -49,6 +51,12 @@ var (
 	ErrSendDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "send document analysis error")
 	// ErrGetDocumentAnalysis ...
 	ErrGetDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "get document analysis error")
+	// ErrScouterQuantity ...
+	ErrScouterQuantity = grok.NewError(http.StatusUnprocessableEntity, "max boleto amount per day reached")
+	// ErrBoletoInvalidStatus ...
+	ErrBoletoInvalidStatus = grok.NewError(http.StatusUnprocessableEntity, "boleto was in an invalid status")
+	// ErrBarcodeNotFound ...
+	ErrBarcodeNotFound = grok.NewError(http.StatusNotFound, "bar code not found")
 )
 
 // BanklyError ...
@@ -88,6 +96,18 @@ var errorList = []Error{
 	{
 		banklyError: BanklyError{Code: "INVALID_PARAMETER"},
 		grokError:   ErrInvalidParameter,
+	},
+	{
+		banklyError: BanklyError{Code: ScouterQuantityCode},
+		grokError:   ErrScouterQuantity,
+	},
+	{
+		banklyError: BanklyError{Code: "BANKSLIP_SETTLEMENT_STATUS_VALIDATE"},
+		grokError:   ErrBoletoInvalidStatus,
+	},
+	{
+		banklyError: BanklyError{Code: "BAR_CODE_NOT_FOUND"},
+		grokError:   ErrBarcodeNotFound,
 	},
 }
 

@@ -18,6 +18,8 @@ const (
 	BusinessPath = "business"
 	// BoletosPath ...
 	BoletosPath = "bankslip"
+	// PaymentPath ...
+	PaymentPath = "bill-payment"
 	// BanksPath ...
 	BanksPath = "banklist"
 	//BankStatementsPath ...
@@ -186,8 +188,14 @@ type ErrorResponse struct {
 
 //BoletoErrorResponse ...
 type BoletoErrorResponse struct {
-	Code    string  `json:"code,omitempty"`
-	Message *string `json:"message,omitempty"`
+	Code    string `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+//PaymentErrorResponse ...
+type PaymentErrorResponse struct {
+	Code    string `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 // TransferErrorResponse ...
@@ -484,8 +492,8 @@ type CancelBoletoRequest struct {
 	Account            *Account `validate:"required" json:"account,omitempty"`
 }
 
-//PayBoletoRequest ...
-type PayBoletoRequest struct {
+//SimulatePaymentRequest ...
+type SimulatePaymentRequest struct {
 	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
 	Account            *Account `validate:"required" json:"account,omitempty"`
 }
@@ -685,6 +693,64 @@ type DocumentDetails struct {
 type Liveness struct {
 	Status     string  `json:"status,omitempty"`
 	Confidence float32 `json:"confidence,omitempty"`
+}
+
+// ValidatePaymentRequest ...
+type ValidatePaymentRequest struct {
+	Code string `validate:"required" json:"code,omitempty"`
+}
+
+// PaymentPayer ...
+type PaymentPayer struct {
+	Name           string `json:"name,omitempty"`
+	DocumentNumber string `json:"documentNumber,omitempty"`
+}
+
+// BusinessHours ...
+type BusinessHours struct {
+	Start time.Time `json:"start,omitempty"`
+	End   time.Time `json:"end,omitempty"`
+}
+
+// Charges ...
+type Charges struct {
+	InterestAmountCalculated float64 `json:"interestAmountCalculated,omitempty"`
+	FineAmountCalculated     float64 `json:"fineAmountCalculated,omitempty"`
+	DiscountAmount           float64 `json:"discountAmount,omitempty"`
+}
+
+// ValidatePaymentResponse ...
+type ValidatePaymentResponse struct {
+	ID                string         `json:"id,omitempty"`
+	Assignor          string         `json:"assignor,omitempty"`
+	Code              string         `json:"code,omitempty"`
+	Digitable         string         `json:"digitable,omitempty"`
+	Amount            float64        `json:"amount,omitempty"`
+	OriginalAmount    float64        `json:"originalAmount,omitempty"`
+	MaxAmount         float64        `json:"maxAmount,omitempty"`
+	NextSettle        bool           `json:"nextSettle,omitempty"`
+	AllowChangeAmount bool           `json:"allowChangeAmount,omitempty"`
+	DueDate           time.Time      `json:"dueDate,omitempty"`
+	SettleDate        time.Time      `json:"settleDate,omitempty"`
+	Payer             *PaymentPayer  `json:"payer,omitempty"`
+	Recipient         *PaymentPayer  `json:"recipient,omitempty"`
+	BusinessHours     *BusinessHours `json:"businessHours,omitempty"`
+	Charges           *Charges       `json:"charges,omitempty"`
+}
+
+// ConfirmPaymentRequest ...
+type ConfirmPaymentRequest struct {
+	ID          string  `validate:"required" json:"id,omitempty"`
+	Amount      float64 `validate:"required" json:"amount,omitempty"`
+	Description *string `json:"description,omitempty"`
+	BankBranch  string  `validate:"required" json:"bankBranch,omitempty"`
+	BankAccount string  `validate:"required" json:"bankAccount,omitempty"`
+}
+
+// ConfirmPaymentResponse ...
+type ConfirmPaymentResponse struct {
+	AuthenticationCode string    `json:"authenticationCode,omitempty"`
+	SettledDate        time.Time `json:"settledDate,omitempty"`
 }
 
 // ParseDocumentAnalysisResponse ....

@@ -104,13 +104,14 @@ func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
 	if len(bodyErr) > 0 {
 		err := bodyErr[0]
 
-		if err.Code == ScouterQuantityKey {
+		if err.Code == ScouterQuantityCode {
 			return nil, ErrScouterQuantity
 		}
 
-		if err.Message != nil {
-			return nil, errors.New(*err.Message)
-		}
+		return nil, FindError(ErrorModel{
+			Code:     err.Code,
+			Messages: []string{err.Message},
+		})
 	}
 
 	return nil, errors.New("error create boletos")
@@ -419,8 +420,8 @@ func (b *Boletos) CancelBoleto(model *CancelBoletoRequest) error {
 	return errors.New("error cancel boleto")
 }
 
-//PayBoleto simulates a boleto beeing payed
-func (b *Boletos) PayBoleto(model *PayBoletoRequest) error {
+//SimulatePayment ...
+func (b *Boletos) SimulatePayment(model *SimulatePaymentRequest) error {
 	err := grok.Validator.Struct(model)
 
 	if err != nil {
@@ -484,13 +485,10 @@ func (b *Boletos) PayBoleto(model *PayBoletoRequest) error {
 	if len(bodyErr) > 0 {
 		err := bodyErr[0]
 
-		if err.Code == BoletoInvalidStatusKey {
-			return ErrBoletoInvalidStatus
-		}
-
-		if err.Message != nil {
-			return errors.New(*err.Message)
-		}
+		return FindError(ErrorModel{
+			Code:     err.Code,
+			Messages: []string{err.Message},
+		})
 	}
 
 	return errors.New("error pay boleto")
