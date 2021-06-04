@@ -188,8 +188,14 @@ type ErrorResponse struct {
 
 //BoletoErrorResponse ...
 type BoletoErrorResponse struct {
-	Code    string  `json:"code,omitempty"`
-	Message *string `json:"message,omitempty"`
+	Code    string `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+//PaymentErrorResponse ...
+type PaymentErrorResponse struct {
+	Code    string `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 // TransferErrorResponse ...
@@ -743,8 +749,8 @@ type ConfirmPaymentRequest struct {
 
 // ConfirmPaymentResponse ...
 type ConfirmPaymentResponse struct {
-	AuthenticationCode string    `json:"AuthenticationCode,omitempty"`
-	SettledDate        time.Time `json:"SettledDate,omitempty"`
+	AuthenticationCode string    `json:"authenticationCode,omitempty"`
+	SettledDate        time.Time `json:"settledDate,omitempty"`
 }
 
 // ParseDocumentAnalysisResponse ....

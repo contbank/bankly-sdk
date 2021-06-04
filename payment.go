@@ -90,15 +90,18 @@ func (p *Payment) ValidatePayment(model *ValidatePaymentRequest) (*ValidatePayme
 		return response, nil
 	}
 
-	var bodyErr *ErrorResponse
+	var bodyErr *PaymentErrorResponse
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
-		return nil, FindError(bodyErr.Errors[0])
+	if bodyErr.Code != "" {
+		return nil, FindError(ErrorModel{
+			Code:     bodyErr.Code,
+			Messages: []string{bodyErr.Message},
+		})
 	}
 
 	return nil, errors.New("error validate payment")
@@ -162,17 +165,19 @@ func (p *Payment) ConfirmPayment(model *ConfirmPaymentRequest) (*ConfirmPaymentR
 
 		return response, nil
 	}
-
-	var bodyErr *ErrorResponse
+	var bodyErr *PaymentErrorResponse
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
-		return nil, FindError(bodyErr.Errors[0])
+	if bodyErr.Code != "" {
+		return nil, FindError(ErrorModel{
+			Code:     bodyErr.Code,
+			Messages: []string{bodyErr.Message},
+		})
 	}
 
-	return nil, errors.New("error validate payment")
+	return nil, errors.New("error confirm payment")
 }

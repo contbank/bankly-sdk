@@ -104,9 +104,13 @@ func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
 	if len(bodyErr) > 0 {
 		err := bodyErr[0]
 
+		if err.Code == ScouterQuantityCode {
+			return nil, ErrScouterQuantity
+		}
+
 		return nil, FindError(ErrorModel{
 			Code:     err.Code,
-			Messages: []string{*err.Message},
+			Messages: []string{err.Message},
 		})
 	}
 
@@ -483,7 +487,7 @@ func (b *Boletos) SimulatePayment(model *SimulatePaymentRequest) error {
 
 		return FindError(ErrorModel{
 			Code:     err.Code,
-			Messages: []string{*err.Message},
+			Messages: []string{err.Message},
 		})
 	}
 

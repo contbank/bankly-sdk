@@ -6,6 +6,8 @@ import (
 	"github.com/contbank/grok"
 )
 
+const ScouterQuantityCode = "SCOUTER_QUANTITY"
+
 var (
 	// ErrEntryNotFound ...
 	ErrEntryNotFound = grok.NewError(http.StatusNotFound, "not found")
@@ -53,6 +55,8 @@ var (
 	ErrScouterQuantity = grok.NewError(http.StatusUnprocessableEntity, "max boleto amount per day reached")
 	// ErrBoletoInvalidStatus ...
 	ErrBoletoInvalidStatus = grok.NewError(http.StatusUnprocessableEntity, "boleto was in an invalid status")
+	// ErrBarcodeNotFound ...
+	ErrBarcodeNotFound = grok.NewError(http.StatusNotFound, "bar code not found")
 )
 
 // BanklyError ...
@@ -65,14 +69,6 @@ type Error struct {
 }
 
 var errorList = []Error{
-	{
-		banklyError: BanklyError{Code: "SCOUTER_QUANTITY"},
-		grokError:   ErrScouterQuantity,
-	},
-	{
-		banklyError: BanklyError{Code: "BANKSLIP_SETTLEMENT_STATUS_VALIDATE"},
-		grokError:   ErrBoletoInvalidStatus,
-	},
 	{
 		banklyError: BanklyError{Code: "INVALID_PERSONAL_BUSINESS_SIZE"},
 		grokError:   ErrInvalidBusinessSize,
@@ -100,6 +96,18 @@ var errorList = []Error{
 	{
 		banklyError: BanklyError{Code: "INVALID_PARAMETER"},
 		grokError:   ErrInvalidParameter,
+	},
+	{
+		banklyError: BanklyError{Code: ScouterQuantityCode},
+		grokError:   ErrScouterQuantity,
+	},
+	{
+		banklyError: BanklyError{Code: "BANKSLIP_SETTLEMENT_STATUS_VALIDATE"},
+		grokError:   ErrBoletoInvalidStatus,
+	},
+	{
+		banklyError: BanklyError{Code: "BAR_CODE_NOT_FOUND"},
+		grokError:   ErrBarcodeNotFound,
 	},
 }
 
