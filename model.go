@@ -753,6 +753,46 @@ type ConfirmPaymentResponse struct {
 	SettledDate        time.Time `json:"settledDate,omitempty"`
 }
 
+// FilterPaymentsRequest ...
+type FilterPaymentsRequest struct {
+	BankBranch  string `validate:"required"`
+	BankAccount string `validate:"required"`
+	PageSize    int    `validate:"required"`
+	PageToken   *string
+}
+
+// PaymentResponse ...
+type PaymentResponse struct {
+	AuthenticationCode string    `json:"authenticationCode,omitempty"`
+	Status             string    `json:"status,omitempty"`
+	Digitable          string    `json:"digitable,omitempty"`
+	Description        *string   `json:"description,omitempty"`
+	BankBranch         string    `json:"bankBranch,omitempty"`
+	BankAccount        string    `json:"bankAccount,omitempty"`
+	RecipientDocument  string    `json:"recipientDocument,omitempty"`
+	RecipientName      string    `json:"recipientName,omitempty"`
+	Amount             float64   `json:"amount,omitempty"`
+	OriginalAmount     float64   `json:"originalAmount,omitempty"`
+	Asignor            float64   `json:"asignor,omitempty"`
+	Charges            *Charges  `json:"charges,omitempty"`
+	SettleDate         time.Time `json:"settleDate,omitempty"`
+	PaymentDate        time.Time `json:"paymentDate,omitempty"`
+	ConfirmedAt        time.Time `json:"confirmedAt,omitempty"`
+}
+
+// FilterPaymentsResponse ...
+type FilterPaymentsResponse struct {
+	NextPageToken string             `json:"nextPage,omitempty"`
+	Data          []*PaymentResponse `json:"data,omitempty"`
+}
+
+// DetailPaymentRequest ...
+type DetailPaymentRequest struct {
+	BankBranch         string `validate:"required"`
+	BankAccount        string `validate:"required"`
+	AuthenticationCode string `validate:"required"`
+}
+
 // ParseDocumentAnalysisResponse ....
 func ParseDocumentAnalysisResponse(documentNumber string, banklyResponse *BanklyDocumentAnalysisResponse) *DocumentAnalysisResponse {
 	if banklyResponse == nil {
