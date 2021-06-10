@@ -35,6 +35,11 @@ func NewBusiness(session Session) *Business {
 //CreateBusiness ...
 func (c *Business) CreateBusiness(businessRequest BusinessRequest) error {
 
+	if businessRequest.BusinessType == BusinessTypeMEI {
+		businessName := businessRequest.LegalRepresentative.RegisterName + " " + businessRequest.LegalRepresentative.Document
+		businessRequest.BusinessName = businessName
+	}
+
 	endpoint, err := c.getBusinessAPIEndpoint(businessRequest.Document, false)
 	if err != nil {
 		return err
