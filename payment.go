@@ -3,7 +3,6 @@ package bankly
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -108,7 +107,7 @@ func (p *Payment) ValidatePayment(correlationID string, model *ValidatePaymentRe
 		})
 	}
 
-	return nil, errors.New("error validate payment")
+	return nil, ErrDefaultPayment
 }
 
 // ConfirmPayment ...
@@ -186,7 +185,7 @@ func (p *Payment) ConfirmPayment(correlationID string, model *ConfirmPaymentRequ
 		})
 	}
 
-	return nil, errors.New("error confirm payment")
+	return nil, ErrDefaultPayment
 }
 
 // FilterPayments ...
@@ -273,7 +272,7 @@ func (p *Payment) FilterPayments(correlationID string, model *FilterPaymentsRequ
 		})
 	}
 
-	return nil, errors.New("error confirm payment")
+	return nil, ErrDefaultPayment
 }
 
 // DetailPayment ...
@@ -357,5 +356,5 @@ func (p *Payment) DetailPayment(correlationID string, model *DetailPaymentReques
 		})
 	}
 
-	return nil, errors.New("error confirm payment")
+	return nil, ErrDefaultPayment
 }

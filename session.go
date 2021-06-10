@@ -1,7 +1,6 @@
 package bankly
 
 import (
-	"errors"
 	"os"
 	"time"
 
@@ -58,7 +57,7 @@ func NewSession(config Config) (*Session, error) {
 	}
 
 	if *config.ClientID == "" || *config.ClientSecret == "" {
-		return nil, errors.New("Invalid client id or client secret")
+		return nil, ErrClientIDClientSecret
 	}
 
 	if config.Cache == nil {

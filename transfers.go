@@ -3,7 +3,6 @@ package bankly
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -150,7 +149,7 @@ func (t *Transfers) createTransferOperation(correlationID string, model Transfer
 		return nil, FindTransferError(*bodyErr)
 	}
 
-	return nil, errors.New("error create transfer operation")
+	return nil, ErrDefaultTransfers
 }
 
 // FindTransfers ...
@@ -218,7 +217,7 @@ func (t *Transfers) FindTransfers(correlationID *string,
 		return nil, FindTransferError(*bodyErr)
 	}
 
-	return nil, errors.New("error find transfers")
+	return nil, ErrDefaultTransfers
 }
 
 // FindTransfersByCode ...
@@ -286,7 +285,7 @@ func (t *Transfers) FindTransfersByCode(correlationID *string,
 		return nil, FindTransferError(*bodyErr)
 	}
 
-	return nil, errors.New("error find transfer by code")
+	return nil, ErrDefaultTransfers
 }
 
 // getTransferAPIEndpoint

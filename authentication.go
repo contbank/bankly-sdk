@@ -2,7 +2,6 @@ package bankly
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -83,10 +82,13 @@ func (a *Authentication) login() (*AuthenticationResponse, error) {
 			return nil, err
 		}
 
-		return nil, errors.New(bodyErr.Message)
+		return nil, FindError(ErrorModel{
+			Code:     "400",
+			Messages: []string{bodyErr.Message},
+		})
 	}
 
-	return nil, errors.New("error login")
+	return nil, ErrDefaultLogin
 }
 
 //Token ...

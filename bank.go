@@ -2,7 +2,6 @@ package bankly
 
 import (
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -79,7 +78,7 @@ func (c *Bank) GetByID(id string) (*BankDataResponse, error) {
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, errors.New("not found")
+		return nil, ErrEntryNotFound
 	}
 
 	var bodyErr *ErrorResponse
@@ -91,10 +90,10 @@ func (c *Bank) GetByID(id string) (*BankDataResponse, error) {
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, errors.New(bodyErr.Errors[0].Messages[0])
+		return nil, FindError(bodyErr.Errors[0])
 	}
 
-	return nil, errors.New("error bank")
+	return nil, ErrDefaultBank
 }
 
 //List returns a list with all available financial instituitions
@@ -178,8 +177,8 @@ func (c *Bank) List(filter *FilterBankListRequest) ([]*BankDataResponse, error) 
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, errors.New(bodyErr.Errors[0].Messages[0])
+		return nil, FindError(bodyErr.Errors[0])
 	}
 
-	return nil, errors.New("error bank")
+	return nil, ErrDefaultBank
 }

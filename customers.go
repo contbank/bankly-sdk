@@ -3,7 +3,6 @@ package bankly
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -88,7 +87,7 @@ func (c *Customers) CreateRegistration(customer CustomersRequest) error {
 		return FindError(bodyErr.Errors[0])
 	}
 
-	return errors.New("error create registration")
+	return ErrDefaultCustomersAccounts
 }
 
 //FindRegistration ...
@@ -148,7 +147,7 @@ func (c *Customers) FindRegistration(document string) (*CustomersResponse, error
 		return nil, FindError(bodyErr.Errors[0])
 	}
 
-	return nil, errors.New("error find registration")
+	return nil, ErrDefaultCustomersAccounts
 }
 
 //UpdateRegistration ...
@@ -205,7 +204,7 @@ func (c *Customers) UpdateRegistration(document string, customerUpdateRequest Cu
 	if len(bodyErr.Errors) > 0 {
 		return FindError(bodyErr.Errors[0])
 	}
-	return errors.New("error updating customer")
+	return ErrDefaultCustomersAccounts
 }
 
 //CreateAccount ...
@@ -265,7 +264,7 @@ func (c *Customers) CreateAccount(document string, accountType AccountType) (*Ac
 		return nil, FindError(bodyErr.Errors[0])
 	}
 
-	return nil, errors.New("error create account")
+	return nil, ErrDefaultCustomersAccounts
 }
 
 //FindAccounts ...
@@ -324,7 +323,7 @@ func (c *Customers) FindAccounts(document string) ([]AccountResponse, error) {
 		return nil, FindError(bodyErr.Errors[0])
 	}
 
-	return nil, errors.New("error find accounts")
+	return nil, ErrDefaultCustomersAccounts
 }
 
 // getCustomerAPIEndpoint

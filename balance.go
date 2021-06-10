@@ -2,7 +2,6 @@ package bankly
 
 import (
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -92,5 +91,5 @@ func (c *Balance) Balance(account string) (*AccountResponse, error) {
 		return nil, FindError(bodyErr.Errors[0])
 	}
 
-	return nil, errors.New("error balance")
+	return nil, ErrDefaultBalance
 }
