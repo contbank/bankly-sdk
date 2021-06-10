@@ -78,7 +78,7 @@ func (c *Business) CreateBusiness(businessRequest BusinessRequest) error {
 		return err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return FindError(bodyErr.Errors[0])
 	}
 	return errors.New("error create business")
@@ -127,7 +127,7 @@ func (c *Business) UpdateBusiness(businessDocument string, businessUpdateRequest
 		return err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return FindError(bodyErr.Errors[0])
 	}
 	return errors.New("error updating business")
@@ -196,7 +196,7 @@ func (c *Business) CreateBusinessAccount(businessAccountRequest BusinessAccountR
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, FindError(bodyErr.Errors[0])
 	}
 	return nil, errors.New("error create business account")
@@ -253,7 +253,7 @@ func (c *Business) FindBusiness(document string) (*BusinessResponse, error) {
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, FindError(bodyErr.Errors[0])
 	}
 
@@ -311,7 +311,7 @@ func (c *Business) FindBusinessAccounts(document string) ([]AccountResponse, err
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, FindError(bodyErr.Errors[0])
 	}
 

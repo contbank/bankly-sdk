@@ -90,7 +90,7 @@ func (c *Bank) GetByID(id string) (*BankDataResponse, error) {
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, errors.New(bodyErr.Errors[0].Messages[0])
 	}
 
@@ -177,7 +177,7 @@ func (c *Bank) List(filter *FilterBankListRequest) ([]*BankDataResponse, error) 
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, errors.New(bodyErr.Errors[0].Messages[0])
 	}
 

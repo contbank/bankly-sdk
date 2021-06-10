@@ -88,7 +88,7 @@ func (c *Balance) Balance(account string) (*AccountResponse, error) {
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, FindError(bodyErr.Errors[0])
 	}
 

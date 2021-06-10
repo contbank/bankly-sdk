@@ -146,7 +146,7 @@ func (t *Transfers) createTransferOperation(correlationID string, model Transfer
 		return nil, err
 	}
 
-	if bodyErr.Code != "" || bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, FindTransferError(*bodyErr)
 	}
 
@@ -214,7 +214,7 @@ func (t *Transfers) FindTransfers(correlationID *string,
 		return nil, err
 	}
 
-	if bodyErr.Code != "" || bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, FindTransferError(*bodyErr)
 	}
 
@@ -282,7 +282,7 @@ func (t *Transfers) FindTransfersByCode(correlationID *string,
 		return nil, err
 	}
 
-	if bodyErr.Code != "" || bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, FindTransferError(*bodyErr)
 	}
 

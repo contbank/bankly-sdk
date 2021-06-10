@@ -181,7 +181,7 @@ func (b *Boletos) FindBoleto(model *FindBoletoRequest) (*BoletoDetailedResponse,
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, errors.New(bodyErr.Errors[0].Messages[0])
 	}
 
@@ -245,7 +245,7 @@ func (b *Boletos) FilterBoleto(date time.Time) (*FilterBoletoResponse, error) {
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, errors.New(bodyErr.Errors[0].Messages[0])
 	}
 
@@ -312,7 +312,7 @@ func (b *Boletos) FindBoletoByBarCode(barcode string) (*BoletoDetailedResponse, 
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, errors.New(bodyErr.Errors[0].Messages[0])
 	}
 
