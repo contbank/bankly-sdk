@@ -36,8 +36,8 @@ func (s *PaymentTestSuite) SetupTest() {
 }
 
 // func (s *PaymentTestSuite) TestValidatePayment() {
-// 	r, err := s.payment.ValidatePayment("", &bankly.ValidatePaymentRequest{
-// 		Code: "23793380296096975582095006333306584750000002400",
+// 	r, err := s.payment.ValidatePayment("cd38008a-dc96-4872-a1a1-96a35a153efd", &bankly.ValidatePaymentRequest{
+// 		Code: "836200000021355100403185234319172032100181841691",
 // 	})
 
 // 	s.assert.NoError(err)
@@ -45,15 +45,15 @@ func (s *PaymentTestSuite) SetupTest() {
 // }
 
 // func (s *PaymentTestSuite) TestConfirmPayment() {
-// 	r, err := s.payment.ValidatePayment("", &bankly.ValidatePaymentRequest{
-// 		Code: "23793380296096975582095006333306584750000002400",
+// 	r, err := s.payment.ValidatePayment("cd38008a-dc96-4872-a1a1-96a35a153efd", &bankly.ValidatePaymentRequest{
+// 		Code: "836200000021355100403185234319172032100181841691",
 // 	})
 
 // 	s.assert.NoError(err)
 // 	s.assert.NotNil(r)
 
 // 	description := "test payment"
-// 	r2, err := s.payment.ConfirmPayment("", &bankly.ConfirmPaymentRequest{
+// 	r2, err := s.payment.ConfirmPayment("cd38008a-dc96-4872-a1a1-96a35a153efd", &bankly.ConfirmPaymentRequest{
 // 		ID:          r.ID,
 // 		Amount:      r.Amount,
 // 		Description: &description,
@@ -80,7 +80,7 @@ func (s *PaymentTestSuite) SetupTest() {
 // 	r, err := s.payment.DetailPayment("e0f5ff37-a75c-4e57-96e6-b17d7003a0e9", &bankly.DetailPaymentRequest{
 // 		BankBranch:         "0001",
 // 		BankAccount:        "184152",
-// 		AuthenticationCode: "123123123",
+// 		AuthenticationCode: "710dd95c-7aa6-49f2-94d0-79c93a945528",
 // 	})
 
 // 	s.assert.NoError(err)
