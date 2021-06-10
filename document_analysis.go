@@ -3,12 +3,10 @@ package bankly
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
-	"net/textproto"
 	"net/url"
 	"os"
 	"path"
@@ -49,6 +47,17 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(request DocumentAnalysisRequest)
 		return nil, err
 	}
 
+/////////////////
+	_, errCopy := copyFile(request.ImageFile.Name(), "/home/joacir/Desenvolvimento/Workspaces/CONTBANK/Projetos/accounts/TESTE_ORIGEM_1.png")
+	if errCopy != nil {
+		return nil, errCopy
+	}
+////////////////
+
+	////
+	url := "http://localhost:9006/accounts/teste/imagem/upload" ////
+	endpoint = &url  ////
+
 	payload, writer, err := createSendImagePayload(request)
 	if err != nil {
 		return nil, err
@@ -85,7 +94,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(request DocumentAnalysisRequest)
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-	if resp.StatusCode == http.StatusAccepted {
+	if resp.StatusCode == http.StatusCreated {
 		var bodyResp *DocumentAnalysisRequestedResponse
 
 		err = json.Unmarshal(respBody, &bodyResp)
@@ -220,29 +229,50 @@ func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *mu
 
 	writer := multipart.NewWriter(payload)
 	file, errFile := os.Open(request.ImageFile.Name())
-	defer file.Close()
-
-	contentType, errorContentType := getFileContentType(file)
-	if errorContentType != nil {
-		logrus.
-			WithError(errorContentType).
-			Error("error document type field")
-		return nil, nil, errorContentType
-	}
-
-	h := make(textproto.MIMEHeader)
-	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
-		escapeQuotes("image"), escapeQuotes(request.ImageFile.Name())))
-	h.Set("Content-Type", contentType)
-
-	part1, errFile := writer.CreatePart(h)
-	_, errFile = io.Copy(part1, file)
 	if errFile != nil {
-		logrus.
-			WithError(errorContentType).
-			Error("error create file part")
 		return nil, nil, errFile
 	}
+	defer file.Close()
+
+	//contentType, errorContentType := getFileContentType(file)
+	//if errorContentType != nil {
+	//	logrus.
+	//		WithError(errorContentType).
+	//		Error("error document type field")
+	//	return nil, nil, errorContentType
+	//}
+	//
+	//h := make(textproto.MIMEHeader)
+	//h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
+	//	escapeQuotes("image"), escapeQuotes(request.ImageFile.Name())))
+	//h.Set("Content-Type", contentType)
+	//
+	//part1, errFile := writer.CreatePart(h)
+	//_, errFile = io.Copy(part1, file)
+	//if errFile != nil {
+	//	logrus.
+	//		WithError(errorContentType).
+	//		Error("error create file part")
+	//	return nil, nil, errFile
+	//}
+	//
+	//file.Close()
+
+	writerFormFile, errFormFile := writer.CreateFormFile("image", file.Name())
+	if errFormFile != nil {
+		logrus.
+			WithError(errFormFile).
+			Error("error")
+		return nil, nil, errFormFile
+	}
+	bFormFile, bErrorFormFile := ioutil.ReadFile(file.Name())
+	if bErrorFormFile != nil {
+		logrus.
+			WithError(bErrorFormFile).
+			Error("error")
+		return nil, nil, bErrorFormFile
+	}
+	writerFormFile.Write(bFormFile)
 
 	errTypeField := writer.WriteField("documentType", string(request.DocumentType))
 	if errTypeField != nil {
@@ -291,6 +321,32 @@ func getFileContentType(out *os.File) (string, error) {
 	return contentType, nil
 }
 
-func createTempFile(dir string) (*os.File, error) {
-	return ioutil.TempFile(dir, "temp_")
+// copyFile ...
+func copyFile(source string, destination string) (bool, error) {
+	fSource, errSource := os.Open(source)
+	if errSource != nil {
+		logrus.WithError(errSource).Error("error copy file - source")
+		return false, errSource
+	}
+	defer fSource.Close()
+
+	fDestination, errDestination := os.Create(destination)
+	if errDestination != nil {
+		logrus.WithError(errDestination).Error("error copy file - destination")
+		return false, errDestination
+	}
+	defer fDestination.Close()
+
+	nBytes, errCopy := io.Copy(fDestination, fSource)
+	if errCopy != nil {
+		logrus.WithError(errCopy).Error("error copy file")
+		return false, errCopy
+	}
+
+	logrus.
+		WithFields(logrus.Fields{
+			"size" : nBytes,
+		}).
+		Info("file copied with success")
+	return true, nil
 }

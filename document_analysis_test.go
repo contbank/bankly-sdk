@@ -1,6 +1,7 @@
 package bankly_test
 
 import (
+	"github.com/sirupsen/logrus"
 	"os"
 	"testing"
 	"time"
@@ -45,6 +46,7 @@ func (s *DocumentAnalysisTestSuite) TestSendDocumentAnalysis() {
 	documentNumber := grok.GeneratorCPF()
 
 	imageFile, errFile := os.Open("test_images/contbank.png")
+	// imageFile, errFile := os.Open("test_images/foto1.png")
 	s.assert.NoError(errFile)
 
 	request := bankly.DocumentAnalysisRequest{
@@ -55,6 +57,13 @@ func (s *DocumentAnalysisTestSuite) TestSendDocumentAnalysis() {
 	}
 
 	response, err := s.documentAnalysis.SendDocumentAnalysis(request)
+
+	logrus.
+		WithFields(logrus.Fields{
+			"request" : request,
+			"response" : response,
+		}).
+		Info("document sent")
 
 	s.assert.NoError(err)
 	s.assert.NotNil(response)
