@@ -2,7 +2,6 @@ package bankly
 
 import (
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -111,9 +110,9 @@ func (c *BankStatement) FilterBankStatements(model *FilterBankStatementRequest) 
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, FindError(bodyErr.Errors[0])
 	}
 
-	return nil, errors.New("error filter bank statements")
+	return nil, ErrDefaultBankStatements
 }

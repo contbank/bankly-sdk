@@ -733,8 +733,8 @@ type PaymentPayer struct {
 
 // BusinessHours ...
 type BusinessHours struct {
-	Start time.Time `json:"start,omitempty"`
-	End   time.Time `json:"end,omitempty"`
+	Start string `json:"start,omitempty"`
+	End   string `json:"end,omitempty"`
 }
 
 // Charges ...
@@ -755,8 +755,8 @@ type ValidatePaymentResponse struct {
 	MaxAmount         float64        `json:"maxAmount,omitempty"`
 	NextSettle        bool           `json:"nextSettle,omitempty"`
 	AllowChangeAmount bool           `json:"allowChangeAmount,omitempty"`
-	DueDate           time.Time      `json:"dueDate,omitempty"`
-	SettleDate        time.Time      `json:"settleDate,omitempty"`
+	DueDate           string         `json:"dueDate,omitempty"`
+	SettleDate        string         `json:"settleDate,omitempty"`
 	Payer             *PaymentPayer  `json:"payer,omitempty"`
 	Recipient         *PaymentPayer  `json:"recipient,omitempty"`
 	BusinessHours     *BusinessHours `json:"businessHours,omitempty"`
