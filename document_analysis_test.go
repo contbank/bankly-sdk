@@ -1,10 +1,11 @@
 package bankly_test
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/contbank/grok"
 
@@ -49,18 +50,18 @@ func (s *DocumentAnalysisTestSuite) TestSendDocumentAnalysis() {
 	s.assert.NoError(errFile)
 
 	request := bankly.DocumentAnalysisRequest{
-		Document : documentNumber,
-		DocumentType : docType,
-		DocumentSide : docSide,
-		ImageFile : *imageFile,
+		Document:     documentNumber,
+		DocumentType: docType,
+		DocumentSide: docSide,
+		ImageFile:    *imageFile,
 	}
 
 	response, err := s.documentAnalysis.SendDocumentAnalysis(request)
 
 	logrus.
 		WithFields(logrus.Fields{
-			"request" : request,
-			"response" : response,
+			"request":  request,
+			"response": response,
 		}).
 		Info("document sent")
 
@@ -232,11 +233,11 @@ func (s *DocumentAnalysisTestSuite) createDocumentAnalysis(documentNumber string
 	imageFile, errFile := os.Open("test_images/contbank.png")
 	s.assert.NoError(errFile)
 
-	request := bankly.DocumentAnalysisRequest {
-		Document : documentNumber,
-		DocumentType : docType,
-		DocumentSide : docSide,
-		ImageFile : *imageFile,
+	request := bankly.DocumentAnalysisRequest{
+		Document:     documentNumber,
+		DocumentType: docType,
+		DocumentSide: docSide,
+		ImageFile:    *imageFile,
 	}
 
 	resp, err := s.documentAnalysis.SendDocumentAnalysis(request)

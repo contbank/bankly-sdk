@@ -657,18 +657,18 @@ type BanklyDocumentAnalysisResponse struct {
 
 type FaceMatch struct {
 	Status     DetailsStatus `json:"status,omitempty"`
-	Similarity int    		 `json:"similarity,omitempty"`
-	Confidence int    		 `json:"confidence,omitempty"`
+	Similarity int           `json:"similarity,omitempty"`
+	Confidence int           `json:"confidence,omitempty"`
 }
 
 type FaceDetails struct {
-	Status     		DetailsStatus	`json:"status,omitempty"`
-	Confidence 		float32     	`json:"confidence,omitempty"`
-	AgeRange   		*AgeRange   	`json:"ageRange,omitempty"`
-	Gender     		*Gender     	`json:"gender,omitempty"`
-	Sunglasses 		*Sunglasses 	`json:"sunglasses,omitempty"`
-	EyesOpen   		*EyesOpen   	`json:"eyesOpen,omitempty"`
-	Emotions   		[]*Emotions 	`json:"emotions,omitempty"`
+	Status     DetailsStatus `json:"status,omitempty"`
+	Confidence float32       `json:"confidence,omitempty"`
+	AgeRange   *AgeRange     `json:"ageRange,omitempty"`
+	Gender     *Gender       `json:"gender,omitempty"`
+	Sunglasses *Sunglasses   `json:"sunglasses,omitempty"`
+	EyesOpen   *EyesOpen     `json:"eyesOpen,omitempty"`
+	Emotions   []*Emotions   `json:"emotions,omitempty"`
 }
 
 type AgeRange struct {
@@ -698,26 +698,26 @@ type Emotions struct {
 
 type DocumentDetails struct {
 	Status                          DetailsStatus `json:"status,omitempty"`
-	IdentifiedDocumentType          string `json:"identifiedDocumentType,omitempty"`
-	IdNumber                        string `json:"idNumber,omitempty"`
-	CpfNumber                       string `json:"cpfNumber,omitempty"`
-	BirthDate                       string `json:"birthDate,omitempty"`
-	FatherName                      string `json:"fatherName,omitempty"`
-	MotherName                      string `json:"motherName,omitempty"`
-	RegisterName                    string `json:"registerName,omitempty"`
-	ValidDate                       string `json:"validDate,omitempty"`
-	DriveLicenseCategory            string `json:"driveLicenseCategory,omitempty"`
-	DriveLicenseNumber              string `json:"driveLicenseNumber,omitempty"`
-	DriveLicenseFirstQualifyingDate string `json:"driveLicenseFirstQualifyingDate,omitempty"`
-	FederativeUnit                  string `json:"federativeUnit,omitempty"`
-	IssuedBy                        string `json:"issuedBy,omitempty"`
-	IssuePlace                      string `json:"issuePlace,omitempty"`
-	IssueDate                       string `json:"issueDate,omitempty"`
+	IdentifiedDocumentType          string        `json:"identifiedDocumentType,omitempty"`
+	IdNumber                        string        `json:"idNumber,omitempty"`
+	CpfNumber                       string        `json:"cpfNumber,omitempty"`
+	BirthDate                       string        `json:"birthDate,omitempty"`
+	FatherName                      string        `json:"fatherName,omitempty"`
+	MotherName                      string        `json:"motherName,omitempty"`
+	RegisterName                    string        `json:"registerName,omitempty"`
+	ValidDate                       string        `json:"validDate,omitempty"`
+	DriveLicenseCategory            string        `json:"driveLicenseCategory,omitempty"`
+	DriveLicenseNumber              string        `json:"driveLicenseNumber,omitempty"`
+	DriveLicenseFirstQualifyingDate string        `json:"driveLicenseFirstQualifyingDate,omitempty"`
+	FederativeUnit                  string        `json:"federativeUnit,omitempty"`
+	IssuedBy                        string        `json:"issuedBy,omitempty"`
+	IssuePlace                      string        `json:"issuePlace,omitempty"`
+	IssueDate                       string        `json:"issueDate,omitempty"`
 }
 
 type Liveness struct {
-	Status     DetailsStatus  `json:"status,omitempty"`
-	Confidence 	float32 	  `json:"confidence,omitempty"`
+	Status     DetailsStatus `json:"status,omitempty"`
+	Confidence float32       `json:"confidence,omitempty"`
 }
 
 // ValidatePaymentRequest ...
