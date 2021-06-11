@@ -46,7 +46,6 @@ func (s *DocumentAnalysisTestSuite) TestSendDocumentAnalysis() {
 	documentNumber := grok.GeneratorCPF()
 
 	imageFile, errFile := os.Open("test_images/contbank.png")
-	// imageFile, errFile := os.Open("test_images/foto1.png")
 	s.assert.NoError(errFile)
 
 	request := bankly.DocumentAnalysisRequest{
