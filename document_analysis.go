@@ -115,7 +115,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(request DocumentAnalysisRequest)
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, FindError(bodyErr.Errors[0])
 	}
 
@@ -180,7 +180,7 @@ func (c *DocumentAnalysis) FindDocumentAnalysis(documentNumber string, documentA
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, FindError(bodyErr.Errors[0])
 	}
 

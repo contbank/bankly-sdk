@@ -3,7 +3,6 @@ package bankly
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -114,7 +113,7 @@ func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
 		})
 	}
 
-	return nil, errors.New("error create boletos")
+	return nil, ErrDefaultBoletos
 }
 
 //FindBoleto ...
@@ -170,7 +169,7 @@ func (b *Boletos) FindBoleto(model *FindBoletoRequest) (*BoletoDetailedResponse,
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, errors.New("not found")
+		return nil, ErrEntryNotFound
 	}
 
 	var bodyErr *ErrorResponse
@@ -181,11 +180,11 @@ func (b *Boletos) FindBoleto(model *FindBoletoRequest) (*BoletoDetailedResponse,
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
-		return nil, errors.New(bodyErr.Errors[0].Messages[0])
+	if len(bodyErr.Errors) > 0 {
+		return nil, FindError(bodyErr.Errors[0])
 	}
 
-	return nil, errors.New("error find boleto")
+	return nil, ErrDefaultBoletos
 }
 
 //FilterBoleto ...
@@ -245,11 +244,11 @@ func (b *Boletos) FilterBoleto(date time.Time) (*FilterBoletoResponse, error) {
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
-		return nil, errors.New(bodyErr.Errors[0].Messages[0])
+	if len(bodyErr.Errors) > 0 {
+		return nil, FindError(bodyErr.Errors[0])
 	}
 
-	return nil, errors.New("error find boleto")
+	return nil, ErrDefaultBoletos
 }
 
 //FindBoletoByBarCode ...
@@ -301,7 +300,7 @@ func (b *Boletos) FindBoletoByBarCode(barcode string) (*BoletoDetailedResponse, 
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, errors.New("not found")
+		return nil, ErrEntryNotFound
 	}
 
 	var bodyErr *ErrorResponse
@@ -312,11 +311,11 @@ func (b *Boletos) FindBoletoByBarCode(barcode string) (*BoletoDetailedResponse, 
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
-		return nil, errors.New(bodyErr.Errors[0].Messages[0])
+	if len(bodyErr.Errors) > 0 {
+		return nil, FindError(bodyErr.Errors[0])
 	}
 
-	return nil, errors.New("error find boleto")
+	return nil, ErrDefaultBoletos
 }
 
 //DownloadBoleto ...
@@ -359,10 +358,10 @@ func (b *Boletos) DownloadBoleto(authenticationCode string, w io.Writer) error {
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return errors.New("not found")
+		return ErrEntryNotFound
 	}
 
-	return errors.New("error download boleto")
+	return ErrDefaultBoletos
 }
 
 //CancelBoleto ...
@@ -417,7 +416,7 @@ func (b *Boletos) CancelBoleto(model *CancelBoletoRequest) error {
 		return nil
 	}
 
-	return errors.New("error cancel boleto")
+	return ErrDefaultBoletos
 }
 
 //SimulatePayment ...
@@ -491,5 +490,5 @@ func (b *Boletos) SimulatePayment(model *SimulatePaymentRequest) error {
 		})
 	}
 
-	return errors.New("error pay boleto")
+	return ErrDefaultBoletos
 }

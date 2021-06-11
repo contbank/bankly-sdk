@@ -36,8 +36,26 @@ func (s *BusinessTestSuite) SetupTest() {
 	s.business = bankly.NewBusiness(*s.session)
 }
 
-func (s *BusinessTestSuite) TestCreateBusiness() {
+func (s *BusinessTestSuite) TestCreateBusiness_TypeEI_SizeME() {
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeEI, bankly.BusinessSizeME)
+
+	err := s.business.CreateBusiness(businessRequest)
+
+	s.assert.NoError(err)
+	s.assert.Nil(err)
+}
+
+func (s *BusinessTestSuite) TestCreateBusiness_TypeMEI_SizeMEI() {
+	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeMEI)
+
+	err := s.business.CreateBusiness(businessRequest)
+
+	s.assert.NoError(err)
+	s.assert.Nil(err)
+}
+
+func (s *BusinessTestSuite) TestCreateBusiness_TypeEIRELI_SizeEPP() {
+	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeEIRELI, bankly.BusinessSizeEPP)
 
 	err := s.business.CreateBusiness(businessRequest)
 
@@ -167,6 +185,55 @@ func (s *BusinessTestSuite) TestFindBusinessAccounts() {
 
 	s.assert.NoError(err)
 	s.assert.NotNil(account)
+}
+
+func (s *BusinessTestSuite) TestBusinessName_TypeMEI() {
+	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeMEI)
+	businessName := businessRequest.LegalRepresentative.RegisterName + " " + businessRequest.LegalRepresentative.Document
+	err := s.business.CreateBusiness(businessRequest)
+
+	s.assert.NoError(err)
+	s.assert.Nil(err)
+
+	time.Sleep(time.Millisecond)
+
+	account, err := s.business.FindBusiness(businessRequest.Document)
+
+	s.assert.NoError(err)
+	s.assert.NotNil(account)
+	s.assert.Equal(businessName, account.BusinessName)
+}
+
+func (s *BusinessTestSuite) TestBusinessName_TypeEI() {
+	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeEI, bankly.BusinessSizeEPP)
+	err := s.business.CreateBusiness(businessRequest)
+
+	s.assert.NoError(err)
+	s.assert.Nil(err)
+
+	time.Sleep(time.Millisecond)
+
+	account, err := s.business.FindBusiness(businessRequest.Document)
+
+	s.assert.NoError(err)
+	s.assert.NotNil(account)
+	s.assert.Equal(businessRequest.BusinessName, account.BusinessName)
+}
+
+func (s *BusinessTestSuite) TestBusinessName_TypeEIRELI() {
+	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeEIRELI, bankly.BusinessSizeEPP)
+	err := s.business.CreateBusiness(businessRequest)
+
+	s.assert.NoError(err)
+	s.assert.Nil(err)
+
+	time.Sleep(time.Millisecond)
+
+	account, err := s.business.FindBusiness(businessRequest.Document)
+
+	s.assert.NoError(err)
+	s.assert.NotNil(account)
+	s.assert.Equal(businessRequest.BusinessName, account.BusinessName)
 }
 
 func createBusinessRequest(document string, businessType bankly.BusinessType, businessSize bankly.BusinessSize) bankly.BusinessRequest {

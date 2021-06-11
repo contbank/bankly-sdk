@@ -3,7 +3,6 @@ package bankly
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -34,6 +33,11 @@ func NewBusiness(session Session) *Business {
 
 //CreateBusiness ...
 func (c *Business) CreateBusiness(businessRequest BusinessRequest) error {
+
+	if businessRequest.BusinessType == BusinessTypeMEI {
+		businessName := businessRequest.LegalRepresentative.RegisterName + " " + businessRequest.LegalRepresentative.Document
+		businessRequest.BusinessName = businessName
+	}
 
 	endpoint, err := c.getBusinessAPIEndpoint(businessRequest.Document, false)
 	if err != nil {
@@ -73,10 +77,10 @@ func (c *Business) CreateBusiness(businessRequest BusinessRequest) error {
 		return err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return FindError(bodyErr.Errors[0])
 	}
-	return errors.New("error create business")
+	return ErrDefaultBusinessAccounts
 }
 
 //UpdateBusiness ...
@@ -122,10 +126,10 @@ func (c *Business) UpdateBusiness(businessDocument string, businessUpdateRequest
 		return err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return FindError(bodyErr.Errors[0])
 	}
-	return errors.New("error updating business")
+	return ErrDefaultBusinessAccounts
 }
 
 //CreateBusinessAccount ...
@@ -191,10 +195,10 @@ func (c *Business) CreateBusinessAccount(businessAccountRequest BusinessAccountR
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, FindError(bodyErr.Errors[0])
 	}
-	return nil, errors.New("error create business account")
+	return nil, ErrDefaultBusinessAccounts
 }
 
 //FindBusiness ...
@@ -248,11 +252,11 @@ func (c *Business) FindBusiness(document string) (*BusinessResponse, error) {
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, FindError(bodyErr.Errors[0])
 	}
 
-	return nil, errors.New("error find business")
+	return nil, ErrDefaultBusinessAccounts
 }
 
 //FindBusinessAccounts ...
@@ -306,11 +310,11 @@ func (c *Business) FindBusinessAccounts(document string) ([]AccountResponse, err
 		return nil, err
 	}
 
-	if bodyErr.Errors != nil {
+	if len(bodyErr.Errors) > 0 {
 		return nil, FindError(bodyErr.Errors[0])
 	}
 
-	return nil, errors.New("error find business accounts")
+	return nil, ErrDefaultBusinessAccounts
 }
 
 // getBusinessAPIEndpoint
