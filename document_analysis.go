@@ -240,7 +240,6 @@ func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *mu
 			Error("error")
 		return nil, nil, bErrorFormFile
 	}
-
 	writerFormFile.Write(bFormFile)
 
 	errTypeField := writer.WriteField("documentType", string(request.DocumentType))
@@ -272,7 +271,6 @@ func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *mu
 
 func createFormFile(writer *multipart.Writer, file *os.File) (io.Writer, error) {
 	h := make(textproto.MIMEHeader)
-
 	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
 		escapeQuotes("image"), escapeQuotes(file.Name())))
 
@@ -284,7 +282,6 @@ func createFormFile(writer *multipart.Writer, file *os.File) (io.Writer, error) 
 		return nil, errorContentType
 	}
 	h.Set("Content-Type", contentType)
-
 	return writer.CreatePart(h)
 }
 
