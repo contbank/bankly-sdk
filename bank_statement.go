@@ -49,6 +49,8 @@ func (c *BankStatement) FilterBankStatements(model *FilterBankStatementRequest) 
 	q.Set("branch", model.Branch)
 	q.Set("account", model.Account)
 	q.Set("includeDetails", strconv.FormatBool(model.IncludeDetails))
+	q.Set("page", strconv.Itoa(int(model.Page)))
+	q.Set("pageSize", strconv.Itoa(int(model.PageSize)))
 
 	if model.BeginDateTime != nil {
 		q.Set("beginDateTime", model.BeginDateTime.UTC().Format("2006-01-02T15:04:05"))
