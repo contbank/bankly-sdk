@@ -3,14 +3,12 @@ package bankly
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/contbank/grok"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
-	"time"
-
-	"github.com/contbank/grok"
-	"github.com/sirupsen/logrus"
 )
 
 //Business ...
@@ -21,13 +19,11 @@ type Business struct {
 }
 
 //NewBusiness ...
-func NewBusiness(session Session) *Business {
+func NewBusiness(httpClient *http.Client, session Session) *Business {
 	return &Business{
-		session: session,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
-		authentication: NewAuthentication(session),
+		session : session,
+		httpClient : httpClient,
+		authentication : NewAuthentication(session),
 	}
 }
 

@@ -1,8 +1,10 @@
 package bankly_test
 
 import (
+	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	bankly "github.com/contbank/bankly-sdk"
 	"github.com/stretchr/testify/assert"
@@ -31,9 +33,13 @@ func (s *BoletosTestSuite) SetupTest() {
 
 	s.assert.NoError(err)
 
+	httpClient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
 	s.session = session
-	s.boletos = bankly.NewBoletos(*s.session)
-	s.customers = bankly.NewCustomers(*s.session)
+	s.boletos = bankly.NewBoletos(httpClient, *s.session)
+	s.customers = bankly.NewCustomers(httpClient, *s.session)
 }
 
 /*

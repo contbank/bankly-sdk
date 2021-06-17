@@ -1,6 +1,7 @@
 package bankly_test
 
 import (
+	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -33,9 +34,13 @@ func (s *BankStatementTestSuite) SetupTest() {
 
 	s.assert.NoError(err)
 
+	httpClient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
 	s.session = session
-	s.bank = bankly.NewBankStatement(*s.session)
-	s.boletos = bankly.NewBoletos(*s.session)
+	s.bank = bankly.NewBankStatement(httpClient, *s.session)
+	s.boletos = bankly.NewBoletos(httpClient, *s.session)
 }
 
 func (s *BankStatementTestSuite) TestFilterBankStatements() {

@@ -2,14 +2,12 @@ package bankly
 
 import (
 	"encoding/json"
+	"github.com/contbank/grok"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
 	"strconv"
-	"time"
-
-	"github.com/contbank/grok"
 )
 
 //BankStatement ...
@@ -20,13 +18,11 @@ type BankStatement struct {
 }
 
 //NewBankStatement ...
-func NewBankStatement(session Session) *BankStatement {
+func NewBankStatement(httpClient *http.Client, session Session) *BankStatement {
 	return &BankStatement{
-		session: session,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
-		authentication: NewAuthentication(session),
+		session : session,
+		httpClient : httpClient,
+		authentication : NewAuthentication(session),
 	}
 }
 

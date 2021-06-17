@@ -21,13 +21,11 @@ type Boletos struct {
 }
 
 //NewBoletos ...
-func NewBoletos(session Session) *Boletos {
-	return &Boletos{
-		session: session,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
-		authentication: NewAuthentication(session),
+func NewBoletos(httpClient *http.Client, session Session) *Boletos {
+	return &Boletos {
+		session : session,
+		httpClient : httpClient,
+		authentication : NewAuthentication(session),
 	}
 }
 
@@ -130,7 +128,7 @@ func (b *Boletos) FindBoleto(model *FindBoletoRequest) (*BoletoDetailedResponse,
 	u.Path = path.Join(u.Path, model.Account.Number)
 	u.Path = path.Join(u.Path, model.AuthenticationCode)
 	endpoint := u.String()
-
+	
 	req, err := http.NewRequest("GET", endpoint, nil)
 
 	if err != nil {

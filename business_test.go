@@ -1,6 +1,7 @@
 package bankly_test
 
 import (
+	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -32,8 +33,12 @@ func (s *BusinessTestSuite) SetupTest() {
 
 	s.assert.NoError(err)
 
+	httpClient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
 	s.session = session
-	s.business = bankly.NewBusiness(*s.session)
+	s.business = bankly.NewBusiness(httpClient, *s.session)
 }
 
 func (s *BusinessTestSuite) TestCreateBusiness_TypeEI_SizeME() {
