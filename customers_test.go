@@ -2,6 +2,7 @@ package bankly_test
 
 import (
 	"math/rand"
+	"net/http"
 	"os"
 	"strings"
 	"testing"
@@ -34,8 +35,12 @@ func (s *CustomersTestSuite) SetupTest() {
 
 	s.assert.NoError(err)
 
+	httpClient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
 	s.session = session
-	s.customers = bankly.NewCustomers(*s.session)
+	s.customers = bankly.NewCustomers(httpClient, *s.session)
 }
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"

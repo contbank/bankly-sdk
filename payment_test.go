@@ -1,8 +1,10 @@
 package bankly_test
 
 import (
+	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/contbank/bankly-sdk"
 
@@ -31,8 +33,12 @@ func (s *PaymentTestSuite) SetupTest() {
 
 	s.assert.NoError(err)
 
+	httpClient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
 	s.session = session
-	s.payment = bankly.NewPayment(*s.session)
+	s.payment = bankly.NewPayment(httpClient, *s.session)
 }
 
 // func (s *PaymentTestSuite) TestValidatePayment() {
