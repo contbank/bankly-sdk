@@ -85,7 +85,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(request DocumentAnalysisRequest)
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-	if resp.StatusCode == http.StatusAccepted {
+	if resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusAccepted {
 		var bodyResp *DocumentAnalysisRequestedResponse
 
 		err = json.Unmarshal(respBody, &bodyResp)
@@ -220,29 +220,27 @@ func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *mu
 
 	writer := multipart.NewWriter(payload)
 	file, errFile := os.Open(request.ImageFile.Name())
-	defer file.Close()
-
-	contentType, errorContentType := getFileContentType(file)
-	if errorContentType != nil {
-		logrus.
-			WithError(errorContentType).
-			Error("error document type field")
-		return nil, nil, errorContentType
-	}
-
-	h := make(textproto.MIMEHeader)
-	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
-		escapeQuotes("image"), escapeQuotes(request.ImageFile.Name())))
-	h.Set("Content-Type", contentType)
-
-	part1, errFile := writer.CreatePart(h)
-	_, errFile = io.Copy(part1, file)
 	if errFile != nil {
-		logrus.
-			WithError(errorContentType).
-			Error("error create file part")
 		return nil, nil, errFile
 	}
+	defer file.Close()
+
+	writerFormFile, errFormFile := createFormFile(writer, file)
+	if errFormFile != nil {
+		logrus.
+			WithError(errFormFile).
+			Error("error")
+		return nil, nil, errFormFile
+	}
+
+	bFormFile, bErrorFormFile := ioutil.ReadFile(file.Name())
+	if bErrorFormFile != nil {
+		logrus.
+			WithError(bErrorFormFile).
+			Error("error")
+		return nil, nil, bErrorFormFile
+	}
+	writerFormFile.Write(bFormFile)
 
 	errTypeField := writer.WriteField("documentType", string(request.DocumentType))
 	if errTypeField != nil {
@@ -271,6 +269,22 @@ func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *mu
 	return payload, writer, nil
 }
 
+func createFormFile(writer *multipart.Writer, file *os.File) (io.Writer, error) {
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
+		escapeQuotes("image"), escapeQuotes(file.Name())))
+
+	contentType, errorContentType := getFileContentType(file)
+	if errorContentType != nil {
+		logrus.
+			WithError(errorContentType).
+			Error("error document type field")
+		return nil, errorContentType
+	}
+	h.Set("Content-Type", contentType)
+	return writer.CreatePart(h)
+}
+
 var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
 
 func escapeQuotes(s string) string {
@@ -289,8 +303,4 @@ func getFileContentType(out *os.File) (string, error) {
 	contentType := http.DetectContentType(buffer)
 
 	return contentType, nil
-}
-
-func createTempFile(dir string) (*os.File, error) {
-	return ioutil.TempFile(dir, "temp_")
 }
