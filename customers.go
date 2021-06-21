@@ -3,12 +3,13 @@ package bankly
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/contbank/grok"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
+
+	"github.com/contbank/grok"
+	"github.com/sirupsen/logrus"
 )
 
 //Customers ...
@@ -21,9 +22,9 @@ type Customers struct {
 //NewCustomers ...
 func NewCustomers(httpClient *http.Client, session Session) *Customers {
 	return &Customers{
-		session : session,
-		httpClient : httpClient,
-		authentication : NewAuthentication(session),
+		session:        session,
+		httpClient:     httpClient,
+		authentication: NewAuthentication(session),
 	}
 }
 
@@ -80,7 +81,7 @@ func (c *Customers) CreateRegistration(customer CustomersRequest) error {
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return FindError(bodyErr.Errors[0])
+		return FindErrorModel(bodyErr.Errors[0])
 	}
 
 	return ErrDefaultCustomersAccounts
@@ -140,7 +141,7 @@ func (c *Customers) FindRegistration(document string) (*CustomersResponse, error
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindError(bodyErr.Errors[0])
+		return nil, FindErrorModel(bodyErr.Errors[0])
 	}
 
 	return nil, ErrDefaultCustomersAccounts
@@ -198,7 +199,7 @@ func (c *Customers) UpdateRegistration(document string, customerUpdateRequest Cu
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return FindError(bodyErr.Errors[0])
+		return FindErrorModel(bodyErr.Errors[0])
 	}
 	return ErrDefaultCustomersAccounts
 }
@@ -257,7 +258,7 @@ func (c *Customers) CreateAccount(document string, accountType AccountType) (*Ac
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindError(bodyErr.Errors[0])
+		return nil, FindErrorModel(bodyErr.Errors[0])
 	}
 
 	return nil, ErrDefaultCustomersAccounts
@@ -316,7 +317,7 @@ func (c *Customers) FindAccounts(document string) ([]AccountResponse, error) {
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindError(bodyErr.Errors[0])
+		return nil, FindErrorModel(bodyErr.Errors[0])
 	}
 
 	return nil, ErrDefaultCustomersAccounts

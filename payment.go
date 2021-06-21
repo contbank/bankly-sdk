@@ -3,12 +3,13 @@ package bankly
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/contbank/grok"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
 	"strconv"
+
+	"github.com/contbank/grok"
 )
 
 //Payment ...
@@ -21,8 +22,8 @@ type Payment struct {
 //NewPayment ...
 func NewPayment(httpClient *http.Client, session Session) *Payment {
 	return &Payment{
-		session: session,
-		httpClient: httpClient,
+		session:        session,
+		httpClient:     httpClient,
 		authentication: NewAuthentication(session),
 	}
 }
@@ -97,10 +98,7 @@ func (p *Payment) ValidatePayment(correlationID string, model *ValidatePaymentRe
 	}
 
 	if bodyErr.Code != "" {
-		return nil, FindError(ErrorModel{
-			Code:     bodyErr.Code,
-			Messages: []string{bodyErr.Message},
-		})
+		return nil, FindError(bodyErr.Code, bodyErr.Message)
 	}
 
 	return nil, ErrDefaultPayment
@@ -175,10 +173,7 @@ func (p *Payment) ConfirmPayment(correlationID string, model *ConfirmPaymentRequ
 	}
 
 	if bodyErr.Code != "" {
-		return nil, FindError(ErrorModel{
-			Code:     bodyErr.Code,
-			Messages: []string{bodyErr.Message},
-		})
+		return nil, FindError(bodyErr.Code, bodyErr.Message)
 	}
 
 	return nil, ErrDefaultPayment
@@ -262,10 +257,7 @@ func (p *Payment) FilterPayments(correlationID string, model *FilterPaymentsRequ
 	}
 
 	if bodyErr.Code != "" {
-		return nil, FindError(ErrorModel{
-			Code:     bodyErr.Code,
-			Messages: []string{bodyErr.Message},
-		})
+		return nil, FindError(bodyErr.Code, bodyErr.Message)
 	}
 
 	return nil, ErrDefaultPayment
@@ -346,10 +338,7 @@ func (p *Payment) DetailPayment(correlationID string, model *DetailPaymentReques
 	}
 
 	if bodyErr.Code != "" {
-		return nil, FindError(ErrorModel{
-			Code:     bodyErr.Code,
-			Messages: []string{bodyErr.Message},
-		})
+		return nil, FindError(bodyErr.Code, bodyErr.Message)
 	}
 
 	return nil, ErrDefaultPayment
