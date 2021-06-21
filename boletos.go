@@ -22,10 +22,10 @@ type Boletos struct {
 
 //NewBoletos ...
 func NewBoletos(httpClient *http.Client, session Session) *Boletos {
-	return &Boletos {
-		session : session,
-		httpClient : httpClient,
-		authentication : NewAuthentication(session),
+	return &Boletos{
+		session:        session,
+		httpClient:     httpClient,
+		authentication: NewAuthentication(session),
 	}
 }
 
@@ -99,16 +99,8 @@ func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
 	}
 
 	if len(bodyErr) > 0 {
-		err := bodyErr[0]
-
-		if err.Code == ScouterQuantityCode {
-			return nil, ErrScouterQuantity
-		}
-
-		return nil, FindError(ErrorModel{
-			Code:     err.Code,
-			Messages: []string{err.Message},
-		})
+		errModel := bodyErr[0]
+		return nil, FindError(errModel.Code, errModel.Message)
 	}
 
 	return nil, ErrDefaultBoletos
@@ -128,7 +120,7 @@ func (b *Boletos) FindBoleto(model *FindBoletoRequest) (*BoletoDetailedResponse,
 	u.Path = path.Join(u.Path, model.Account.Number)
 	u.Path = path.Join(u.Path, model.AuthenticationCode)
 	endpoint := u.String()
-	
+
 	req, err := http.NewRequest("GET", endpoint, nil)
 
 	if err != nil {
@@ -179,7 +171,8 @@ func (b *Boletos) FindBoleto(model *FindBoletoRequest) (*BoletoDetailedResponse,
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindError(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
 	}
 
 	return nil, ErrDefaultBoletos
@@ -243,7 +236,8 @@ func (b *Boletos) FilterBoleto(date time.Time) (*FilterBoletoResponse, error) {
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindError(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
 	}
 
 	return nil, ErrDefaultBoletos
@@ -310,7 +304,8 @@ func (b *Boletos) FindBoletoByBarCode(barcode string) (*BoletoDetailedResponse, 
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindError(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
 	}
 
 	return nil, ErrDefaultBoletos
@@ -481,11 +476,7 @@ func (b *Boletos) SimulatePayment(model *SimulatePaymentRequest) error {
 
 	if len(bodyErr) > 0 {
 		err := bodyErr[0]
-
-		return FindError(ErrorModel{
-			Code:     err.Code,
-			Messages: []string{err.Message},
-		})
+		return FindError(err.Code, err.Message)
 	}
 
 	return ErrDefaultBoletos

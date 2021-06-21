@@ -1,12 +1,12 @@
 package bankly
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/contbank/grok"
 )
-
-const ScouterQuantityCode = "SCOUTER_QUANTITY"
 
 var (
 	// ErrEntryNotFound ...
@@ -27,8 +27,8 @@ var (
 	ErrAccountHolderNotExists = grok.NewError(http.StatusBadRequest, "account holder not exists")
 	// ErrHolderAlreadyHaveAAccount ...
 	ErrHolderAlreadyHaveAAccount = grok.NewError(http.StatusConflict, "holder already have a account")
-	// ErrInvalidCorrelationId ...
-	ErrInvalidCorrelationId = grok.NewError(http.StatusBadRequest, "invalid correlation id")
+	// ErrInvalidCorrelationID ...
+	ErrInvalidCorrelationID = grok.NewError(http.StatusBadRequest, "invalid correlation id")
 	// ErrInvalidAmount ...
 	ErrInvalidAmount = grok.NewError(http.StatusBadRequest, "invalid amount")
 	// ErrInsufficientBalance ...
@@ -86,50 +86,50 @@ type BanklyError ErrorModel
 
 // Error ..
 type Error struct {
-	banklyError BanklyError
-	grokError   *grok.Error
+	ErrorKey  string
+	GrokError *grok.Error
 }
 
 var errorList = []Error{
 	{
-		banklyError: BanklyError{Code: "INVALID_PERSONAL_BUSINESS_SIZE"},
-		grokError:   ErrInvalidBusinessSize,
+		ErrorKey:  "INVALID_PERSONAL_BUSINESS_SIZE",
+		GrokError: ErrInvalidBusinessSize,
 	},
 	{
-		banklyError: BanklyError{Code: "EMAIL_ALREADY_IN_USE"},
-		grokError:   ErrEmailAlreadyInUse,
+		ErrorKey:  "EMAIL_ALREADY_IN_USE",
+		GrokError: ErrEmailAlreadyInUse,
 	},
 	{
-		banklyError: BanklyError{Code: "PHONE_ALREADY_IN_USE"},
-		grokError:   ErrPhoneAlreadyInUse,
+		ErrorKey:  "PHONE_ALREADY_IN_USE",
+		GrokError: ErrPhoneAlreadyInUse,
 	},
 	{
-		banklyError: BanklyError{Code: "CUSTOMER_REGISTRATION_CANNOT_BE_REPLACED"},
-		grokError:   ErrCustomerRegistrationCannotBeReplaced,
+		ErrorKey:  "CUSTOMER_REGISTRATION_CANNOT_BE_REPLACED",
+		GrokError: ErrCustomerRegistrationCannotBeReplaced,
 	},
 	{
-		banklyError: BanklyError{Code: "ACCOUNT_HOLDER_NOT_EXISTS"},
-		grokError:   ErrAccountHolderNotExists,
+		ErrorKey:  "ACCOUNT_HOLDER_NOT_EXISTS",
+		GrokError: ErrAccountHolderNotExists,
 	},
 	{
-		banklyError: BanklyError{Code: "HOLDER_ALREADY_HAVE_A_ACCOUNT"},
-		grokError:   ErrHolderAlreadyHaveAAccount,
+		ErrorKey:  "HOLDER_ALREADY_HAVE_A_ACCOUNT",
+		GrokError: ErrHolderAlreadyHaveAAccount,
 	},
 	{
-		banklyError: BanklyError{Code: "INVALID_PARAMETER"},
-		grokError:   ErrInvalidParameter,
+		ErrorKey:  "INVALID_PARAMETER",
+		GrokError: ErrInvalidParameter,
 	},
 	{
-		banklyError: BanklyError{Code: ScouterQuantityCode},
-		grokError:   ErrScouterQuantity,
+		ErrorKey:  "SCOUTER_QUANTITY",
+		GrokError: ErrScouterQuantity,
 	},
 	{
-		banklyError: BanklyError{Code: "BANKSLIP_SETTLEMENT_STATUS_VALIDATE"},
-		grokError:   ErrBoletoInvalidStatus,
+		ErrorKey:  "BANKSLIP_SETTLEMENT_STATUS_VALIDATE",
+		GrokError: ErrBoletoInvalidStatus,
 	},
 	{
-		banklyError: BanklyError{Code: "BAR_CODE_NOT_FOUND"},
-		grokError:   ErrBarcodeNotFound,
+		ErrorKey:  "BAR_CODE_NOT_FOUND",
+		GrokError: ErrBarcodeNotFound,
 	},
 }
 
@@ -145,7 +145,7 @@ type TransferError struct {
 var transferErrorList = []TransferError{
 	{
 		banklyTransferError: BanklyTransferError{Key: "x-correlation-id"},
-		grokError:           ErrInvalidCorrelationId,
+		grokError:           ErrInvalidCorrelationID,
 	},
 	{
 		banklyTransferError: BanklyTransferError{Key: "$.amount"},
@@ -166,19 +166,28 @@ var transferErrorList = []TransferError{
 }
 
 // FindError ..
-func FindError(errorModel ErrorModel) *grok.Error {
+func FindError(code string, messages ...string) *Error {
 	for _, v := range errorList {
-		if v.banklyError.Code == errorModel.Code {
-			return v.grokError
+		if v.ErrorKey == code {
+			return &v
 		}
 	}
 
-	var message string
-	if len(errorModel.Messages) > 0 {
-		message = errorModel.Messages[0]
+	return &Error{
+		ErrorKey:  code,
+		GrokError: grok.NewError(http.StatusConflict, messages...),
 	}
+}
 
-	return grok.NewError(http.StatusBadRequest, errorModel.Code+" - "+message)
+// FindErrorModel ..
+func FindErrorModel(errorModel ErrorModel) *Error {
+	return FindError(errorModel.Code, errorModel.Messages...)
+}
+
+// ParseErr ..
+func ParseErr(err error) (*Error, bool) {
+	banklyErr, ok := err.(*Error)
+	return banklyErr, ok
 }
 
 // FindTransferError ..
@@ -199,4 +208,12 @@ func FindTransferError(transferErrorResponse TransferErrorResponse) *grok.Error 
 		}
 	}
 	return grok.NewError(http.StatusBadRequest, errorModel.Key+" - "+errorModel.Value)
+}
+
+func (e *Error) Error() string {
+	return fmt.Sprintf(
+		"Key: %s - Messages: %s",
+		e.ErrorKey,
+		strings.Join(e.GrokError.Messages, "\n"),
+	)
 }

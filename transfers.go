@@ -157,7 +157,7 @@ func (t *Transfers) FindTransfers(correlationID *string,
 	branch *string, account *string, pageSize *int, nextPage *string) (*TransfersResponse, error) {
 
 	if correlationID == nil {
-		return nil, ErrInvalidCorrelationId
+		return nil, ErrInvalidCorrelationID
 	} else if branch == nil || account == nil {
 		return nil, ErrInvalidAccountNumber
 	}
@@ -225,7 +225,7 @@ func (t *Transfers) FindTransfersByCode(correlationID *string,
 	authenticationCode *string, branch *string, account *string) (*TransferByCodeResponse, error) {
 
 	if correlationID == nil {
-		return nil, ErrInvalidCorrelationId
+		return nil, ErrInvalidCorrelationID
 	} else if authenticationCode == nil || branch == nil || account == nil {
 		return nil, ErrInvalidAuthenticationCodeOrAccount
 	}

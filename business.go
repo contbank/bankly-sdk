@@ -3,12 +3,13 @@ package bankly
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/contbank/grok"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
+
+	"github.com/contbank/grok"
+	"github.com/sirupsen/logrus"
 )
 
 //Business ...
@@ -21,9 +22,9 @@ type Business struct {
 //NewBusiness ...
 func NewBusiness(httpClient *http.Client, session Session) *Business {
 	return &Business{
-		session : session,
-		httpClient : httpClient,
-		authentication : NewAuthentication(session),
+		session:        session,
+		httpClient:     httpClient,
+		authentication: NewAuthentication(session),
 	}
 }
 
@@ -74,7 +75,7 @@ func (c *Business) CreateBusiness(businessRequest BusinessRequest) error {
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return FindError(bodyErr.Errors[0])
+		return FindErrorModel(bodyErr.Errors[0])
 	}
 	return ErrDefaultBusinessAccounts
 }
@@ -123,7 +124,7 @@ func (c *Business) UpdateBusiness(businessDocument string, businessUpdateRequest
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return FindError(bodyErr.Errors[0])
+		return FindErrorModel(bodyErr.Errors[0])
 	}
 	return ErrDefaultBusinessAccounts
 }
@@ -192,7 +193,7 @@ func (c *Business) CreateBusinessAccount(businessAccountRequest BusinessAccountR
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindError(bodyErr.Errors[0])
+		return nil, FindErrorModel(bodyErr.Errors[0])
 	}
 	return nil, ErrDefaultBusinessAccounts
 }
@@ -249,7 +250,7 @@ func (c *Business) FindBusiness(document string) (*BusinessResponse, error) {
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindError(bodyErr.Errors[0])
+		return nil, FindErrorModel(bodyErr.Errors[0])
 	}
 
 	return nil, ErrDefaultBusinessAccounts
@@ -307,7 +308,7 @@ func (c *Business) FindBusinessAccounts(document string) ([]AccountResponse, err
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindError(bodyErr.Errors[0])
+		return nil, FindErrorModel(bodyErr.Errors[0])
 	}
 
 	return nil, ErrDefaultBusinessAccounts
