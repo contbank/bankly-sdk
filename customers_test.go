@@ -86,7 +86,11 @@ func (s *CustomersTestSuite) TestCreateAccountErrorMoreThanOneAccountPerHolder()
 	account, err := s.customers.CreateAccount("54012948083", bankly.PaymentAccount)
 
 	s.assert.Error(err)
-	s.assert.Equal(err, bankly.ErrHolderAlreadyHaveAAccount)
+
+	banklyErr, ok := bankly.ParseErr(err)
+
+	s.assert.True(ok)
+	s.assert.Equal(bankly.ErrHolderAlreadyHaveAAccount, banklyErr.GrokError)
 	s.assert.Nil(account)
 }
 
@@ -94,7 +98,11 @@ func (s *CustomersTestSuite) TestCreateAccountErrorDoesntHaveAnApprovedRegistrat
 	account, err := s.customers.CreateAccount(bankly.GeneratorCPF(), bankly.PaymentAccount)
 
 	s.assert.Error(err)
-	s.assert.Equal(err, bankly.ErrAccountHolderNotExists)
+
+	banklyErr, ok := bankly.ParseErr(err)
+
+	s.assert.True(ok)
+	s.assert.Equal(bankly.ErrAccountHolderNotExists, banklyErr.GrokError)
 	s.assert.Nil(account)
 }
 
