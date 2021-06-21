@@ -174,7 +174,11 @@ func (s *BusinessTestSuite) TestCreateBusinessAccountErrorDoesntHaveAnApprovedRe
 	account, err := s.business.CreateBusinessAccount(businessAccountRequest)
 
 	s.assert.Error(err)
-	s.assert.Equal(err, bankly.ErrAccountHolderNotExists)
+
+	banklyErr, ok := bankly.ParseErr(err)
+
+	s.assert.True(ok)
+	s.assert.Equal(bankly.ErrAccountHolderNotExists, banklyErr.GrokError)
 	s.assert.Nil(account)
 }
 
