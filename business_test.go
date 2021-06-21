@@ -74,7 +74,11 @@ func (s *BusinessTestSuite) TestCreateBusinessErrorInvalidTypeMEIAndSizeEPP() {
 	err := s.business.CreateBusiness(businessRequest)
 
 	s.assert.Error(err)
-	s.assert.Equal(err, bankly.ErrInvalidBusinessSize)
+
+	banklyErr, ok := bankly.ParseErr(err)
+
+	s.assert.True(ok)
+	s.assert.Equal(bankly.ErrInvalidBusinessSize, banklyErr.GrokError)
 }
 
 func (s *BusinessTestSuite) TestCreateBusinessErrorInvalidTypeMEIAndSizeME() {
@@ -83,7 +87,11 @@ func (s *BusinessTestSuite) TestCreateBusinessErrorInvalidTypeMEIAndSizeME() {
 	err := s.business.CreateBusiness(businessRequest)
 
 	s.assert.Error(err)
-	s.assert.Equal(err, bankly.ErrInvalidBusinessSize)
+
+	banklyErr, ok := bankly.ParseErr(err)
+
+	s.assert.True(ok)
+	s.assert.Equal(bankly.ErrInvalidBusinessSize, banklyErr.GrokError)
 }
 
 func (s *BusinessTestSuite) TestUpdateBusinessName() {
