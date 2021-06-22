@@ -82,10 +82,7 @@ func (a *Authentication) login() (*AuthenticationResponse, error) {
 			return nil, err
 		}
 
-		return nil, FindErrorModel(ErrorModel{
-			Code:     "400",
-			Messages: []string{bodyErr.Message},
-		})
+		return nil, FindError("400", bodyErr.Message)
 	}
 
 	return nil, ErrDefaultLogin

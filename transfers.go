@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"path"
 	"strconv"
-	"time"
 
 	"github.com/contbank/grok"
 	"github.com/sirupsen/logrus"
@@ -22,12 +21,10 @@ type Transfers struct {
 }
 
 //NewTransfers ...
-func NewTransfers(session Session) *Transfers {
+func NewTransfers(httpClient *http.Client, session Session) *Transfers {
 	return &Transfers{
-		session: session,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
+		session:        session,
+		httpClient:     httpClient,
 		authentication: NewAuthentication(session),
 	}
 }
