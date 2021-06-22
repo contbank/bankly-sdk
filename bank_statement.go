@@ -110,7 +110,8 @@ func (c *BankStatement) FilterBankStatements(model *FilterBankStatementRequest) 
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindErrorModel(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
 	}
 
 	return nil, ErrDefaultBankStatements

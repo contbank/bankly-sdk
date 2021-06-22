@@ -81,7 +81,8 @@ func (c *Customers) CreateRegistration(customer CustomersRequest) error {
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return FindErrorModel(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return FindError(errModel.Code, errModel.Messages...)
 	}
 
 	return ErrDefaultCustomersAccounts
@@ -141,7 +142,8 @@ func (c *Customers) FindRegistration(document string) (*CustomersResponse, error
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindErrorModel(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
 	}
 
 	return nil, ErrDefaultCustomersAccounts
@@ -199,8 +201,10 @@ func (c *Customers) UpdateRegistration(document string, customerUpdateRequest Cu
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return FindErrorModel(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return FindError(errModel.Code, errModel.Messages...)
 	}
+
 	return ErrDefaultCustomersAccounts
 }
 
@@ -258,7 +262,8 @@ func (c *Customers) CreateAccount(document string, accountType AccountType) (*Ac
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindErrorModel(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
 	}
 
 	return nil, ErrDefaultCustomersAccounts
@@ -317,7 +322,8 @@ func (c *Customers) FindAccounts(document string) ([]AccountResponse, error) {
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindErrorModel(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
 	}
 
 	return nil, ErrDefaultCustomersAccounts

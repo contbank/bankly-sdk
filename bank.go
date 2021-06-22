@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"path"
 	"strconv"
-	"time"
 )
 
 // Bank ...
@@ -18,12 +17,10 @@ type Bank struct {
 }
 
 //NewBank ...
-func NewBank(session Session) *Bank {
+func NewBank(httpClient *http.Client, session Session) *Bank {
 	return &Bank{
-		session: session,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
+		session:        session,
+		httpClient:     httpClient,
 		authentication: NewAuthentication(session),
 	}
 }
@@ -90,7 +87,8 @@ func (c *Bank) GetByID(id string) (*BankDataResponse, error) {
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindErrorModel(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
 	}
 
 	return nil, ErrDefaultBank
@@ -177,7 +175,8 @@ func (c *Bank) List(filter *FilterBankListRequest) ([]*BankDataResponse, error) 
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindErrorModel(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
 	}
 
 	return nil, ErrDefaultBank

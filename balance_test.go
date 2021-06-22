@@ -1,8 +1,10 @@
 package bankly_test
 
 import (
+	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/contbank/bankly-sdk"
 
@@ -31,8 +33,12 @@ func (s *BalanceTestSuite) SetupTest() {
 
 	s.assert.NoError(err)
 
+	httpClient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
 	s.session = session
-	s.balance = bankly.NewBalance(*s.session)
+	s.balance = bankly.NewBalance(httpClient, *s.session)
 }
 
 func (s *BalanceTestSuite) TestBalance() {

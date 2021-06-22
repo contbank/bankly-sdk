@@ -6,23 +6,20 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"time"
 )
 
 //Balance ...
 type Balance struct {
 	session        Session
-	httpClient     *http.Client
 	authentication *Authentication
+	httpClient     *http.Client
 }
 
 //NewBalance ...
-func NewBalance(session Session) *Balance {
+func NewBalance(httpClient *http.Client, session Session) *Balance {
 	return &Balance{
-		session: session,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
+		session:        session,
+		httpClient:     httpClient,
 		authentication: NewAuthentication(session),
 	}
 }
@@ -88,7 +85,8 @@ func (c *Balance) Balance(account string) (*AccountResponse, error) {
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindErrorModel(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
 	}
 
 	return nil, ErrDefaultBalance

@@ -75,8 +75,10 @@ func (c *Business) CreateBusiness(businessRequest BusinessRequest) error {
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return FindErrorModel(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return FindError(errModel.Code, errModel.Messages...)
 	}
+
 	return ErrDefaultBusinessAccounts
 }
 
@@ -124,8 +126,10 @@ func (c *Business) UpdateBusiness(businessDocument string, businessUpdateRequest
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return FindErrorModel(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return FindError(errModel.Code, errModel.Messages...)
 	}
+
 	return ErrDefaultBusinessAccounts
 }
 
@@ -193,8 +197,10 @@ func (c *Business) CreateBusinessAccount(businessAccountRequest BusinessAccountR
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindErrorModel(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
 	}
+
 	return nil, ErrDefaultBusinessAccounts
 }
 
@@ -250,7 +256,8 @@ func (c *Business) FindBusiness(document string) (*BusinessResponse, error) {
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindErrorModel(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
 	}
 
 	return nil, ErrDefaultBusinessAccounts
@@ -308,7 +315,8 @@ func (c *Business) FindBusinessAccounts(document string) ([]AccountResponse, err
 	}
 
 	if len(bodyErr.Errors) > 0 {
-		return nil, FindErrorModel(bodyErr.Errors[0])
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
 	}
 
 	return nil, ErrDefaultBusinessAccounts

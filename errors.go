@@ -179,11 +179,6 @@ func FindError(code string, messages ...string) *Error {
 	}
 }
 
-// FindErrorModel ..
-func FindErrorModel(errorModel ErrorModel) *Error {
-	return FindError(errorModel.Code, errorModel.Messages...)
-}
-
 // ParseErr ..
 func ParseErr(err error) (*Error, bool) {
 	banklyErr, ok := err.(*Error)
