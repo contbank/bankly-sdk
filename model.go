@@ -657,8 +657,8 @@ type BanklyDocumentAnalysisResponse struct {
 
 type FaceMatch struct {
 	Status     DetailsStatus `json:"status,omitempty"`
-	Similarity int           `json:"similarity,omitempty"`
-	Confidence int           `json:"confidence,omitempty"`
+	Similarity float32       `json:"similarity,omitempty"`
+	Confidence float32       `json:"confidence,omitempty"`
 }
 
 type FaceDetails struct {
