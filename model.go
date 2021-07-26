@@ -303,6 +303,26 @@ const (
 	SavingsAccount TransfersAccountType = "SAVINGS"
 )
 
+// TransfersStatus
+type TransfersStatus string
+
+const (
+	// Created
+	TransfersStatusCreated TransfersStatus = "CREATED"
+	// InProcess
+	TransfersStatusInProcess TransfersStatus = "IN_PROCESS"
+	// Approved
+	TransfersStatusApproved TransfersStatus = "APPROVED"
+	// Reproved
+	TransfersStatusReproved TransfersStatus = "REPROVED"
+	// Done
+	TransfersStatusDone TransfersStatus = "DONE"
+	// Undone
+	TransfersStatusUndone TransfersStatus = "UNDONE"
+	// Canceled
+	TransfersStatusCanceled TransfersStatus = "CANCELED"
+)
+
 // TransfersResponse ...
 type TransfersResponse struct {
 	ContinuationToken string                   `json:"continuationToken"`
@@ -320,7 +340,7 @@ type TransferByCodeResponse struct {
 	Channel            string             `json:"channel"`
 	Operation          string             `json:"operation"`
 	Identifier         string             `json:"identifier"`
-	Status             string             `json:"status"`
+	Status             TransfersStatus    `json:"status"`
 	CreatedAt          time.Time          `json:"createdAt"`
 	UpdatedAt          time.Time          `json:"updatedAt"`
 }
