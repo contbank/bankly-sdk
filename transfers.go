@@ -139,12 +139,22 @@ func (t *Transfers) createTransferOperation(correlationID string, model Transfer
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
+		logrus.Error("error - createTransferOperation")
 		return nil, err
 	}
 
 	if len(bodyErr.Errors) > 0 {
+		logrus.Error("body error - createTransferOperation")
 		return nil, FindTransferError(*bodyErr)
 	}
+
+	logrus.
+		WithFields(logrus.Fields{
+			"response_status_code" : resp.StatusCode,
+			"response_body" : respBody,
+		}).
+		WithError(err).
+		Error("default error transfer - createTransferOperation")
 
 	return nil, ErrDefaultTransfers
 }
@@ -214,7 +224,11 @@ func (t *Transfers) FindTransfers(correlationID *string,
 		return nil, FindTransferError(*bodyErr)
 	}
 
-	return nil, ErrDefaultTransfers
+	logrus.
+		WithError(err).
+		Error("default error transfer - FindTransfers")
+
+	return nil, ErrDefaultFindTransfers
 }
 
 // FindTransfersByCode ...
@@ -282,7 +296,7 @@ func (t *Transfers) FindTransfersByCode(correlationID *string,
 		return nil, FindTransferError(*bodyErr)
 	}
 
-	return nil, ErrDefaultTransfers
+	return nil, ErrDefaultFindTransfers
 }
 
 // getTransferAPIEndpoint
