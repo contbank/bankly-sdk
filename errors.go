@@ -204,7 +204,7 @@ func FindTransferError(transferErrorResponse TransferErrorResponse) *grok.Error 
 			return v.grokError
 		}
 	}
-	return grok.NewError(http.StatusBadRequest, errorModel.Key+" - "+errorModel.Value)
+	return grok.NewError(http.StatusBadRequest, errorModel.Key + " - " + errorModel.Value)
 }
 
 func (e *Error) Error() string {

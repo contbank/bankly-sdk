@@ -139,23 +139,25 @@ func (t *Transfers) createTransferOperation(correlationID string, model Transfer
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
-		logrus.Error("error - createTransferOperation")
+		logrus.
+			WithError(err).
+			Error("error - createTransferOperation")
 		return nil, err
 	}
 
-	if len(bodyErr.Errors) > 0 {
-		logrus.Error("body error - createTransferOperation")
+	if bodyErr != nil && (len(bodyErr.Errors) > 0 || bodyErr.Code != "") {
+		logrus.
+			WithField("bankly_body_error", bodyErr).
+			Error("body error - createTransferOperation")
 		return nil, FindTransferError(*bodyErr)
 	}
 
 	logrus.
 		WithFields(logrus.Fields{
-			"response_status_code" : resp.StatusCode,
-			"response_body" : respBody,
+			"bankly_response_status_code" : resp.StatusCode,
 		}).
 		WithError(err).
 		Error("default error transfer - createTransferOperation")
-
 	return nil, ErrDefaultTransfers
 }
 
@@ -220,7 +222,7 @@ func (t *Transfers) FindTransfers(correlationID *string,
 		return nil, err
 	}
 
-	if len(bodyErr.Errors) > 0 {
+	if bodyErr != nil && (len(bodyErr.Errors) > 0 || bodyErr.Code != "") {
 		return nil, FindTransferError(*bodyErr)
 	}
 
@@ -292,7 +294,7 @@ func (t *Transfers) FindTransfersByCode(correlationID *string,
 		return nil, err
 	}
 
-	if len(bodyErr.Errors) > 0 {
+	if bodyErr != nil && (len(bodyErr.Errors) > 0 || bodyErr.Code != "") {
 		return nil, FindTransferError(*bodyErr)
 	}
 
