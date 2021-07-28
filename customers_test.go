@@ -75,7 +75,6 @@ func (s *CustomersTestSuite) TestFindRegistration() {
 	s.assert.NotNil(response.Address)
 	s.assert.NotNil(response.Email)
 	s.assert.NotNil(response.MotherName)
-	s.assert.NotNil(response.BirthDate)
 }
 
 func (s *CustomersTestSuite) TestFindRegistrationErrorNotFound() {

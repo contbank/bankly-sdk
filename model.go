@@ -157,13 +157,10 @@ type CustomersResponse struct {
 	Phone                      Phone          `json:"phone"`
 	Address                    Address        `json:"address"`
 	MotherName                 string         `json:"motherName"`
-	BirthDate                  time.Time      `json:"birthDate"`
 	IsPoliticallyExposedPerson bool           `json:"isPoliticallyExposedPerson"`
 	Reasons                    []string       `json:"reasons"`
 	Status                     CustomerStatus `json:"status"`
 	Profile                    string         `json:"profile"`
-	CreatedAt                  time.Time      `json:"createdAt"`
-	UpdatedAt                  time.Time      `json:"updatedAt"`
 }
 
 // Phone ...
