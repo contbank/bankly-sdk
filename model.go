@@ -423,6 +423,7 @@ type BusinessResponse struct {
 	TradingName   string       `json:"tradingName,omitempty"`
 	BusinessEmail string       `json:"businessEmail,omitempty"`
 	Status        string       `json:"status,omitempty"`
+	Reasons		  []string     `json:"reasons,omitempty"`
 	BusinessType  BusinessType `json:"businessType"`
 	BusinessSize  BusinessSize `json:"businessSize"`
 	CreatedAt     time.Time    `json:"createdAt"`

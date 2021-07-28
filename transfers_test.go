@@ -2,8 +2,14 @@ package bankly_test
 
 import (
 	"github.com/contbank/bankly-sdk"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"math"
+	"net/http"
+	"os"
+	"testing"
+	"time"
 )
 
 type TransfersTestSuite struct {
@@ -14,7 +20,6 @@ type TransfersTestSuite struct {
 	balance   *bankly.Balance
 }
 
-/*
 func TestTransfersTestSuite(t *testing.T) {
 	suite.Run(t, new(TransfersTestSuite))
 }
@@ -29,14 +34,18 @@ func (s *TransfersTestSuite) SetupTest() {
 
 	s.assert.NoError(err)
 
+	httpClient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
 	s.session = session
-	s.transfers = bankly.NewTransfers(*s.session)
-	s.balance = bankly.NewBalance(*s.session)
+	s.transfers = bankly.NewTransfers(httpClient, *s.session)
+	s.balance = bankly.NewBalance(httpClient, *s.session)
 }
 
 var internalTransferAmount = []int64{
-	18375,  // R$ 183,75
 	075,    // R$ 0,75
+	18375,  // R$ 183,75
 	1001,   // R$ 10,01
 	121374, // R$ 1.213,74
 	300,    // R$ 3,00
@@ -51,6 +60,7 @@ func (s *TransfersTestSuite) TestCreateInternalTransfer0() {
 	s.createInternalTransferTestLogic(internalTransferAmount[0], *accountA(), *accountB())
 }
 
+/*
 func (s *TransfersTestSuite) TestCreateInternalTransfer1() {
 	s.createInternalTransferTestLogic(internalTransferAmount[1], *accountA(), *accountB())
 }
@@ -77,17 +87,6 @@ func (s *TransfersTestSuite) TestCreateInternalTransferAllAvailableAmountBalance
 
 func (s *TransfersTestSuite) TestCreateInternalTransferAllAvailableAmountBalance2() {
 	s.transferAllAvailableAmountBalance(*accountD(), *accountC())
-}
-
-func (s *TransfersTestSuite) TestCreateInternalTransferInvalidCorrelationId() {
-	correlationID := "invalid_correlation_id"
-	transferRequest := createInternalTransferRequest(100.00, *accountA(), *accountB())
-
-	resp, err := s.transfers.CreateInternalTransfer(correlationID, transferRequest)
-
-	s.assert.Error(err)
-	s.assert.Equal(err, bankly.ErrInvalidCorrelationId)
-	s.assert.Nil(resp)
 }
 
 func (s *TransfersTestSuite) TestCreateExternalTransfer() {
@@ -139,6 +138,7 @@ func (s *TransfersTestSuite) TestCreateExternalTransferInvalidCorrelationId() {
 	s.assert.Equal(err, bankly.ErrInvalidCorrelationId)
 	s.assert.Nil(resp)
 }
+*/
 
 func (s *TransfersTestSuite) TestFindTransferByCode1() {
 	correlationID := uuid.New().String()
@@ -190,6 +190,7 @@ func createInternalTransferRequest(amount int64, from AccountToTest, to AccountT
 	}
 }
 
+/*
 func createExternalTransferRequest(amount int64, from AccountToTest) bankly.TransfersRequest {
 	senderRequest := createSenderRequest(from.Branch, from.Account, from.Document, from.Name)
 	recipientRequest := createRecipientRequest("301", "1000", "131221", "11111111111", "Nome Qualquer")
@@ -200,6 +201,7 @@ func createExternalTransferRequest(amount int64, from AccountToTest) bankly.Tran
 		Description: "Descrição da Transação para uma Conta Externa",
 	}
 }
+*/
 
 func (s *TransfersTestSuite) createInternalTransferTestLogic(amount int64, sender AccountToTest, recipient AccountToTest) {
 	correlationID := uuid.New().String()
@@ -214,7 +216,7 @@ func (s *TransfersTestSuite) createInternalTransferTestLogic(amount int64, sende
 
 	resp, err := s.transfers.CreateInternalTransfer(correlationID, transferRequest)
 
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 3)
 
 	senderBalance, _ = s.balance.Balance(sender.Account)
 	recipientBalance, _ = s.balance.Balance(recipient.Account)
@@ -291,6 +293,7 @@ func toDecimal(value float64) float64 {
 	return math.Round(value*100) / 100
 }
 
+/*
 // TODO Não está levando em consideração dia útil ou feriados. Verificar melhor alternativa para implementar isto.
 func isOutOfServicePeriod() bool {
 	currentTime := time.Now()

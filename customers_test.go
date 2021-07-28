@@ -1,6 +1,7 @@
 package bankly_test
 
 import (
+	"context"
 	"math/rand"
 	"net/http"
 	"os"
@@ -65,7 +66,7 @@ func (s *CustomersTestSuite) TestFindRegistration() {
 	// TODO corrigir este teste. Pode ser que não tenha esta conta.
 	s.T().Skip("Criar a conta e depois dar um filter.")
 
-	response, err := s.customers.FindRegistration("36183588814")
+	response, err := s.customers.FindRegistration(context.Background(), "36183588814")
 
 	s.assert.NoError(err)
 	s.assert.NotNil(response)
@@ -78,7 +79,7 @@ func (s *CustomersTestSuite) TestFindRegistration() {
 }
 
 func (s *CustomersTestSuite) TestFindRegistrationErrorNotFound() {
-	response, err := s.customers.FindRegistration(bankly.GeneratorCPF())
+	response, err := s.customers.FindRegistration(context.Background(), bankly.GeneratorCPF())
 
 	s.assert.Error(err)
 	s.assert.Contains(err.Error(), "not found")
@@ -86,7 +87,7 @@ func (s *CustomersTestSuite) TestFindRegistrationErrorNotFound() {
 }
 
 func (s *CustomersTestSuite) TestCreateAccountErrorMoreThanOneAccountPerHolder() {
-	account, err := s.customers.CreateAccount("54012948083", bankly.PaymentAccount)
+	account, err := s.customers.CreateAccount(context.Background(), "54012948083", bankly.PaymentAccount)
 
 	s.assert.Error(err)
 
@@ -98,7 +99,7 @@ func (s *CustomersTestSuite) TestCreateAccountErrorMoreThanOneAccountPerHolder()
 }
 
 func (s *CustomersTestSuite) TestCreateAccountErrorDoesntHaveAnApprovedRegistrationYet() {
-	account, err := s.customers.CreateAccount(bankly.GeneratorCPF(), bankly.PaymentAccount)
+	account, err := s.customers.CreateAccount(context.Background(), bankly.GeneratorCPF(), bankly.PaymentAccount)
 
 	s.assert.Error(err)
 
@@ -110,7 +111,7 @@ func (s *CustomersTestSuite) TestCreateAccountErrorDoesntHaveAnApprovedRegistrat
 }
 
 func (s *CustomersTestSuite) TestFindAccounts() {
-	account, err := s.customers.FindAccounts("36183588814")
+	account, err := s.customers.FindAccounts(context.Background(), "36183588814")
 
 	s.assert.NoError(err)
 	s.assert.NotNil(account)
@@ -131,7 +132,7 @@ func (s *CustomersTestSuite) TestCreateAndFindRegistration() {
 
 	time.Sleep(time.Millisecond)
 
-	registrationResponse, err := s.customers.FindRegistration(document)
+	registrationResponse, err := s.customers.FindRegistration(context.Background(), document)
 	s.assert.NoError(err)
 	s.assert.NotNil(registrationResponse)
 }
@@ -147,38 +148,39 @@ func (s *CustomersTestSuite) TestCreateAndFindAccount() {
 
 	time.Sleep(time.Second)
 
-	account, err := s.customers.CreateAccount(document, bankly.PaymentAccount)
+	account, err := s.customers.CreateAccount(context.Background(), document, bankly.PaymentAccount)
 	s.assert.NoError(err)
 	s.assert.NotNil(account)
 
 	time.Sleep(time.Millisecond)
 
-	accountResponse, err := s.customers.FindAccounts(document)
+	accountResponse, err := s.customers.FindAccounts(context.Background(), document)
 	s.assert.NoError(err)
 	s.assert.NotNil(accountResponse)
 }
 
 func (s *CustomersTestSuite) createRegistrationWithParams(surname string, document string, cellphone string, email string) error {
-	return s.customers.CreateRegistration(bankly.CustomersRequest{
-		Document: document,
-		Phone: &bankly.Phone{
-			CountryCode: "55",
-			Number:      cellphone,
-		},
-		Address: &bankly.Address{
-			ZipCode:        "03503030",
-			City:           "São Paulo",
-			AddressLine:    "Rua Fulano de Tal",
-			BuildingNumber: "1000",
-			Neighborhood:   "Chácara Califórnia",
-			State:          "SP",
-			Country:        "BR",
-		},
-		RegisterName: "Nome da Pessoa " + surname,
-		BirthDate:    time.Date(1993, time.March, 25, 0, 0, 0, 0, time.UTC),
-		MotherName:   "Nome da Mãe da Pessoa " + surname,
-		Email:        email,
-	})
+	return s.customers.CreateRegistration(context.Background(),
+		bankly.CustomersRequest{
+			Document: document,
+			Phone: &bankly.Phone{
+				CountryCode: "55",
+				Number:      cellphone,
+			},
+			Address: &bankly.Address{
+				ZipCode:        "03503030",
+				City:           "São Paulo",
+				AddressLine:    "Rua Fulano de Tal",
+				BuildingNumber: "1000",
+				Neighborhood:   "Chácara Califórnia",
+				State:          "SP",
+				Country:        "BR",
+			},
+			RegisterName: "Nome da Pessoa " + surname,
+			BirthDate:    time.Date(1993, time.March, 25, 0, 0, 0, 0, time.UTC),
+			MotherName:   "Nome da Mãe da Pessoa " + surname,
+			Email:        email,
+		})
 }
 
 func randStringBytes(n int) string {
