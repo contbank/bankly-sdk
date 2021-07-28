@@ -159,50 +159,6 @@ func (s *CustomersTestSuite) TestCreateAndFindAccount() {
 	s.assert.NotNil(accountResponse)
 }
 
-func (s *CustomersTestSuite) TestUpdateRegistration() {
-
-	// TODO O PATCH da Customers não está funcionando na Bankly. Aguardando retorno deles para ativar este teste.
-	s.T().Skip("O PATCH da Customers não está funcionando na Bankly. Aguardando retorno deles para ativar este teste.")
-
-	document := grok.GeneratorCPF()
-	cellphone := grok.GeneratorCellphone()
-	randSurname := randStringBytes(10)
-	email := "email_de_teste_" + randSurname + "@contbank.com"
-
-	err := s.createRegistrationWithParams(randSurname, document, cellphone, email)
-	s.assert.NoError(err)
-
-	time.Sleep(time.Millisecond)
-
-	registrationResponse, err := s.customers.FindRegistration(document)
-	s.assert.NoError(err)
-	s.assert.NotNil(registrationResponse)
-
-	// update customer
-	newRegisterName := "NOVO NOME DA PESSOA VIA UPDATE REQUEST"
-	customerUpdateRequest := &bankly.CustomerUpdateRequest{
-		RegisterName: newRegisterName,
-		SocialName:   registrationResponse.SocialName,
-		BirthDate:    registrationResponse.BirthDate,
-		MotherName:   registrationResponse.MotherName,
-		Phone:        &registrationResponse.Phone,
-		Email:        registrationResponse.Email,
-		Address:      &registrationResponse.Address,
-	}
-	s.customers.UpdateRegistration(document, *customerUpdateRequest)
-	s.assert.NoError(err)
-	s.assert.Nil(err)
-
-	time.Sleep(time.Millisecond)
-
-	// find updated customer
-	updatedAccount, err := s.customers.FindRegistration(registrationResponse.DocumentNumber)
-	s.assert.NoError(err)
-	s.assert.NotNil(updatedAccount)
-	s.assert.Equal(registrationResponse.DocumentNumber, updatedAccount.DocumentNumber)
-	s.assert.Equal(newRegisterName, updatedAccount.RegisterName)
-}
-
 func (s *CustomersTestSuite) createRegistrationWithParams(surname string, document string, cellphone string, email string) error {
 	return s.customers.CreateRegistration(bankly.CustomersRequest{
 		Document: document,
