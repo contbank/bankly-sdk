@@ -120,11 +120,6 @@ func (t *Transfers) createTransferOperation(ctx context.Context, requestID strin
 	req.Header.Add("api-version", t.session.APIVersion)
 	req.Header.Add("x-correlation-id", requestID)
 
-	fields["bankly_request_host"] = req.URL.Host
-	fields["bankly_request_path"] = req.URL.Path
-	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
-	fields["bankly_request_header_correlation_id"] = req.Header.Get("x-correlation-id")
-
 	resp, err := t.httpClient.Do(req)
 	if err != nil {
 		logrus.
@@ -218,11 +213,6 @@ func (t *Transfers) FindTransfers(ctx context.Context, requestID *string,
 	req.Header.Add("api-version", t.session.APIVersion)
 	req.Header.Add("x-correlation-id", *requestID)
 
-	fields["bankly_request_host"] = req.URL.Host
-	fields["bankly_request_path"] = req.URL.Path
-	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
-	fields["bankly_request_header_correlation_id"] = req.Header.Get("x-correlation-id")
-
 	resp, err := t.httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -236,7 +226,6 @@ func (t *Transfers) FindTransfers(ctx context.Context, requestID *string,
 		var response TransfersResponse
 
 		err = json.Unmarshal(respBody, &response)
-		fields["bankly_response"] = response
 
 		if err != nil {
 			logrus.
@@ -316,11 +305,6 @@ func (t *Transfers) FindTransfersByCode(ctx context.Context, requestID *string,
 	req.Header.Add("api-version", t.session.APIVersion)
 	req.Header.Add("x-correlation-id", *requestID)
 
-	fields["bankly_request_host"] = req.URL.Host
-	fields["bankly_request_path"] = req.URL.Path
-	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
-	fields["bankly_request_header_correlation_id"] = req.Header.Get("x-correlation-id")
-
 	resp, err := t.httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -334,7 +318,6 @@ func (t *Transfers) FindTransfersByCode(ctx context.Context, requestID *string,
 		var response TransferByCodeResponse
 
 		err = json.Unmarshal(respBody, &response)
-		fields["bankly_response"] = response
 
 		if err != nil {
 			logrus.
