@@ -1,19 +1,22 @@
 package bankly_test
 
 import (
-	"github.com/contbank/bankly-sdk"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
+	"context"
 	"math"
 	"net/http"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/contbank/bankly-sdk"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 type TransfersTestSuite struct {
 	suite.Suite
+	ctx       context.Context
 	assert    *assert.Assertions
 	session   *bankly.Session
 	transfers *bankly.Transfers
@@ -26,6 +29,7 @@ func TestTransfersTestSuite(t *testing.T) {
 
 func (s *TransfersTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
+	s.ctx = context.Background()
 
 	session, err := bankly.NewSession(bankly.Config{
 		ClientID:     bankly.String(os.Getenv("BANKLY_CLIENT_ID")),
@@ -206,10 +210,10 @@ func createExternalTransferRequest(amount int64, from AccountToTest) bankly.Tran
 func (s *TransfersTestSuite) createInternalTransferTestLogic(amount int64, sender AccountToTest, recipient AccountToTest) {
 	correlationID := uuid.New().String()
 
-	senderBalance, _ := s.balance.Balance(sender.Account)
+	senderBalance, _ := s.balance.Balance(s.ctx, sender.Account)
 	expectedSenderAvailableAmount := senderBalance.Balance.Available.Amount - (float64(amount) / 100)
 
-	recipientBalance, _ := s.balance.Balance(recipient.Account)
+	recipientBalance, _ := s.balance.Balance(s.ctx, recipient.Account)
 	expectedRecipientAvailableAmount := recipientBalance.Balance.Available.Amount + (float64(amount) / 100)
 
 	transferRequest := createInternalTransferRequest(amount, sender, recipient)
@@ -218,8 +222,8 @@ func (s *TransfersTestSuite) createInternalTransferTestLogic(amount int64, sende
 
 	time.Sleep(time.Second * 3)
 
-	senderBalance, _ = s.balance.Balance(sender.Account)
-	recipientBalance, _ = s.balance.Balance(recipient.Account)
+	senderBalance, _ = s.balance.Balance(s.ctx, sender.Account)
+	recipientBalance, _ = s.balance.Balance(s.ctx, recipient.Account)
 
 	s.assert.NoError(err)
 	s.assert.NotNil(resp)
@@ -231,8 +235,8 @@ func (s *TransfersTestSuite) createInternalTransferTestLogic(amount int64, sende
 func (s *TransfersTestSuite) transferAllAvailableAmountBalance(from AccountToTest, to AccountToTest) {
 	correlationID := uuid.New().String()
 
-	senderBalance, _ := s.balance.Balance(from.Account)
-	recipientBalance, _ := s.balance.Balance(to.Account)
+	senderBalance, _ := s.balance.Balance(s.ctx, from.Account)
+	recipientBalance, _ := s.balance.Balance(s.ctx, to.Account)
 	expectedRecipientAvailableAmount :=
 		float64(recipientBalance.Balance.Available.Amount) + float64(senderBalance.Balance.Available.Amount)
 
@@ -243,10 +247,10 @@ func (s *TransfersTestSuite) transferAllAvailableAmountBalance(from AccountToTes
 
 	time.Sleep(time.Second)
 
-	senderBalance, _ = s.balance.Balance(from.Account)
+	senderBalance, _ = s.balance.Balance(s.ctx, from.Account)
 	afterSenderAvailableAmount := float64(senderBalance.Balance.Available.Amount)
 
-	recipientBalance, _ = s.balance.Balance(to.Account)
+	recipientBalance, _ = s.balance.Balance(s.ctx, to.Account)
 	afterRecipientAvailableAmount := float64(recipientBalance.Balance.Available.Amount)
 
 	if amount != 0 {

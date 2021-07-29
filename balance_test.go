@@ -1,6 +1,7 @@
 package bankly_test
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"testing"
@@ -14,6 +15,7 @@ import (
 
 type BalanceTestSuite struct {
 	suite.Suite
+	ctx     context.Context
 	assert  *assert.Assertions
 	session *bankly.Session
 	balance *bankly.Balance
@@ -25,6 +27,7 @@ func TestBalanceTestSuite(t *testing.T) {
 
 func (s *BalanceTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
+	s.ctx = context.Background()
 
 	session, err := bankly.NewSession(bankly.Config{
 		ClientID:     bankly.String(os.Getenv("BANKLY_CLIENT_ID")),
@@ -42,7 +45,7 @@ func (s *BalanceTestSuite) SetupTest() {
 }
 
 func (s *BalanceTestSuite) TestBalance() {
-	balance, err := s.balance.Balance("184152")
+	balance, err := s.balance.Balance(s.ctx, "184152")
 
 	s.assert.NoError(err)
 	s.assert.NotNil(balance)
