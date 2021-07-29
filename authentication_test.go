@@ -1,6 +1,7 @@
 package bankly_test
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -13,6 +14,7 @@ import (
 type AuthenticationTestSuite struct {
 	suite.Suite
 	assert         *assert.Assertions
+	ctx            context.Context
 	session        *bankly.Session
 	authentication *bankly.Authentication
 }
@@ -23,6 +25,7 @@ func TestAuthenticationTestSuite(t *testing.T) {
 
 func (s *AuthenticationTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
+	s.ctx = context.Background()
 
 	session, err := bankly.NewSession(bankly.Config{
 		ClientID:     bankly.String(os.Getenv("BANKLY_CLIENT_ID")),
@@ -36,7 +39,7 @@ func (s *AuthenticationTestSuite) SetupTest() {
 }
 
 func (s *AuthenticationTestSuite) TestToken() {
-	token, err := s.authentication.Token()
+	token, err := s.authentication.Token(s.ctx)
 
 	s.assert.NoError(err)
 	s.assert.Contains(token, "Bearer")

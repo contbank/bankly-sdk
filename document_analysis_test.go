@@ -1,6 +1,7 @@
 package bankly_test
 
 import (
+	"context"
 	"os"
 	"testing"
 	"time"
@@ -18,6 +19,7 @@ import (
 type DocumentAnalysisTestSuite struct {
 	suite.Suite
 	assert           *assert.Assertions
+	ctx              context.Context
 	bankSession      *bankly.Session
 	documentAnalysis *bankly.DocumentAnalysis
 }
@@ -28,6 +30,7 @@ func TestDocumentAnalysisTestSuite(t *testing.T) {
 
 func (s *DocumentAnalysisTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
+	s.ctx = context.Background()
 
 	newSession, err := bankly.NewSession(bankly.Config{
 		ClientID:     bankly.String(os.Getenv("BANKLY_CLIENT_ID")),
@@ -56,7 +59,7 @@ func (s *DocumentAnalysisTestSuite) TestSendDocumentAnalysis() {
 		ImageFile:    *imageFile,
 	}
 
-	response, err := s.documentAnalysis.SendDocumentAnalysis(request)
+	response, err := s.documentAnalysis.SendDocumentAnalysis(s.ctx, request)
 
 	logrus.
 		WithFields(logrus.Fields{
@@ -82,7 +85,7 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_SELFIE_FRONT() {
 	time.Sleep(time.Millisecond)
 
 	// find document analysis
-	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(documentNumber, resp.Token)
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(s.ctx, documentNumber, resp.Token)
 
 	s.assert.NoError(errDocAnalysis)
 	s.assert.NotNil(respDocAnalysis)
@@ -103,7 +106,7 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_SELFIE_BACK() {
 	time.Sleep(time.Millisecond)
 
 	// find document analysis
-	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(documentNumber, resp.Token)
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(s.ctx, documentNumber, resp.Token)
 
 	s.assert.NoError(errDocAnalysis)
 	s.assert.NotNil(respDocAnalysis)
@@ -124,7 +127,7 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_CNH_FRONT() {
 	time.Sleep(time.Millisecond)
 
 	// find document analysis
-	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(documentNumber, resp.Token)
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(s.ctx, documentNumber, resp.Token)
 
 	s.assert.NoError(errDocAnalysis)
 	s.assert.NotNil(respDocAnalysis)
@@ -145,7 +148,7 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_CNH_BACK() {
 	time.Sleep(time.Millisecond)
 
 	// find document analysis
-	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(documentNumber, resp.Token)
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(s.ctx, documentNumber, resp.Token)
 
 	s.assert.NoError(errDocAnalysis)
 	s.assert.NotNil(respDocAnalysis)
@@ -166,7 +169,7 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_RG_FRONT() {
 	time.Sleep(time.Millisecond)
 
 	// find document analysis
-	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(documentNumber, resp.Token)
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(s.ctx, documentNumber, resp.Token)
 
 	s.assert.NoError(errDocAnalysis)
 	s.assert.NotNil(respDocAnalysis)
@@ -189,7 +192,7 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_RG_BACK() {
 	time.Sleep(time.Millisecond)
 
 	// find document analysis
-	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(documentNumber, resp.Token)
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(s.ctx, documentNumber, resp.Token)
 
 	s.assert.NoError(errDocAnalysis)
 	s.assert.NotNil(respDocAnalysis)
@@ -201,7 +204,7 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysis_RG_BACK() {
 }
 
 func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysisError_INVALID_DOCUMENT() {
-	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(grok.GeneratorCPF(), "TOKEN")
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(s.ctx, grok.GeneratorCPF(), "TOKEN")
 
 	s.assert.Error(errDocAnalysis)
 	s.assert.Nil(respDocAnalysis)
@@ -220,7 +223,7 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysisError_INVALID_TOKEN(
 	time.Sleep(time.Millisecond)
 
 	// find document analysis
-	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(documentNumber, "INVALID_TOKEN")
+	respDocAnalysis, errDocAnalysis := s.documentAnalysis.FindDocumentAnalysis(s.ctx, documentNumber, "INVALID_TOKEN")
 
 	s.assert.Error(errDocAnalysis)
 	s.assert.Nil(respDocAnalysis)
@@ -240,7 +243,7 @@ func (s *DocumentAnalysisTestSuite) createDocumentAnalysis(documentNumber string
 		ImageFile:    *imageFile,
 	}
 
-	resp, err := s.documentAnalysis.SendDocumentAnalysis(request)
+	resp, err := s.documentAnalysis.SendDocumentAnalysis(s.ctx, request)
 
 	s.assert.NoError(err)
 	s.assert.NotNil(resp)

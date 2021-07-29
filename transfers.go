@@ -2,6 +2,7 @@ package bankly
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -30,17 +31,17 @@ func NewTransfers(httpClient *http.Client, session Session) *Transfers {
 }
 
 // CreateTransfer ...
-func (t *Transfers) CreateTransfer(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
+func (t *Transfers) CreateTransfer(ctx context.Context, correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
 	logrus.
 		WithFields(logrus.Fields{
 			"correlation_id": correlationID,
 		}).
 		Info("create transfer")
-	return t.createTransferOperation(correlationID, model)
+	return t.createTransferOperation(ctx, correlationID, model)
 }
 
 // CreateInternalTransfer ...
-func (t *Transfers) CreateInternalTransfer(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
+func (t *Transfers) CreateInternalTransfer(ctx context.Context, correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
 	logrus.
 		WithFields(logrus.Fields{
 			"correlation_id": correlationID,
@@ -48,25 +49,25 @@ func (t *Transfers) CreateInternalTransfer(correlationID string, model Transfers
 		Info("create internal transfer")
 	// TODO quando transação interna, necessário validar algo? limite de transação é maior do que quando externa?
 	model.Recipient.BankCode = InternalBankCode
-	return t.createTransferOperation(correlationID, model)
+	return t.createTransferOperation(ctx, correlationID, model)
 }
 
 // CreateExternalTransfer ...
-func (t *Transfers) CreateExternalTransfer(requestID string, model TransfersRequest) (*TransferByCodeResponse, error) {
+func (t *Transfers) CreateExternalTransfer(ctx context.Context, requestID string, model TransfersRequest) (*TransferByCodeResponse, error) {
 	logrus.
 		WithFields(logrus.Fields{
 			"request_id": requestID,
 		}).
 		Info("create external transfer")
-	return t.createTransferOperation(requestID, model)
+	return t.createTransferOperation(ctx, requestID, model)
 }
 
 // createTransferOperation ...
-func (t *Transfers) createTransferOperation(requestID string, model TransfersRequest) (*TransferByCodeResponse, error) {
+func (t *Transfers) createTransferOperation(ctx context.Context, requestID string, model TransfersRequest) (*TransferByCodeResponse, error) {
 
-	fields := logrus.Fields {
-		"request_id" : requestID,
-		"model" : model,
+	fields := logrus.Fields{
+		"request_id": requestID,
+		"model":      model,
 	}
 
 	err := grok.Validator.Struct(model)
@@ -96,7 +97,7 @@ func (t *Transfers) createTransferOperation(requestID string, model TransfersReq
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", *endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "POST", *endpoint, bytes.NewReader(reqbyte))
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -105,7 +106,7 @@ func (t *Transfers) createTransferOperation(requestID string, model TransfersReq
 		return nil, err
 	}
 
-	token, err := t.authentication.Token()
+	token, err := t.authentication.Token(ctx)
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -137,13 +138,10 @@ func (t *Transfers) createTransferOperation(requestID string, model TransfersReq
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
-	fields["bankly_response_status_code"] = resp.StatusCode
-
 	if resp.StatusCode == http.StatusAccepted {
 		var body *TransferByCodeResponse
 
 		err = json.Unmarshal(respBody, &body)
-		fields["bankly_response"] = body
 
 		if err != nil {
 			logrus.
@@ -182,7 +180,7 @@ func (t *Transfers) createTransferOperation(requestID string, model TransfersReq
 }
 
 // FindTransfers ...
-func (t *Transfers) FindTransfers(requestID *string,
+func (t *Transfers) FindTransfers(ctx context.Context, requestID *string,
 	branch *string, account *string, pageSize *int, nextPage *string) (*TransfersResponse, error) {
 
 	if requestID == nil {
@@ -191,12 +189,12 @@ func (t *Transfers) FindTransfers(requestID *string,
 		return nil, ErrInvalidAccountNumber
 	}
 
-	fields := logrus.Fields {
-		"request_id" : requestID,
-		"branch" : branch,
-		"account" : account,
-		"page_size" : pageSize,
-		"next_page" : nextPage,
+	fields := logrus.Fields{
+		"request_id": requestID,
+		"branch":     branch,
+		"account":    account,
+		"page_size":  pageSize,
+		"next_page":  nextPage,
 	}
 
 	endpoint, err := t.getTransferAPIEndpoint(*requestID, nil, branch, account, pageSize)
@@ -205,12 +203,12 @@ func (t *Transfers) FindTransfers(requestID *string,
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", *endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", *endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := t.authentication.Token()
+	token, err := t.authentication.Token(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -233,8 +231,6 @@ func (t *Transfers) FindTransfers(requestID *string,
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusOK {
 		var response TransfersResponse
@@ -284,7 +280,7 @@ func (t *Transfers) FindTransfers(requestID *string,
 }
 
 // FindTransfersByCode ...
-func (t *Transfers) FindTransfersByCode(requestID *string,
+func (t *Transfers) FindTransfersByCode(ctx context.Context, requestID *string,
 	authenticationCode *string, branch *string, account *string) (*TransferByCodeResponse, error) {
 
 	if requestID == nil {
@@ -293,11 +289,11 @@ func (t *Transfers) FindTransfersByCode(requestID *string,
 		return nil, ErrInvalidAuthenticationCodeOrAccount
 	}
 
-	fields := logrus.Fields {
-		"request_id" : requestID,
-		"authentication_code" : authenticationCode,
-		"branch" : branch,
-		"account" : account,
+	fields := logrus.Fields{
+		"request_id":          requestID,
+		"authentication_code": authenticationCode,
+		"branch":              branch,
+		"account":             account,
 	}
 
 	endpoint, err := t.getTransferAPIEndpoint(*requestID, authenticationCode, branch, account, nil)
@@ -305,12 +301,12 @@ func (t *Transfers) FindTransfersByCode(requestID *string,
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", *endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", *endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := t.authentication.Token()
+	token, err := t.authentication.Token(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -333,8 +329,6 @@ func (t *Transfers) FindTransfersByCode(requestID *string,
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusOK {
 		var response TransferByCodeResponse
@@ -389,12 +383,12 @@ func (t *Transfers) getTransferAPIEndpoint(correlationID string,
 	u, err := url.Parse(t.session.APIEndpoint)
 	if err != nil {
 		logrus.
-			WithFields(logrus.Fields {
-				"correlation_id" : correlationID,
-				"authentication_code" : authenticationCode,
-				"branch" : branch,
-				"account" : account,
-				"page_size" : pageSize,
+			WithFields(logrus.Fields{
+				"correlation_id":      correlationID,
+				"authentication_code": authenticationCode,
+				"branch":              branch,
+				"account":             account,
+				"page_size":           pageSize,
 			}).
 			WithError(err).
 			Error("error api endpoint")

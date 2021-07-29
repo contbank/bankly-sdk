@@ -39,8 +39,7 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"request" : businessRequest,
+		"request_id": requestID,
 	}
 
 	endpoint, err := c.getBusinessAPIEndpoint(requestID, businessRequest.Document, false)
@@ -54,7 +53,7 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 
 	reqbyte, err := json.Marshal(businessRequest)
 
-	req, err := http.NewRequest("PUT", *endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "PUT", *endpoint, bytes.NewReader(reqbyte))
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -63,7 +62,7 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 		return err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -73,10 +72,6 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 	}
 
 	req = setRequestHeader(req, token, c.session.APIVersion)
-
-	fields["bankly_request_host"] = req.URL.Host
-	fields["bankly_request_path"] = req.URL.Path
-	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -90,8 +85,6 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusAccepted {
 		return nil
@@ -129,8 +122,7 @@ func (c *Business) UpdateBusiness(ctx context.Context,
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"request" : businessDocument,
+		"request_id": requestID,
 	}
 
 	endpoint, err := c.getBusinessAPIEndpoint(requestID, businessDocument, false)
@@ -140,7 +132,7 @@ func (c *Business) UpdateBusiness(ctx context.Context,
 
 	reqbyte, err := json.Marshal(businessUpdateRequest)
 
-	req, err := http.NewRequest("PATCH", *endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", *endpoint, bytes.NewReader(reqbyte))
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -149,7 +141,7 @@ func (c *Business) UpdateBusiness(ctx context.Context,
 		return err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -159,10 +151,6 @@ func (c *Business) UpdateBusiness(ctx context.Context,
 	}
 
 	req = setRequestHeader(req, token, c.session.APIVersion)
-
-	fields["bankly_request_host"] = req.URL.Host
-	fields["bankly_request_path"] = req.URL.Path
-	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -176,8 +164,6 @@ func (c *Business) UpdateBusiness(ctx context.Context,
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusAccepted {
 		return nil
@@ -214,8 +200,7 @@ func (c *Business) CreateBusinessAccount(ctx context.Context,
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"request" : businessAccountRequest,
+		"request_id": requestID,
 	}
 
 	endpoint, err := c.getBusinessAPIEndpoint(requestID, businessAccountRequest.Document, true)
@@ -225,7 +210,7 @@ func (c *Business) CreateBusinessAccount(ctx context.Context,
 
 	reqbyte, err := json.Marshal(businessAccountRequest)
 
-	req, err := http.NewRequest("POST", *endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "POST", *endpoint, bytes.NewReader(reqbyte))
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -234,7 +219,7 @@ func (c *Business) CreateBusinessAccount(ctx context.Context,
 		return nil, err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -244,10 +229,6 @@ func (c *Business) CreateBusinessAccount(ctx context.Context,
 	}
 
 	req = setRequestHeader(req, token, c.session.APIVersion)
-
-	fields["bankly_request_host"] = req.URL.Host
-	fields["bankly_request_path"] = req.URL.Path
-	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -262,13 +243,10 @@ func (c *Business) CreateBusinessAccount(ctx context.Context,
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
-	fields["bankly_response_status_code"] = resp.StatusCode
-
 	if resp.StatusCode == http.StatusCreated {
 		var bodyResp *AccountResponse
 
 		err = json.Unmarshal(respBody, &bodyResp)
-		fields["bankly_response"] = bodyResp
 
 		if err != nil {
 			logrus.
@@ -309,8 +287,8 @@ func (c *Business) FindBusiness(ctx context.Context, document string) (*Business
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"document" : document,
+		"request_id": requestID,
+		"document":   document,
 	}
 
 	endpoint, err := c.getBusinessAPIEndpoint(requestID, document, false)
@@ -318,21 +296,17 @@ func (c *Business) FindBusiness(ctx context.Context, document string) (*Business
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", *endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", *endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	req = setRequestHeader(req, token, c.session.APIVersion)
-
-	fields["bankly_request_host"] = req.URL.Host
-	fields["bankly_request_path"] = req.URL.Path
-	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -347,13 +321,10 @@ func (c *Business) FindBusiness(ctx context.Context, document string) (*Business
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
-	fields["bankly_response_status_code"] = resp.StatusCode
-
 	if resp.StatusCode == http.StatusOK {
 		var response BusinessResponse
 
 		err = json.Unmarshal(respBody, &response)
-		fields["bankly_response"] = response
 
 		if err != nil {
 			logrus.
@@ -401,8 +372,8 @@ func (c *Business) FindBusinessAccounts(ctx context.Context, document string) ([
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"document" : document,
+		"request_id": requestID,
+		"document":   document,
 	}
 
 	endpoint, err := c.getBusinessAPIEndpoint(requestID, document, true)
@@ -410,7 +381,7 @@ func (c *Business) FindBusinessAccounts(ctx context.Context, document string) ([
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", *endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", *endpoint, nil)
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -419,7 +390,7 @@ func (c *Business) FindBusinessAccounts(ctx context.Context, document string) ([
 		return nil, err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -429,10 +400,6 @@ func (c *Business) FindBusinessAccounts(ctx context.Context, document string) ([
 	}
 
 	req = setRequestHeader(req, token, c.session.APIVersion)
-
-	fields["bankly_request_host"] = req.URL.Host
-	fields["bankly_request_path"] = req.URL.Path
-	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -447,13 +414,10 @@ func (c *Business) FindBusinessAccounts(ctx context.Context, document string) ([
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
-	fields["bankly_response_status_code"] = resp.StatusCode
-
 	if resp.StatusCode == http.StatusOK {
 		var response []AccountResponse
 
 		err = json.Unmarshal(respBody, &response)
-		fields["bankly_response"] = response
 
 		if err != nil {
 			logrus.
@@ -503,7 +467,7 @@ func (c *Business) getBusinessAPIEndpoint(requestID string,
 	if err != nil {
 		logrus.
 			WithFields(logrus.Fields{
-				"request_id" : requestID,
+				"request_id": requestID,
 			}).
 			WithError(err).
 			Error("error api endpoint")

@@ -36,11 +36,6 @@ func (p *Payment) ValidatePayment(ctx context.Context, correlationID string, mod
 		"request_id": correlationID,
 	}
 
-	logrus.
-		WithField("request", model).
-		WithFields(fields).
-		Info("validating payment")
-
 	if err := grok.Validator.Struct(model); err != nil {
 		return nil, grok.FromValidationErros(err)
 	}
@@ -69,7 +64,7 @@ func (p *Payment) ValidatePayment(ctx context.Context, correlationID string, mod
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, bytes.NewReader(reqbyte))
 
 	if err != nil {
 		logrus.
@@ -79,7 +74,7 @@ func (p *Payment) ValidatePayment(ctx context.Context, correlationID string, mod
 		return nil, err
 	}
 
-	token, err := p.authentication.Token()
+	token, err := p.authentication.Token(ctx)
 
 	if err != nil {
 		logrus.
@@ -107,8 +102,6 @@ func (p *Payment) ValidatePayment(ctx context.Context, correlationID string, mod
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusOK {
 		var response *ValidatePaymentResponse
@@ -157,11 +150,6 @@ func (p *Payment) ConfirmPayment(ctx context.Context, correlationID string, mode
 		"request_id": correlationID,
 	}
 
-	logrus.
-		WithField("request", model).
-		WithFields(fields).
-		Info("confirming payment")
-
 	if err := grok.Validator.Struct(model); err != nil {
 		return nil, grok.FromValidationErros(err)
 	}
@@ -190,7 +178,7 @@ func (p *Payment) ConfirmPayment(ctx context.Context, correlationID string, mode
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, bytes.NewReader(reqbyte))
 
 	if err != nil {
 		logrus.
@@ -200,7 +188,7 @@ func (p *Payment) ConfirmPayment(ctx context.Context, correlationID string, mode
 		return nil, err
 	}
 
-	token, err := p.authentication.Token()
+	token, err := p.authentication.Token(ctx)
 
 	if err != nil {
 		logrus.
@@ -228,8 +216,6 @@ func (p *Payment) ConfirmPayment(ctx context.Context, correlationID string, mode
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusOK {
 		var response *ConfirmPaymentResponse
@@ -277,11 +263,6 @@ func (p *Payment) FilterPayments(ctx context.Context, correlationID string, mode
 		"request_id": correlationID,
 	}
 
-	logrus.
-		WithField("request", model).
-		WithFields(fields).
-		Info("filtering payments")
-
 	if err := grok.Validator.Struct(model); err != nil {
 		return nil, grok.FromValidationErros(err)
 	}
@@ -310,7 +291,7 @@ func (p *Payment) FilterPayments(ctx context.Context, correlationID string, mode
 	u.RawQuery = q.Encode()
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
 		logrus.
@@ -320,7 +301,7 @@ func (p *Payment) FilterPayments(ctx context.Context, correlationID string, mode
 		return nil, err
 	}
 
-	token, err := p.authentication.Token()
+	token, err := p.authentication.Token(ctx)
 
 	if err != nil {
 		logrus.
@@ -348,8 +329,6 @@ func (p *Payment) FilterPayments(ctx context.Context, correlationID string, mode
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusOK {
 		var response *FilterPaymentsResponse
@@ -402,11 +381,6 @@ func (p *Payment) DetailPayment(ctx context.Context, correlationID string, model
 		"request_id": correlationID,
 	}
 
-	logrus.
-		WithField("request", model).
-		WithFields(fields).
-		Info("getting payment details")
-
 	if err := grok.Validator.Struct(model); err != nil {
 		return nil, grok.FromValidationErros(err)
 	}
@@ -432,7 +406,7 @@ func (p *Payment) DetailPayment(ctx context.Context, correlationID string, model
 	u.RawQuery = q.Encode()
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
 		logrus.
@@ -442,7 +416,7 @@ func (p *Payment) DetailPayment(ctx context.Context, correlationID string, model
 		return nil, err
 	}
 
-	token, err := p.authentication.Token()
+	token, err := p.authentication.Token(ctx)
 
 	if err != nil {
 		logrus.
@@ -470,8 +444,6 @@ func (p *Payment) DetailPayment(ctx context.Context, correlationID string, model
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusOK {
 		var response *PaymentResponse

@@ -149,7 +149,7 @@ func (s *TransfersTestSuite) TestFindTransferByCode1() {
 	authenticationCode := "4ebdaae8-663f-4c78-835d-112177f139e8"
 	branch := "0001"
 	account := "189081"
-	receipt, err := s.transfers.FindTransfersByCode(&correlationID, &authenticationCode, &branch, &account)
+	receipt, err := s.transfers.FindTransfersByCode(s.ctx, &correlationID, &authenticationCode, &branch, &account)
 
 	s.assert.NoError(err)
 	s.assert.NotNil(receipt)
@@ -163,7 +163,7 @@ func (s *TransfersTestSuite) TestFindTransferByCode2() {
 	authenticationCode := "8330d81e-0501-4c7d-8b31-5961fa6f8550"
 	branch := "0001"
 	account := "189162"
-	receipt, err := s.transfers.FindTransfersByCode(&correlationID, &authenticationCode, &branch, &account)
+	receipt, err := s.transfers.FindTransfersByCode(s.ctx, &correlationID, &authenticationCode, &branch, &account)
 
 	s.assert.NoError(err)
 	s.assert.NotNil(receipt)
@@ -177,7 +177,7 @@ func (s *TransfersTestSuite) TestFindTransfers() {
 	branch := "0001"
 	account := "189081"
 	pageSize := 10
-	transfers, err := s.transfers.FindTransfers(&correlationID, &branch, &account, &pageSize, nil)
+	transfers, err := s.transfers.FindTransfers(s.ctx, &correlationID, &branch, &account, &pageSize, nil)
 
 	s.assert.NoError(err)
 	s.assert.NotNil(transfers)
@@ -218,7 +218,7 @@ func (s *TransfersTestSuite) createInternalTransferTestLogic(amount int64, sende
 
 	transferRequest := createInternalTransferRequest(amount, sender, recipient)
 
-	resp, err := s.transfers.CreateInternalTransfer(correlationID, transferRequest)
+	resp, err := s.transfers.CreateInternalTransfer(s.ctx, correlationID, transferRequest)
 
 	time.Sleep(time.Second * 3)
 
@@ -243,7 +243,7 @@ func (s *TransfersTestSuite) transferAllAvailableAmountBalance(from AccountToTes
 	amount := int64(senderBalance.Balance.Available.Amount * 100)
 	transferRequest := createInternalTransferRequest(amount, from, to)
 
-	resp, err := s.transfers.CreateInternalTransfer(correlationID, transferRequest)
+	resp, err := s.transfers.CreateInternalTransfer(s.ctx, correlationID, transferRequest)
 
 	time.Sleep(time.Second)
 

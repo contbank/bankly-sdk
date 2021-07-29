@@ -34,11 +34,6 @@ func (c *Balance) Balance(ctx context.Context, account string) (*AccountResponse
 		"request_id": requestID,
 	}
 
-	logrus.
-		WithField("account", account).
-		WithFields(fields).
-		Info("getting account balance")
-
 	u, err := url.Parse(c.session.APIEndpoint)
 	if err != nil {
 		logrus.
@@ -67,7 +62,7 @@ func (c *Balance) Balance(ctx context.Context, account string) (*AccountResponse
 		return nil, err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -90,8 +85,6 @@ func (c *Balance) Balance(ctx context.Context, account string) (*AccountResponse
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusOK {
 		var response *AccountResponse

@@ -38,11 +38,6 @@ func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*Bole
 		"request_id": requestID,
 	}
 
-	logrus.
-		WithField("request", model).
-		WithFields(fields).
-		Info("creating boleto")
-
 	if err := grok.Validator.Struct(model); err != nil {
 		return nil, grok.FromValidationErros(err)
 	}
@@ -70,7 +65,7 @@ func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*Bole
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, bytes.NewReader(reqbyte))
 
 	if err != nil {
 		logrus.
@@ -80,7 +75,7 @@ func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*Bole
 		return nil, err
 	}
 
-	token, err := b.authentication.Token()
+	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
 		logrus.
@@ -107,8 +102,6 @@ func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*Bole
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusAccepted {
 		var body *BoletoResponse
@@ -159,11 +152,6 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 		"request_id": requestID,
 	}
 
-	logrus.
-		WithField("request", model).
-		WithFields(fields).
-		Info("getting boleto")
-
 	u, err := url.Parse(b.session.APIEndpoint)
 
 	if err != nil {
@@ -182,7 +170,7 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 	u.Path = path.Join(u.Path, model.AuthenticationCode)
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
 		logrus.
@@ -192,7 +180,7 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 		return nil, err
 	}
 
-	token, err := b.authentication.Token()
+	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
 		logrus.
@@ -218,8 +206,6 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusOK {
 		var response *BoletoDetailedResponse
@@ -274,11 +260,6 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 		"request_id": requestID,
 	}
 
-	logrus.
-		WithField("filter_date", date).
-		WithFields(fields).
-		Info("filtering boletos")
-
 	u, err := url.Parse(b.session.APIEndpoint)
 
 	if err != nil {
@@ -293,7 +274,7 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 	u.Path = path.Join(u.Path, url.QueryEscape(date.UTC().Format("2006-01-02T15:04:05")))
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
 		logrus.
@@ -303,7 +284,7 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 		return nil, err
 	}
 
-	token, err := b.authentication.Token()
+	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
 		logrus.
@@ -329,8 +310,6 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusOK {
 		var response *FilterBoletoResponse
@@ -381,11 +360,6 @@ func (b *Boletos) FindBoletoByBarCode(ctx context.Context, barcode string) (*Bol
 		"request_id": requestID,
 	}
 
-	logrus.
-		WithField("barcode", barcode).
-		WithFields(fields).
-		Info("finding boleto by barcode")
-
 	u, err := url.Parse(b.session.APIEndpoint)
 
 	if err != nil {
@@ -400,7 +374,7 @@ func (b *Boletos) FindBoletoByBarCode(ctx context.Context, barcode string) (*Bol
 	u.Path = path.Join(u.Path, barcode)
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
 		logrus.
@@ -411,7 +385,7 @@ func (b *Boletos) FindBoletoByBarCode(ctx context.Context, barcode string) (*Bol
 		return nil, err
 	}
 
-	token, err := b.authentication.Token()
+	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
 		logrus.
@@ -437,8 +411,6 @@ func (b *Boletos) FindBoletoByBarCode(ctx context.Context, barcode string) (*Bol
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusOK {
 		var response *BoletoDetailedResponse
@@ -493,11 +465,6 @@ func (b *Boletos) DownloadBoleto(ctx context.Context, authenticationCode string,
 		"request_id": requestID,
 	}
 
-	logrus.
-		WithField("authentication_code", authenticationCode).
-		WithFields(fields).
-		Info("downloading boleto")
-
 	u, err := url.Parse(b.session.APIEndpoint)
 
 	if err != nil {
@@ -508,7 +475,7 @@ func (b *Boletos) DownloadBoleto(ctx context.Context, authenticationCode string,
 	u.Path = path.Join(u.Path, "pdf")
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
 		logrus.
@@ -518,7 +485,7 @@ func (b *Boletos) DownloadBoleto(ctx context.Context, authenticationCode string,
 		return err
 	}
 
-	token, err := b.authentication.Token()
+	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
 		logrus.
@@ -541,8 +508,6 @@ func (b *Boletos) DownloadBoleto(ctx context.Context, authenticationCode string,
 			Error("error performing the request")
 		return err
 	}
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusOK {
 		_, err := io.Copy(w, resp.Body)
@@ -570,11 +535,6 @@ func (b *Boletos) CancelBoleto(ctx context.Context, model *CancelBoletoRequest) 
 	fields := logrus.Fields{
 		"request_id": requestID,
 	}
-
-	logrus.
-		WithField("request", model).
-		WithFields(fields).
-		Info("canceling boleto")
 
 	err := grok.Validator.Struct(model)
 
@@ -606,7 +566,7 @@ func (b *Boletos) CancelBoleto(ctx context.Context, model *CancelBoletoRequest) 
 		return err
 	}
 
-	req, err := http.NewRequest("DELETE", endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "DELETE", endpoint, bytes.NewReader(reqbyte))
 
 	if err != nil {
 		logrus.
@@ -616,7 +576,7 @@ func (b *Boletos) CancelBoleto(ctx context.Context, model *CancelBoletoRequest) 
 		return err
 	}
 
-	token, err := b.authentication.Token()
+	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
 		logrus.
@@ -641,8 +601,6 @@ func (b *Boletos) CancelBoleto(ctx context.Context, model *CancelBoletoRequest) 
 	}
 
 	defer resp.Body.Close()
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusOK {
 		return nil
@@ -675,13 +633,13 @@ func (b *Boletos) SimulatePayment(ctx context.Context, model *SimulatePaymentReq
 		return err
 	}
 
-	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, bytes.NewReader(reqbyte))
 
 	if err != nil {
 		return err
 	}
 
-	token, err := b.authentication.Token()
+	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
 		return err

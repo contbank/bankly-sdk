@@ -1,6 +1,7 @@
 package bankly
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -26,7 +27,7 @@ func NewBank(httpClient *http.Client, session Session) *Bank {
 }
 
 //GetByID returns a list with all available financial instituitions
-func (c *Bank) GetByID(id string) (*BankDataResponse, error) {
+func (c *Bank) GetByID(ctx context.Context, id string) (*BankDataResponse, error) {
 	u, err := url.Parse(c.session.APIEndpoint)
 
 	if err != nil {
@@ -37,13 +38,13 @@ func (c *Bank) GetByID(id string) (*BankDataResponse, error) {
 	u.Path = path.Join(u.Path, id)
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 
 	if err != nil {
 		return nil, err
@@ -95,7 +96,7 @@ func (c *Bank) GetByID(id string) (*BankDataResponse, error) {
 }
 
 //List returns a list with all available financial instituitions
-func (c *Bank) List(filter *FilterBankListRequest) ([]*BankDataResponse, error) {
+func (c *Bank) List(ctx context.Context, filter *FilterBankListRequest) ([]*BankDataResponse, error) {
 	u, err := url.Parse(c.session.APIEndpoint)
 
 	if err != nil {
@@ -129,13 +130,13 @@ func (c *Bank) List(filter *FilterBankListRequest) ([]*BankDataResponse, error) 
 	u.RawQuery = q.Encode()
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 
 	if err != nil {
 		return nil, err

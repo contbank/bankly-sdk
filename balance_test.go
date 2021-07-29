@@ -37,7 +37,8 @@ func (s *BalanceTestSuite) SetupTest() {
 	s.assert.NoError(err)
 
 	httpClient := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout:   30 * time.Second,
+		Transport: bankly.LoggingRoundTripper{Proxied: http.DefaultTransport},
 	}
 
 	s.session = session

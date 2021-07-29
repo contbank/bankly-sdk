@@ -38,8 +38,8 @@ func (c *Customers) CreateRegistration(ctx context.Context, customer CustomersRe
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"customer" : customer,
+		"request_id": requestID,
+		"customer":   customer,
 	}
 
 	endpoint, err := c.getCustomerAPIEndpoint(requestID, customer.Document, false, nil)
@@ -56,7 +56,7 @@ func (c *Customers) CreateRegistration(ctx context.Context, customer CustomersRe
 		return err
 	}
 
-	req, err := http.NewRequest("PUT", *endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "PUT", *endpoint, bytes.NewReader(reqbyte))
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -65,7 +65,7 @@ func (c *Customers) CreateRegistration(ctx context.Context, customer CustomersRe
 		return err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -93,8 +93,6 @@ func (c *Customers) CreateRegistration(ctx context.Context, customer CustomersRe
 	}
 
 	defer resp.Body.Close()
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusAccepted {
 		return nil
@@ -131,8 +129,8 @@ func (c *Customers) FindRegistration(ctx context.Context, document string) (*Cus
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"document" : document,
+		"request_id": requestID,
+		"document":   document,
 	}
 
 	resultLevel := ResultLevelDetailed
@@ -141,12 +139,12 @@ func (c *Customers) FindRegistration(ctx context.Context, document string) (*Cus
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", *endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", *endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -165,8 +163,6 @@ func (c *Customers) FindRegistration(ctx context.Context, document string) (*Cus
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusOK {
 		var response *CustomersResponse
@@ -209,9 +205,8 @@ func (c *Customers) UpdateRegistration(ctx context.Context, document string, cus
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"document" : document,
-		"customerUpdateRequest" : customerUpdateRequest,
+		"request_id": requestID,
+		"document":   document,
 	}
 
 	method := "PUT"
@@ -230,12 +225,12 @@ func (c *Customers) UpdateRegistration(ctx context.Context, document string, cus
 		return err
 	}
 
-	req, err := http.NewRequest(method, *endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, method, *endpoint, bytes.NewReader(reqbyte))
 	if err != nil {
 		return err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
 		return err
 	}
@@ -254,8 +249,6 @@ func (c *Customers) UpdateRegistration(ctx context.Context, document string, cus
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusAccepted {
 		return nil
@@ -287,9 +280,9 @@ func (c *Customers) CreateAccount(ctx context.Context, document string, accountT
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"document" : document,
-		"accountType" : accountType,
+		"request_id":  requestID,
+		"document":    document,
+		"accountType": accountType,
 	}
 
 	endpoint, err := c.getCustomerAPIEndpoint(requestID, document, true, nil)
@@ -303,12 +296,12 @@ func (c *Customers) CreateAccount(ctx context.Context, document string, accountT
 
 	reqbyte, err := json.Marshal(model)
 
-	req, err := http.NewRequest("POST", *endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "POST", *endpoint, bytes.NewReader(reqbyte))
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -328,13 +321,10 @@ func (c *Customers) CreateAccount(ctx context.Context, document string, accountT
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
-	fields["bankly_response_status_code"] = resp.StatusCode
-
 	if resp.StatusCode == http.StatusCreated {
 		var bodyResp *AccountResponse
 
 		err = json.Unmarshal(respBody, &bodyResp)
-		fields["bankly_response"] = bodyResp
 
 		if err != nil {
 			return nil, err
@@ -367,8 +357,8 @@ func (c *Customers) FindAccounts(ctx context.Context, document string) ([]Accoun
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"document" : document,
+		"request_id": requestID,
+		"document":   document,
 	}
 
 	endpoint, err := c.getCustomerAPIEndpoint(requestID, document, true, nil)
@@ -376,7 +366,7 @@ func (c *Customers) FindAccounts(ctx context.Context, document string) ([]Accoun
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", *endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", *endpoint, nil)
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -385,7 +375,7 @@ func (c *Customers) FindAccounts(ctx context.Context, document string) ([]Accoun
 		return nil, err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -412,8 +402,6 @@ func (c *Customers) FindAccounts(ctx context.Context, document string) ([]Accoun
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-
-	fields["bankly_response_status_code"] = resp.StatusCode
 
 	if resp.StatusCode == http.StatusOK {
 		var response []AccountResponse
@@ -465,7 +453,7 @@ func (c *Customers) getCustomerAPIEndpoint(requestID string, document string, is
 	if err != nil {
 		logrus.
 			WithFields(logrus.Fields{
-				"request_id" : requestID,
+				"request_id": requestID,
 			}).
 			WithError(err).
 			Error("error api endpoint")
