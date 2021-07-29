@@ -2,6 +2,7 @@ package bankly
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -30,17 +31,17 @@ func NewTransfers(httpClient *http.Client, session Session) *Transfers {
 }
 
 // CreateTransfer ...
-func (t *Transfers) CreateTransfer(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
+func (t *Transfers) CreateTransfer(ctx context.Context, correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
 	logrus.
 		WithFields(logrus.Fields{
 			"correlation_id": correlationID,
 		}).
 		Info("create transfer")
-	return t.createTransferOperation(correlationID, model)
+	return t.createTransferOperation(ctx, correlationID, model)
 }
 
 // CreateInternalTransfer ...
-func (t *Transfers) CreateInternalTransfer(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
+func (t *Transfers) CreateInternalTransfer(ctx context.Context, correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
 	logrus.
 		WithFields(logrus.Fields{
 			"correlation_id": correlationID,
@@ -48,33 +49,40 @@ func (t *Transfers) CreateInternalTransfer(correlationID string, model Transfers
 		Info("create internal transfer")
 	// TODO quando transação interna, necessário validar algo? limite de transação é maior do que quando externa?
 	model.Recipient.BankCode = InternalBankCode
-	return t.createTransferOperation(correlationID, model)
+	return t.createTransferOperation(ctx, correlationID, model)
 }
 
 // CreateExternalTransfer ...
-func (t *Transfers) CreateExternalTransfer(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
+func (t *Transfers) CreateExternalTransfer(ctx context.Context, requestID string, model TransfersRequest) (*TransferByCodeResponse, error) {
 	logrus.
 		WithFields(logrus.Fields{
-			"correlation_id": correlationID,
+			"request_id": requestID,
 		}).
 		Info("create external transfer")
-	return t.createTransferOperation(correlationID, model)
+	return t.createTransferOperation(ctx, requestID, model)
 }
 
 // createTransferOperation ...
-func (t *Transfers) createTransferOperation(correlationID string, model TransfersRequest) (*TransferByCodeResponse, error) {
+func (t *Transfers) createTransferOperation(ctx context.Context, requestID string, model TransfersRequest) (*TransferByCodeResponse, error) {
+
+	fields := logrus.Fields{
+		"request_id": requestID,
+		"model":      model,
+	}
 
 	err := grok.Validator.Struct(model)
 	if err != nil {
 		logrus.
+			WithFields(fields).
 			WithError(err).
 			Error("error validating model")
 		return nil, grok.FromValidationErros(err)
 	}
 
-	endpoint, err := t.getTransferAPIEndpoint(nil, nil, nil, nil)
+	endpoint, err := t.getTransferAPIEndpoint(requestID, nil, nil, nil, nil)
 	if err != nil {
 		logrus.
+			WithFields(fields).
 			WithError(err).
 			Error("error getting api endpoint")
 		return nil, err
@@ -83,22 +91,25 @@ func (t *Transfers) createTransferOperation(correlationID string, model Transfer
 	reqbyte, err := json.Marshal(model)
 	if err != nil {
 		logrus.
+			WithFields(fields).
 			WithError(err).
 			Error("error marshal model")
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", *endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "POST", *endpoint, bytes.NewReader(reqbyte))
 	if err != nil {
 		logrus.
+			WithFields(fields).
 			WithError(err).
 			Error("error new request")
 		return nil, err
 	}
 
-	token, err := t.authentication.Token()
+	token, err := t.authentication.Token(ctx)
 	if err != nil {
 		logrus.
+			WithFields(fields).
 			WithError(err).
 			Error("error authentication")
 		return nil, err
@@ -107,11 +118,17 @@ func (t *Transfers) createTransferOperation(correlationID string, model Transfer
 	req.Header.Add("Authorization", token)
 	req.Header.Add("Content-type", "application/json")
 	req.Header.Add("api-version", t.session.APIVersion)
-	req.Header.Add("x-correlation-id", correlationID)
+	req.Header.Add("x-correlation-id", requestID)
+
+	fields["bankly_request_host"] = req.URL.Host
+	fields["bankly_request_path"] = req.URL.Path
+	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
+	fields["bankly_request_header_correlation_id"] = req.Header.Get("x-correlation-id")
 
 	resp, err := t.httpClient.Do(req)
 	if err != nil {
 		logrus.
+			WithFields(fields).
 			WithError(err).
 			Error("error http client")
 		return nil, err
@@ -125,8 +142,10 @@ func (t *Transfers) createTransferOperation(correlationID string, model Transfer
 		var body *TransferByCodeResponse
 
 		err = json.Unmarshal(respBody, &body)
+
 		if err != nil {
 			logrus.
+				WithFields(fields).
 				WithError(err).
 				Error("error unmarshal")
 			return nil, err
@@ -140,6 +159,7 @@ func (t *Transfers) createTransferOperation(correlationID string, model Transfer
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
 		logrus.
+			WithFields(fields).
 			WithError(err).
 			Error("error - createTransferOperation")
 		return nil, err
@@ -147,41 +167,48 @@ func (t *Transfers) createTransferOperation(correlationID string, model Transfer
 
 	if bodyErr != nil && (len(bodyErr.Errors) > 0 || bodyErr.Code != "") {
 		logrus.
-			WithField("bankly_body_error", bodyErr).
+			WithFields(fields).
 			Error("body error - createTransferOperation")
 		return nil, FindTransferError(*bodyErr)
 	}
 
 	logrus.
-		WithFields(logrus.Fields{
-			"bankly_response_status_code" : resp.StatusCode,
-		}).
-		WithError(err).
+		WithFields(fields).
 		Error("default error transfer - createTransferOperation")
+
 	return nil, ErrDefaultTransfers
 }
 
 // FindTransfers ...
-func (t *Transfers) FindTransfers(correlationID *string,
+func (t *Transfers) FindTransfers(ctx context.Context, requestID *string,
 	branch *string, account *string, pageSize *int, nextPage *string) (*TransfersResponse, error) {
 
-	if correlationID == nil {
+	if requestID == nil {
 		return nil, ErrInvalidCorrelationID
 	} else if branch == nil || account == nil {
 		return nil, ErrInvalidAccountNumber
 	}
 
-	endpoint, err := t.getTransferAPIEndpoint(nil, branch, account, pageSize)
+	fields := logrus.Fields{
+		"request_id": requestID,
+		"branch":     branch,
+		"account":    account,
+		"page_size":  pageSize,
+		"next_page":  nextPage,
+	}
+
+	endpoint, err := t.getTransferAPIEndpoint(*requestID, nil, branch, account, pageSize)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error transfer api endpoint")
+		return nil, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "GET", *endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", *endpoint, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	token, err := t.authentication.Token()
+	token, err := t.authentication.Token(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +216,12 @@ func (t *Transfers) FindTransfers(correlationID *string,
 	req.Header.Add("Authorization", token)
 	req.Header.Add("Content-type", "application/json")
 	req.Header.Add("api-version", t.session.APIVersion)
-	req.Header.Add("x-correlation-id", *correlationID)
+	req.Header.Add("x-correlation-id", *requestID)
+
+	fields["bankly_request_host"] = req.URL.Host
+	fields["bankly_request_path"] = req.URL.Path
+	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
+	fields["bankly_request_header_correlation_id"] = req.Header.Get("x-correlation-id")
 
 	resp, err := t.httpClient.Do(req)
 	if err != nil {
@@ -204,7 +236,13 @@ func (t *Transfers) FindTransfers(correlationID *string,
 		var response TransfersResponse
 
 		err = json.Unmarshal(respBody, &response)
+		fields["bankly_response"] = response
+
 		if err != nil {
+			logrus.
+				WithFields(fields).
+				WithError(err).
+				Error("error unmarshal")
 			return nil, err
 		}
 
@@ -219,14 +257,22 @@ func (t *Transfers) FindTransfers(correlationID *string,
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error unmarshal transfer error response")
 		return nil, err
 	}
 
 	if bodyErr != nil && (len(bodyErr.Errors) > 0 || bodyErr.Code != "") {
+		logrus.
+			WithFields(fields).
+			Error("body error")
 		return nil, FindTransferError(*bodyErr)
 	}
 
 	logrus.
+		WithFields(fields).
 		WithError(err).
 		Error("default error transfer - FindTransfers")
 
@@ -234,26 +280,33 @@ func (t *Transfers) FindTransfers(correlationID *string,
 }
 
 // FindTransfersByCode ...
-func (t *Transfers) FindTransfersByCode(correlationID *string,
+func (t *Transfers) FindTransfersByCode(ctx context.Context, requestID *string,
 	authenticationCode *string, branch *string, account *string) (*TransferByCodeResponse, error) {
 
-	if correlationID == nil {
+	if requestID == nil {
 		return nil, ErrInvalidCorrelationID
 	} else if authenticationCode == nil || branch == nil || account == nil {
 		return nil, ErrInvalidAuthenticationCodeOrAccount
 	}
 
-	endpoint, err := t.getTransferAPIEndpoint(authenticationCode, branch, account, nil)
+	fields := logrus.Fields{
+		"request_id":          requestID,
+		"authentication_code": authenticationCode,
+		"branch":              branch,
+		"account":             account,
+	}
+
+	endpoint, err := t.getTransferAPIEndpoint(*requestID, authenticationCode, branch, account, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", *endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", *endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := t.authentication.Token()
+	token, err := t.authentication.Token(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -261,7 +314,12 @@ func (t *Transfers) FindTransfersByCode(correlationID *string,
 	req.Header.Add("Authorization", token)
 	req.Header.Add("Content-type", "application/json")
 	req.Header.Add("api-version", t.session.APIVersion)
-	req.Header.Add("x-correlation-id", *correlationID)
+	req.Header.Add("x-correlation-id", *requestID)
+
+	fields["bankly_request_host"] = req.URL.Host
+	fields["bankly_request_path"] = req.URL.Path
+	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
+	fields["bankly_request_header_correlation_id"] = req.Header.Get("x-correlation-id")
 
 	resp, err := t.httpClient.Do(req)
 	if err != nil {
@@ -276,7 +334,13 @@ func (t *Transfers) FindTransfersByCode(correlationID *string,
 		var response TransferByCodeResponse
 
 		err = json.Unmarshal(respBody, &response)
+		fields["bankly_response"] = response
+
 		if err != nil {
+			logrus.
+				WithFields(fields).
+				WithError(err).
+				Error("error unmarshal")
 			return nil, err
 		}
 
@@ -291,23 +355,41 @@ func (t *Transfers) FindTransfersByCode(correlationID *string,
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error unmarshal")
 		return nil, err
 	}
 
 	if bodyErr != nil && (len(bodyErr.Errors) > 0 || bodyErr.Code != "") {
+		logrus.
+			WithFields(fields).
+			Error("body error")
 		return nil, FindTransferError(*bodyErr)
 	}
+
+	logrus.
+		WithFields(fields).
+		Error("default error transfer - FindTransfersByCode")
 
 	return nil, ErrDefaultFindTransfers
 }
 
 // getTransferAPIEndpoint
-func (t *Transfers) getTransferAPIEndpoint(
+func (t *Transfers) getTransferAPIEndpoint(correlationID string,
 	authenticationCode *string, branch *string, account *string, pageSize *int) (*string, error) {
 
 	u, err := url.Parse(t.session.APIEndpoint)
 	if err != nil {
 		logrus.
+			WithFields(logrus.Fields{
+				"correlation_id":      correlationID,
+				"authentication_code": authenticationCode,
+				"branch":              branch,
+				"account":             account,
+				"page_size":           pageSize,
+			}).
 			WithError(err).
 			Error("error api endpoint")
 		return nil, err

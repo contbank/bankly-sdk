@@ -1,6 +1,7 @@
 package bankly
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -28,7 +29,7 @@ func NewBankStatement(httpClient *http.Client, session Session) *BankStatement {
 }
 
 // FilterBankStatements ...
-func (c *BankStatement) FilterBankStatements(model *FilterBankStatementRequest) ([]*Statement, error) {
+func (c *BankStatement) FilterBankStatements(ctx context.Context, model *FilterBankStatementRequest) ([]*Statement, error) {
 
 	if err := grok.Validator.Struct(model); err != nil {
 		return nil, grok.FromValidationErros(err)
@@ -66,12 +67,12 @@ func (c *BankStatement) FilterBankStatements(model *FilterBankStatementRequest) 
 	u.RawQuery = q.Encode()
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
 		return nil, err
 	}

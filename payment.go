@@ -2,6 +2,7 @@ package bankly
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/contbank/grok"
+	"github.com/sirupsen/logrus"
 )
 
 //Payment ...
@@ -29,7 +31,10 @@ func NewPayment(httpClient *http.Client, session Session) *Payment {
 }
 
 // ValidatePayment ...
-func (p *Payment) ValidatePayment(correlationID string, model *ValidatePaymentRequest) (*ValidatePaymentResponse, error) {
+func (p *Payment) ValidatePayment(ctx context.Context, correlationID string, model *ValidatePaymentRequest) (*ValidatePaymentResponse, error) {
+	fields := logrus.Fields{
+		"request_id": correlationID,
+	}
 
 	if err := grok.Validator.Struct(model); err != nil {
 		return nil, grok.FromValidationErros(err)
@@ -38,6 +43,10 @@ func (p *Payment) ValidatePayment(correlationID string, model *ValidatePaymentRe
 	u, err := url.Parse(p.session.APIEndpoint)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error parsing api endpoint")
 		return nil, err
 	}
 
@@ -48,18 +57,30 @@ func (p *Payment) ValidatePayment(correlationID string, model *ValidatePaymentRe
 	reqbyte, err := json.Marshal(model)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error encoding model to json")
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, bytes.NewReader(reqbyte))
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error creating request")
 		return nil, err
 	}
 
-	token, err := p.authentication.Token()
+	token, err := p.authentication.Token(ctx)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error in authentication request")
 		return nil, err
 	}
 
@@ -71,6 +92,10 @@ func (p *Payment) ValidatePayment(correlationID string, model *ValidatePaymentRe
 	resp, err := p.httpClient.Do(req)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error performing the request")
 		return nil, err
 	}
 
@@ -84,7 +109,11 @@ func (p *Payment) ValidatePayment(correlationID string, model *ValidatePaymentRe
 		err = json.Unmarshal(respBody, &response)
 
 		if err != nil {
-			return nil, err
+			logrus.
+				WithFields(fields).
+				WithError(err).
+				Error("error decoding json response")
+			return nil, ErrDefaultPayment
 		}
 
 		return response, nil
@@ -94,18 +123,32 @@ func (p *Payment) ValidatePayment(correlationID string, model *ValidatePaymentRe
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
-		return nil, err
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error decoding json response")
+		return nil, ErrDefaultPayment
 	}
 
 	if bodyErr.Code != "" {
-		return nil, FindError(bodyErr.Code, bodyErr.Message)
+		err = FindError(bodyErr.Code, bodyErr.Message)
+		logrus.
+			WithField("bankly_error", bodyErr).
+			WithFields(fields).
+			WithError(err).
+			Error("bankly validate payment error")
+		return nil, err
 	}
 
 	return nil, ErrDefaultPayment
 }
 
 // ConfirmPayment ...
-func (p *Payment) ConfirmPayment(correlationID string, model *ConfirmPaymentRequest) (*ConfirmPaymentResponse, error) {
+func (p *Payment) ConfirmPayment(ctx context.Context, correlationID string, model *ConfirmPaymentRequest) (*ConfirmPaymentResponse, error) {
+
+	fields := logrus.Fields{
+		"request_id": correlationID,
+	}
 
 	if err := grok.Validator.Struct(model); err != nil {
 		return nil, grok.FromValidationErros(err)
@@ -114,6 +157,10 @@ func (p *Payment) ConfirmPayment(correlationID string, model *ConfirmPaymentRequ
 	u, err := url.Parse(p.session.APIEndpoint)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error parsing api endpoint")
 		return nil, err
 	}
 
@@ -124,18 +171,30 @@ func (p *Payment) ConfirmPayment(correlationID string, model *ConfirmPaymentRequ
 	reqbyte, err := json.Marshal(model)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error encoding model to json")
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, bytes.NewReader(reqbyte))
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error creating request")
 		return nil, err
 	}
 
-	token, err := p.authentication.Token()
+	token, err := p.authentication.Token(ctx)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error in authentication request")
 		return nil, err
 	}
 
@@ -147,6 +206,10 @@ func (p *Payment) ConfirmPayment(correlationID string, model *ConfirmPaymentRequ
 	resp, err := p.httpClient.Do(req)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error performing the request")
 		return nil, err
 	}
 
@@ -160,7 +223,11 @@ func (p *Payment) ConfirmPayment(correlationID string, model *ConfirmPaymentRequ
 		err = json.Unmarshal(respBody, &response)
 
 		if err != nil {
-			return nil, err
+			logrus.
+				WithFields(fields).
+				WithError(err).
+				Error("error decoding json response")
+			return nil, ErrDefaultPayment
 		}
 
 		return response, nil
@@ -169,18 +236,32 @@ func (p *Payment) ConfirmPayment(correlationID string, model *ConfirmPaymentRequ
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
-		return nil, err
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error decoding json response")
+		return nil, ErrDefaultPayment
 	}
 
 	if bodyErr.Code != "" {
-		return nil, FindError(bodyErr.Code, bodyErr.Message)
+		err = FindError(bodyErr.Code, bodyErr.Message)
+		logrus.
+			WithField("bankly_error", bodyErr).
+			WithFields(fields).
+			WithError(err).
+			Error("bankly confirm payment error")
+		return nil, err
 	}
 
 	return nil, ErrDefaultPayment
 }
 
 // FilterPayments ...
-func (p *Payment) FilterPayments(correlationID string, model *FilterPaymentsRequest) (*FilterPaymentsResponse, error) {
+func (p *Payment) FilterPayments(ctx context.Context, correlationID string, model *FilterPaymentsRequest) (*FilterPaymentsResponse, error) {
+
+	fields := logrus.Fields{
+		"request_id": correlationID,
+	}
 
 	if err := grok.Validator.Struct(model); err != nil {
 		return nil, grok.FromValidationErros(err)
@@ -189,6 +270,10 @@ func (p *Payment) FilterPayments(correlationID string, model *FilterPaymentsRequ
 	u, err := url.Parse(p.session.APIEndpoint)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error parsing api endpoint")
 		return nil, err
 	}
 
@@ -206,15 +291,23 @@ func (p *Payment) FilterPayments(correlationID string, model *FilterPaymentsRequ
 	u.RawQuery = q.Encode()
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error creating request")
 		return nil, err
 	}
 
-	token, err := p.authentication.Token()
+	token, err := p.authentication.Token(ctx)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error in authentication request")
 		return nil, err
 	}
 
@@ -226,6 +319,10 @@ func (p *Payment) FilterPayments(correlationID string, model *FilterPaymentsRequ
 	resp, err := p.httpClient.Do(req)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error performing the request")
 		return nil, err
 	}
 
@@ -239,7 +336,11 @@ func (p *Payment) FilterPayments(correlationID string, model *FilterPaymentsRequ
 		err = json.Unmarshal(respBody, &response)
 
 		if err != nil {
-			return nil, err
+			logrus.
+				WithFields(fields).
+				WithError(err).
+				Error("error decoding json response")
+			return nil, ErrDefaultPayment
 		}
 
 		return response, nil
@@ -253,18 +354,32 @@ func (p *Payment) FilterPayments(correlationID string, model *FilterPaymentsRequ
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
-		return nil, err
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error decoding json response")
+		return nil, ErrDefaultPayment
 	}
 
 	if bodyErr.Code != "" {
-		return nil, FindError(bodyErr.Code, bodyErr.Message)
+		err = FindError(bodyErr.Code, bodyErr.Message)
+		logrus.
+			WithField("bankly_error", bodyErr).
+			WithFields(fields).
+			WithError(err).
+			Error("bankly filter payments error")
+		return nil, err
 	}
 
 	return nil, ErrDefaultPayment
 }
 
 // DetailPayment ...
-func (p *Payment) DetailPayment(correlationID string, model *DetailPaymentRequest) (*PaymentResponse, error) {
+func (p *Payment) DetailPayment(ctx context.Context, correlationID string, model *DetailPaymentRequest) (*PaymentResponse, error) {
+
+	fields := logrus.Fields{
+		"request_id": correlationID,
+	}
 
 	if err := grok.Validator.Struct(model); err != nil {
 		return nil, grok.FromValidationErros(err)
@@ -273,6 +388,10 @@ func (p *Payment) DetailPayment(correlationID string, model *DetailPaymentReques
 	u, err := url.Parse(p.session.APIEndpoint)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error parsing api endpoint")
 		return nil, err
 	}
 
@@ -287,15 +406,23 @@ func (p *Payment) DetailPayment(correlationID string, model *DetailPaymentReques
 	u.RawQuery = q.Encode()
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error creating request")
 		return nil, err
 	}
 
-	token, err := p.authentication.Token()
+	token, err := p.authentication.Token(ctx)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error in authentication request")
 		return nil, err
 	}
 
@@ -307,6 +434,10 @@ func (p *Payment) DetailPayment(correlationID string, model *DetailPaymentReques
 	resp, err := p.httpClient.Do(req)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error performing the request")
 		return nil, err
 	}
 
@@ -320,7 +451,11 @@ func (p *Payment) DetailPayment(correlationID string, model *DetailPaymentReques
 		err = json.Unmarshal(respBody, &response)
 
 		if err != nil {
-			return nil, err
+			logrus.
+				WithFields(fields).
+				WithError(err).
+				Error("error decoding json response")
+			return nil, ErrDefaultPayment
 		}
 
 		return response, nil
@@ -334,11 +469,21 @@ func (p *Payment) DetailPayment(correlationID string, model *DetailPaymentReques
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
-		return nil, err
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error decoding json response")
+		return nil, ErrDefaultPayment
 	}
 
 	if bodyErr.Code != "" {
-		return nil, FindError(bodyErr.Code, bodyErr.Message)
+		err = FindError(bodyErr.Code, bodyErr.Message)
+		logrus.
+			WithField("bankly_error", bodyErr).
+			WithFields(fields).
+			WithError(err).
+			Error("bankly get payment detail error")
+		return nil, err
 	}
 
 	return nil, ErrDefaultPayment

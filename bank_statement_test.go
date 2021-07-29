@@ -1,6 +1,7 @@
 package bankly_test
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"testing"
@@ -15,6 +16,7 @@ import (
 type BankStatementTestSuite struct {
 	suite.Suite
 	assert  *assert.Assertions
+	ctx     context.Context
 	session *bankly.Session
 	bank    *bankly.BankStatement
 	boletos *bankly.Boletos
@@ -59,7 +61,7 @@ func (s *BankStatementTestSuite) TestFilterBankStatements() {
 		CardProxy:      []string{"123", "456"},
 	}
 
-	r, err := s.bank.FilterBankStatements(req)
+	r, err := s.bank.FilterBankStatements(s.ctx, req)
 
 	s.assert.NoError(err)
 	s.assert.NotEmpty(r)

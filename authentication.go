@@ -1,6 +1,7 @@
 package bankly
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -27,7 +28,7 @@ func NewAuthentication(session Session) *Authentication {
 	}
 }
 
-func (a *Authentication) login() (*AuthenticationResponse, error) {
+func (a *Authentication) login(ctx context.Context) (*AuthenticationResponse, error) {
 	u, err := url.Parse(a.session.LoginEndpoint)
 
 	if err != nil {
@@ -43,7 +44,7 @@ func (a *Authentication) login() (*AuthenticationResponse, error) {
 		"client_secret": {a.session.ClientSecret},
 	}
 
-	req, err := http.NewRequest("POST", endpoint, strings.NewReader(formData.Encode()))
+	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, strings.NewReader(formData.Encode()))
 
 	if err != nil {
 		return nil, err
@@ -89,12 +90,12 @@ func (a *Authentication) login() (*AuthenticationResponse, error) {
 }
 
 //Token ...
-func (a Authentication) Token() (string, error) {
+func (a Authentication) Token(ctx context.Context) (string, error) {
 	if token, found := a.session.Cache.Get("token"); found {
 		return token.(string), nil
 	}
 
-	response, err := a.login()
+	response, err := a.login(ctx)
 
 	if err != nil {
 		return "", err

@@ -2,6 +2,7 @@ package bankly
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/contbank/grok"
+	"github.com/sirupsen/logrus"
 )
 
 //Boletos ...
@@ -30,16 +32,23 @@ func NewBoletos(httpClient *http.Client, session Session) *Boletos {
 }
 
 //CreateBoleto ...
-func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
-	err := grok.Validator.Struct(model)
+func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*BoletoResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+	}
 
-	if err != nil {
+	if err := grok.Validator.Struct(model); err != nil {
 		return nil, grok.FromValidationErros(err)
 	}
 
 	u, err := url.Parse(b.session.APIEndpoint)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error parsing api endpoint")
 		return nil, err
 	}
 
@@ -49,18 +58,30 @@ func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
 	reqbyte, err := json.Marshal(model)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error encoding model to json")
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, bytes.NewReader(reqbyte))
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error creating request")
 		return nil, err
 	}
 
-	token, err := b.authentication.Token()
+	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error in authentication request")
 		return nil, err
 	}
 
@@ -71,6 +92,10 @@ func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
 	resp, err := b.httpClient.Do(req)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error performing the request")
 		return nil, err
 	}
 
@@ -84,7 +109,11 @@ func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
 		err = json.Unmarshal(respBody, &body)
 
 		if err != nil {
-			return nil, err
+			logrus.
+				WithFields(fields).
+				WithError(err).
+				Error("error decoding json response")
+			return nil, ErrDefaultBoletos
 		}
 
 		return body, nil
@@ -95,24 +124,44 @@ func (b *Boletos) CreateBoleto(model *BoletoRequest) (*BoletoResponse, error) {
 	err = json.Unmarshal(respBody, &bodyErr)
 
 	if err != nil {
-		return nil, err
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error decoding json response")
+		return nil, ErrDefaultBoletos
 	}
 
 	if len(bodyErr) > 0 {
 		errModel := bodyErr[0]
-		return nil, FindError(errModel.Code, errModel.Message)
+		err = FindError(errModel.Code, errModel.Message)
+		logrus.
+			WithField("bankly_error", bodyErr).
+			WithFields(fields).
+			WithError(err).
+			Error("bankly create boleto error")
+		return nil, err
 	}
 
 	return nil, ErrDefaultBoletos
 }
 
 //FindBoleto ...
-func (b *Boletos) FindBoleto(model *FindBoletoRequest) (*BoletoDetailedResponse, error) {
+func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*BoletoDetailedResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+	}
+
 	u, err := url.Parse(b.session.APIEndpoint)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error parsing api endpoint")
 		return nil, err
 	}
+
 	u.Path = path.Join(u.Path, BoletosPath)
 	u.Path = path.Join(u.Path, "branch")
 	u.Path = path.Join(u.Path, model.Account.Branch)
@@ -121,15 +170,23 @@ func (b *Boletos) FindBoleto(model *FindBoletoRequest) (*BoletoDetailedResponse,
 	u.Path = path.Join(u.Path, model.AuthenticationCode)
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error creating request")
 		return nil, err
 	}
 
-	token, err := b.authentication.Token()
+	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error in authentication request")
 		return nil, err
 	}
 
@@ -139,6 +196,10 @@ func (b *Boletos) FindBoleto(model *FindBoletoRequest) (*BoletoDetailedResponse,
 	resp, err := b.httpClient.Do(req)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error performing the request")
 		return nil, err
 	}
 
@@ -152,7 +213,11 @@ func (b *Boletos) FindBoleto(model *FindBoletoRequest) (*BoletoDetailedResponse,
 		err = json.Unmarshal(respBody, &response)
 
 		if err != nil {
-			return nil, err
+			logrus.
+				WithFields(fields).
+				WithError(err).
+				Error("error decoding json response")
+			return nil, ErrDefaultBoletos
 		}
 
 		return response, nil
@@ -167,22 +232,41 @@ func (b *Boletos) FindBoleto(model *FindBoletoRequest) (*BoletoDetailedResponse,
 	err = json.Unmarshal(respBody, &bodyErr)
 
 	if err != nil {
-		return nil, err
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error decoding json response")
+		return nil, ErrDefaultBoletos
 	}
 
 	if len(bodyErr.Errors) > 0 {
 		errModel := bodyErr.Errors[0]
-		return nil, FindError(errModel.Code, errModel.Messages...)
+		err = FindError(errModel.Code, errModel.Messages...)
+		logrus.
+			WithField("bankly_error", bodyErr).
+			WithFields(fields).
+			WithError(err).
+			Error("bankly find boleto error")
+		return nil, err
 	}
 
 	return nil, ErrDefaultBoletos
 }
 
 //FilterBoleto ...
-func (b *Boletos) FilterBoleto(date time.Time) (*FilterBoletoResponse, error) {
+func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBoletoResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+	}
+
 	u, err := url.Parse(b.session.APIEndpoint)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error parsing api endpoint")
 		return nil, err
 	}
 	u.Path = path.Join(u.Path, BoletosPath)
@@ -190,15 +274,23 @@ func (b *Boletos) FilterBoleto(date time.Time) (*FilterBoletoResponse, error) {
 	u.Path = path.Join(u.Path, url.QueryEscape(date.UTC().Format("2006-01-02T15:04:05")))
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error creating request")
 		return nil, err
 	}
 
-	token, err := b.authentication.Token()
+	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error in authentication request")
 		return nil, err
 	}
 
@@ -208,6 +300,10 @@ func (b *Boletos) FilterBoleto(date time.Time) (*FilterBoletoResponse, error) {
 	resp, err := b.httpClient.Do(req)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error performing the request")
 		return nil, err
 	}
 
@@ -221,7 +317,11 @@ func (b *Boletos) FilterBoleto(date time.Time) (*FilterBoletoResponse, error) {
 		err = json.Unmarshal(respBody, &response)
 
 		if err != nil {
-			return nil, err
+			logrus.
+				WithFields(fields).
+				WithError(err).
+				Error("error decoding json response")
+			return nil, ErrDefaultBoletos
 		}
 
 		return response, nil
@@ -232,37 +332,66 @@ func (b *Boletos) FilterBoleto(date time.Time) (*FilterBoletoResponse, error) {
 	err = json.Unmarshal(respBody, &bodyErr)
 
 	if err != nil {
-		return nil, err
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error decoding json response")
+		return nil, ErrDefaultBoletos
 	}
 
 	if len(bodyErr.Errors) > 0 {
 		errModel := bodyErr.Errors[0]
-		return nil, FindError(errModel.Code, errModel.Messages...)
+		err = FindError(errModel.Code, errModel.Messages...)
+		logrus.
+			WithField("bankly_error", bodyErr).
+			WithFields(fields).
+			WithError(err).
+			Error("bankly filteting boleto error")
+		return nil, err
 	}
 
 	return nil, ErrDefaultBoletos
 }
 
 //FindBoletoByBarCode ...
-func (b *Boletos) FindBoletoByBarCode(barcode string) (*BoletoDetailedResponse, error) {
+func (b *Boletos) FindBoletoByBarCode(ctx context.Context, barcode string) (*BoletoDetailedResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+	}
+
 	u, err := url.Parse(b.session.APIEndpoint)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error parsing api endpoint")
 		return nil, err
 	}
+
 	u.Path = path.Join(u.Path, BoletosPath)
 	u.Path = path.Join(u.Path, barcode)
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error creating request")
+
 		return nil, err
 	}
 
-	token, err := b.authentication.Token()
+	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error in authentication request")
 		return nil, err
 	}
 
@@ -272,6 +401,10 @@ func (b *Boletos) FindBoletoByBarCode(barcode string) (*BoletoDetailedResponse, 
 	resp, err := b.httpClient.Do(req)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error performing the request")
 		return nil, err
 	}
 
@@ -285,7 +418,11 @@ func (b *Boletos) FindBoletoByBarCode(barcode string) (*BoletoDetailedResponse, 
 		err = json.Unmarshal(respBody, &response)
 
 		if err != nil {
-			return nil, err
+			logrus.
+				WithFields(fields).
+				WithError(err).
+				Error("error decoding json response")
+			return nil, ErrDefaultBoletos
 		}
 
 		return response, nil
@@ -300,19 +437,34 @@ func (b *Boletos) FindBoletoByBarCode(barcode string) (*BoletoDetailedResponse, 
 	err = json.Unmarshal(respBody, &bodyErr)
 
 	if err != nil {
-		return nil, err
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error decoding json response")
+		return nil, ErrDefaultBoletos
 	}
 
 	if len(bodyErr.Errors) > 0 {
 		errModel := bodyErr.Errors[0]
-		return nil, FindError(errModel.Code, errModel.Messages...)
+		err = FindError(errModel.Code, errModel.Messages...)
+		logrus.
+			WithField("bankly_error", bodyErr).
+			WithFields(fields).
+			WithError(err).
+			Error("bankly find boleto by barcode error")
+		return nil, err
 	}
 
 	return nil, ErrDefaultBoletos
 }
 
 //DownloadBoleto ...
-func (b *Boletos) DownloadBoleto(authenticationCode string, w io.Writer) error {
+func (b *Boletos) DownloadBoleto(ctx context.Context, authenticationCode string, w io.Writer) error {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+	}
+
 	u, err := url.Parse(b.session.APIEndpoint)
 
 	if err != nil {
@@ -323,15 +475,23 @@ func (b *Boletos) DownloadBoleto(authenticationCode string, w io.Writer) error {
 	u.Path = path.Join(u.Path, "pdf")
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error creating request")
 		return err
 	}
 
-	token, err := b.authentication.Token()
+	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error in authentication request")
 		return err
 	}
 
@@ -342,12 +502,24 @@ func (b *Boletos) DownloadBoleto(authenticationCode string, w io.Writer) error {
 	resp, err := b.httpClient.Do(req)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error performing the request")
 		return err
 	}
 
 	if resp.StatusCode == http.StatusOK {
 		_, err := io.Copy(w, resp.Body)
-		return err
+		if err != nil {
+			logrus.
+				WithFields(fields).
+				WithError(err).
+				Error("error writting bytes to writer")
+			return ErrDefaultBoletos
+		}
+
+		return nil
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
@@ -358,7 +530,12 @@ func (b *Boletos) DownloadBoleto(authenticationCode string, w io.Writer) error {
 }
 
 //CancelBoleto ...
-func (b *Boletos) CancelBoleto(model *CancelBoletoRequest) error {
+func (b *Boletos) CancelBoleto(ctx context.Context, model *CancelBoletoRequest) error {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+	}
+
 	err := grok.Validator.Struct(model)
 
 	if err != nil {
@@ -368,6 +545,10 @@ func (b *Boletos) CancelBoleto(model *CancelBoletoRequest) error {
 	u, err := url.Parse(b.session.APIEndpoint)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error parsing api endpoint")
 		return err
 	}
 
@@ -378,18 +559,30 @@ func (b *Boletos) CancelBoleto(model *CancelBoletoRequest) error {
 	reqbyte, err := json.Marshal(model)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error encoding model to json")
 		return err
 	}
 
-	req, err := http.NewRequest("DELETE", endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "DELETE", endpoint, bytes.NewReader(reqbyte))
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error creating request")
 		return err
 	}
 
-	token, err := b.authentication.Token()
+	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error in authentication request")
 		return err
 	}
 
@@ -400,6 +593,10 @@ func (b *Boletos) CancelBoleto(model *CancelBoletoRequest) error {
 	resp, err := b.httpClient.Do(req)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error performing the request")
 		return err
 	}
 
@@ -413,7 +610,7 @@ func (b *Boletos) CancelBoleto(model *CancelBoletoRequest) error {
 }
 
 //SimulatePayment ...
-func (b *Boletos) SimulatePayment(model *SimulatePaymentRequest) error {
+func (b *Boletos) SimulatePayment(ctx context.Context, model *SimulatePaymentRequest) error {
 	err := grok.Validator.Struct(model)
 
 	if err != nil {
@@ -436,13 +633,13 @@ func (b *Boletos) SimulatePayment(model *SimulatePaymentRequest) error {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(reqbyte))
+	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, bytes.NewReader(reqbyte))
 
 	if err != nil {
 		return err
 	}
 
-	token, err := b.authentication.Token()
+	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
 		return err

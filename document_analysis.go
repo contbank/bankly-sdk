@@ -2,6 +2,7 @@ package bankly
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -38,7 +39,7 @@ func NewDocumentAnalysis(session Session) *DocumentAnalysis {
 }
 
 // SendDocumentAnalysis ...
-func (c *DocumentAnalysis) SendDocumentAnalysis(request DocumentAnalysisRequest) (*DocumentAnalysisResponse, error) {
+func (c *DocumentAnalysis) SendDocumentAnalysis(ctx context.Context, request DocumentAnalysisRequest) (*DocumentAnalysisResponse, error) {
 	err := grok.Validator.Struct(request)
 	if err != nil {
 		return nil, grok.FromValidationErros(err)
@@ -54,7 +55,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(request DocumentAnalysisRequest)
 		return nil, err
 	}
 
-	req, err := http.NewRequest("PUT", *endpoint, payload)
+	req, err := http.NewRequestWithContext(ctx, "PUT", *endpoint, payload)
 	if err != nil {
 		logrus.
 			WithError(err).
@@ -62,7 +63,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(request DocumentAnalysisRequest)
 		return nil, err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
 		logrus.
 			WithError(err).
@@ -124,7 +125,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(request DocumentAnalysisRequest)
 }
 
 // FindDocumentAnalysis ...
-func (c *DocumentAnalysis) FindDocumentAnalysis(documentNumber string, documentAnalysisToken string) (*DocumentAnalysisResponse, error) {
+func (c *DocumentAnalysis) FindDocumentAnalysis(ctx context.Context, documentNumber string, documentAnalysisToken string) (*DocumentAnalysisResponse, error) {
 	resultLevel := ResultLevelDetailed
 	endpoint, err := c.getDocumentAnalysisAPIEndpoint(documentNumber, &resultLevel, &documentAnalysisToken)
 	if err != nil {
@@ -133,13 +134,13 @@ func (c *DocumentAnalysis) FindDocumentAnalysis(documentNumber string, documentA
 		return nil, ErrInvalidAPIEndpoint
 	}
 
-	req, err := http.NewRequest("GET", *endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", *endpoint, nil)
 	if err != nil {
 		logrus.WithError(err).Error("error new request")
 		return nil, err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
 		logrus.WithError(err).Error("error token")
 		return nil, err

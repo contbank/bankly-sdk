@@ -1,11 +1,14 @@
 package bankly
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
+
+	"github.com/sirupsen/logrus"
 )
 
 //Balance ...
@@ -25,9 +28,18 @@ func NewBalance(httpClient *http.Client, session Session) *Balance {
 }
 
 //Balance ...
-func (c *Balance) Balance(account string) (*AccountResponse, error) {
+func (c *Balance) Balance(ctx context.Context, account string) (*AccountResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+	}
+
 	u, err := url.Parse(c.session.APIEndpoint)
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error parsing api endpoint")
 		return nil, err
 	}
 
@@ -41,13 +53,21 @@ func (c *Balance) Balance(account string) (*AccountResponse, error) {
 	u.RawQuery = q.Encode()
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error new request")
 		return nil, err
 	}
 
-	token, err := c.authentication.Token()
+	token, err := c.authentication.Token(ctx)
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error authentication")
 		return nil, err
 	}
 
@@ -55,6 +75,10 @@ func (c *Balance) Balance(account string) (*AccountResponse, error) {
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error http client")
 		return nil, err
 	}
 
@@ -67,7 +91,11 @@ func (c *Balance) Balance(account string) (*AccountResponse, error) {
 
 		err = json.Unmarshal(respBody, &response)
 		if err != nil {
-			return nil, err
+			logrus.
+				WithFields(fields).
+				WithError(err).
+				Error("error decoding json response")
+			return nil, ErrDefaultBalance
 		}
 
 		return response, nil
@@ -81,12 +109,23 @@ func (c *Balance) Balance(account string) (*AccountResponse, error) {
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
-		return nil, err
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error decoding json response")
+		return nil, ErrDefaultBalance
 	}
 
 	if len(bodyErr.Errors) > 0 {
 		errModel := bodyErr.Errors[0]
-		return nil, FindError(errModel.Code, errModel.Messages...)
+		err = FindError(errModel.Code, errModel.Messages...)
+
+		logrus.
+			WithField("bankly_error", bodyErr).
+			WithFields(fields).
+			WithError(err).
+			Error("bankly get balance error")
+		return nil, err
 	}
 
 	return nil, ErrDefaultBalance
