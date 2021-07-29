@@ -58,7 +58,7 @@ func (c *Balance) Balance(ctx context.Context, account string) (*AccountResponse
 	u.RawQuery = q.Encode()
 	endpoint := u.String()
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 	if err != nil {
 		logrus.
 			WithFields(fields).
