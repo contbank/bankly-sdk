@@ -147,13 +147,13 @@ func (s *CustomersTestSuite) TestCreateAndFindAccount() {
 	err := s.createRegistrationWithParams(randSurname, document, cellphone, email)
 	s.assert.NoError(err)
 
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 3)
 
 	account, err := s.customers.CreateAccount(context.Background(), document, bankly.PaymentAccount)
 	s.assert.NoError(err)
 	s.assert.NotNil(account)
 
-	time.Sleep(time.Millisecond)
+	time.Sleep(time.Second * 3)
 
 	accountResponse, err := s.customers.FindAccounts(context.Background(), document)
 	s.assert.NoError(err)

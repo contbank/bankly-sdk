@@ -19,7 +19,10 @@ type LoggingRoundTripper struct {
 // RoundTrip ...
 func (lrt LoggingRoundTripper) RoundTrip(req *http.Request) (res *http.Response, err error) {
 
-	fields := logrus.Fields{"request_id": req.Context().Value("Request-Id")}
+	fields := logrus.Fields{
+		"request_id": req.Context().Value("Request-Id"),
+		"worker_request_id": req.Context().Value("Worker-Request-Id"),
+	}
 
 	logrus.WithFields(fields).Infof("sending request to %v", req.URL)
 

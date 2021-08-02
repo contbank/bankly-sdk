@@ -80,10 +80,6 @@ func (c *Customers) CreateRegistration(ctx context.Context, customer CustomersRe
 
 	resp, err := c.httpClient.Do(req)
 
-	fields["bankly_request_host"] = req.URL.Host
-	fields["bankly_request_path"] = req.URL.Path
-	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
-
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -151,10 +147,6 @@ func (c *Customers) FindRegistration(ctx context.Context, document string) (*Cus
 
 	req = setRequestHeader(req, token, c.session.APIVersion)
 
-	fields["bankly_request_host"] = req.URL.Host
-	fields["bankly_request_path"] = req.URL.Path
-	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
-
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -168,7 +160,6 @@ func (c *Customers) FindRegistration(ctx context.Context, document string) (*Cus
 		var response *CustomersResponse
 
 		err = json.Unmarshal(respBody, &response)
-		fields["bankly_response"] = response
 
 		if err != nil {
 			return nil, err
@@ -237,10 +228,6 @@ func (c *Customers) UpdateRegistration(ctx context.Context, document string, cus
 
 	req = setRequestHeader(req, token, c.session.APIVersion)
 
-	fields["bankly_request_host"] = req.URL.Host
-	fields["bankly_request_path"] = req.URL.Path
-	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
-
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
@@ -307,10 +294,6 @@ func (c *Customers) CreateAccount(ctx context.Context, document string, accountT
 	}
 
 	req = setRequestHeader(req, token, c.session.APIVersion)
-
-	fields["bankly_request_host"] = req.URL.Host
-	fields["bankly_request_path"] = req.URL.Path
-	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -386,10 +369,6 @@ func (c *Customers) FindAccounts(ctx context.Context, document string) ([]Accoun
 
 	req = setRequestHeader(req, token, c.session.APIVersion)
 
-	fields["bankly_request_host"] = req.URL.Host
-	fields["bankly_request_path"] = req.URL.Path
-	fields["bankly_request_header_api_version"] = req.Header.Get("api-version")
-
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		logrus.
@@ -407,7 +386,6 @@ func (c *Customers) FindAccounts(ctx context.Context, document string) ([]Accoun
 		var response []AccountResponse
 
 		err = json.Unmarshal(respBody, &response)
-		fields["bankly_response"] = response
 
 		if err != nil {
 			logrus.
