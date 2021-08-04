@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"path"
 	"strconv"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Bank ...
@@ -28,9 +30,19 @@ func NewBank(httpClient *http.Client, session Session) *Bank {
 
 //GetByID returns a list with all available financial instituitions
 func (c *Bank) GetByID(ctx context.Context, id string) (*BankDataResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"bank_id":    id,
+		"request_id": requestID,
+	}
+
 	u, err := url.Parse(c.session.APIEndpoint)
 
 	if err != nil {
+		logrus.
+			WithError(err).
+			WithFields(fields).
+			Error("error parsing api endpoint")
 		return nil, err
 	}
 
@@ -41,12 +53,20 @@ func (c *Bank) GetByID(ctx context.Context, id string) (*BankDataResponse, error
 	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
+		logrus.
+			WithError(err).
+			WithFields(fields).
+			Error("error creating request")
 		return nil, err
 	}
 
 	token, err := c.authentication.Token(ctx)
 
 	if err != nil {
+		logrus.
+			WithError(err).
+			WithFields(fields).
+			Error("error in authentication request")
 		return nil, err
 	}
 
@@ -56,6 +76,10 @@ func (c *Bank) GetByID(ctx context.Context, id string) (*BankDataResponse, error
 	resp, err := c.httpClient.Do(req)
 
 	if err != nil {
+		logrus.
+			WithError(err).
+			WithFields(fields).
+			Error("error performing the request")
 		return nil, err
 	}
 
@@ -69,6 +93,10 @@ func (c *Bank) GetByID(ctx context.Context, id string) (*BankDataResponse, error
 		err = json.Unmarshal(respBody, &response)
 
 		if err != nil {
+			logrus.
+				WithError(err).
+				WithFields(fields).
+				Error("error decoding json response")
 			return nil, err
 		}
 
@@ -84,12 +112,23 @@ func (c *Bank) GetByID(ctx context.Context, id string) (*BankDataResponse, error
 	err = json.Unmarshal(respBody, &bodyErr)
 
 	if err != nil {
-		return nil, err
+		logrus.
+			WithError(err).
+			WithFields(fields).
+			Error("error decoding json response")
+
+		return nil, ErrDefaultBank
 	}
 
 	if len(bodyErr.Errors) > 0 {
 		errModel := bodyErr.Errors[0]
-		return nil, FindError(errModel.Code, errModel.Messages...)
+		err = FindError(errModel.Code, errModel.Messages...)
+		logrus.
+			WithError(err).
+			WithFields(fields).
+			WithField("bankly_error", bodyErr).
+			Error("bankly get bank by id error")
+		return nil, err
 	}
 
 	return nil, ErrDefaultBank
@@ -97,9 +136,18 @@ func (c *Bank) GetByID(ctx context.Context, id string) (*BankDataResponse, error
 
 //List returns a list with all available financial instituitions
 func (c *Bank) List(ctx context.Context, filter *FilterBankListRequest) ([]*BankDataResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+	}
+
 	u, err := url.Parse(c.session.APIEndpoint)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error parsing api endpoint")
 		return nil, err
 	}
 
@@ -133,12 +181,20 @@ func (c *Bank) List(ctx context.Context, filter *FilterBankListRequest) ([]*Bank
 	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error creating request")
 		return nil, err
 	}
 
 	token, err := c.authentication.Token(ctx)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error in authentication request")
 		return nil, err
 	}
 
@@ -148,6 +204,10 @@ func (c *Bank) List(ctx context.Context, filter *FilterBankListRequest) ([]*Bank
 	resp, err := c.httpClient.Do(req)
 
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error performing the request")
 		return nil, err
 	}
 
@@ -161,7 +221,11 @@ func (c *Bank) List(ctx context.Context, filter *FilterBankListRequest) ([]*Bank
 		err = json.Unmarshal(respBody, &response)
 
 		if err != nil {
-			return nil, err
+			logrus.
+				WithFields(fields).
+				WithError(err).
+				Error("error decoding json response")
+			return nil, ErrDefaultBank
 		}
 
 		return response, nil
@@ -172,12 +236,24 @@ func (c *Bank) List(ctx context.Context, filter *FilterBankListRequest) ([]*Bank
 	err = json.Unmarshal(respBody, &bodyErr)
 
 	if err != nil {
-		return nil, err
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error decoding json response")
+		return nil, ErrDefaultBank
 	}
 
 	if len(bodyErr.Errors) > 0 {
 		errModel := bodyErr.Errors[0]
-		return nil, FindError(errModel.Code, errModel.Messages...)
+		err = FindError(errModel.Code, errModel.Messages...)
+
+		logrus.
+			WithField("bankly_error", bodyErr).
+			WithFields(fields).
+			WithError(err).
+			Error("bankly filter banks")
+
+		return nil, err
 	}
 
 	return nil, ErrDefaultBank
