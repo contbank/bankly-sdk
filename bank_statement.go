@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/contbank/grok"
+	"github.com/sirupsen/logrus"
 )
 
 //BankStatement ...
@@ -30,6 +31,10 @@ func NewBankStatement(httpClient *http.Client, session Session) *BankStatement {
 
 // FilterBankStatements ...
 func (c *BankStatement) FilterBankStatements(ctx context.Context, model *FilterBankStatementRequest) ([]*Statement, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+	}
 
 	if err := grok.Validator.Struct(model); err != nil {
 		return nil, grok.FromValidationErros(err)
@@ -37,6 +42,10 @@ func (c *BankStatement) FilterBankStatements(ctx context.Context, model *FilterB
 
 	u, err := url.Parse(c.session.APIEndpoint)
 	if err != nil {
+		logrus.
+			WithError(err).
+			WithFields(fields).
+			Error("error parsing api endpoint")
 		return nil, err
 	}
 
@@ -69,11 +78,19 @@ func (c *BankStatement) FilterBankStatements(ctx context.Context, model *FilterB
 
 	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 	if err != nil {
+		logrus.
+			WithError(err).
+			WithFields(fields).
+			Error("error creating request")
 		return nil, err
 	}
 
 	token, err := c.authentication.Token(ctx)
 	if err != nil {
+		logrus.
+			WithError(err).
+			WithFields(fields).
+			Error("error in authentication request")
 		return nil, err
 	}
 
@@ -81,6 +98,10 @@ func (c *BankStatement) FilterBankStatements(ctx context.Context, model *FilterB
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		logrus.
+			WithError(err).
+			WithFields(fields).
+			Error("error performing the request")
 		return nil, err
 	}
 
@@ -93,7 +114,11 @@ func (c *BankStatement) FilterBankStatements(ctx context.Context, model *FilterB
 
 		err = json.Unmarshal(respBody, &response)
 		if err != nil {
-			return nil, err
+			logrus.
+				WithError(err).
+				WithFields(fields).
+				Error("error decoding json response")
+			return nil, ErrDefaultBankStatements
 		}
 
 		return response, nil
@@ -107,12 +132,24 @@ func (c *BankStatement) FilterBankStatements(ctx context.Context, model *FilterB
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
-		return nil, err
+		logrus.
+			WithError(err).
+			WithFields(fields).
+			Error("error decoding json response")
+		return nil, ErrDefaultBankStatements
 	}
 
 	if len(bodyErr.Errors) > 0 {
 		errModel := bodyErr.Errors[0]
-		return nil, FindError(errModel.Code, errModel.Messages...)
+		err = FindError(errModel.Code, errModel.Messages...)
+
+		logrus.
+			WithError(err).
+			WithFields(fields).
+			WithField("bankly_error", bodyErr).
+			Error("bankly filter banks statements")
+
+		return nil, err
 	}
 
 	return nil, ErrDefaultBankStatements
