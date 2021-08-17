@@ -121,27 +121,35 @@ func (c *Customers) CreateRegistration(ctx context.Context, customer CustomersRe
 }
 
 //FindRegistration ...
-func (c *Customers) FindRegistration(ctx context.Context, document string) (*CustomersResponse, error) {
+func (c *Customers) FindRegistration(ctx context.Context, identifier string) (*CustomersResponse, error) {
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id": requestID,
-		"document":   document,
+		"request_id" : requestID,
+		"identifier" : identifier,
 	}
 
 	resultLevel := ResultLevelDetailed
-	endpoint, err := c.getCustomerAPIEndpoint(requestID, document, false, &resultLevel)
+	endpoint, err := c.getCustomerAPIEndpoint(requestID, identifier, false, &resultLevel)
 	if err != nil {
 		return nil, err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "GET", *endpoint, nil)
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error new request")
 		return nil, err
 	}
 
 	token, err := c.authentication.Token(ctx)
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error authentication")
 		return nil, err
 	}
 
@@ -149,6 +157,10 @@ func (c *Customers) FindRegistration(ctx context.Context, document string) (*Cus
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		logrus.
+			WithFields(fields).
+			WithError(err).
+			Error("error http client")
 		return nil, err
 	}
 
@@ -162,8 +174,17 @@ func (c *Customers) FindRegistration(ctx context.Context, document string) (*Cus
 		err = json.Unmarshal(respBody, &response)
 
 		if err != nil {
+			logrus.
+				WithFields(fields).
+				WithError(err).
+				Error("error unmarshal")
 			return nil, err
 		}
+
+		fields["response"] = response
+		logrus.
+			WithFields(fields).
+			Info("response with success")
 
 		return response, nil
 	}
@@ -395,6 +416,11 @@ func (c *Customers) FindAccounts(ctx context.Context, document string) ([]Accoun
 			return nil, err
 		}
 
+		fields["response"] = response
+		logrus.
+			WithFields(fields).
+			Info("response with success")
+
 		return response, nil
 	}
 
@@ -426,28 +452,45 @@ func (c *Customers) FindAccounts(ctx context.Context, document string) ([]Accoun
 }
 
 // getCustomerAPIEndpoint
-func (c *Customers) getCustomerAPIEndpoint(requestID string, document string, isAccountPath bool, resultLevel *ResultLevel) (*string, error) {
+func (c *Customers) getCustomerAPIEndpoint(requestID string, identifier string,
+	isAccountPath bool, resultLevel *ResultLevel) (*string, error) {
+
+	fields := logrus.Fields {
+		"request_id" : requestID,
+		"identifier" : identifier,
+		"is_account_path" : isAccountPath,
+		"result_level" : resultLevel,
+	}
+
 	u, err := url.Parse(c.session.APIEndpoint)
 	if err != nil {
 		logrus.
-			WithFields(logrus.Fields{
-				"request_id": requestID,
-			}).
+			WithFields(fields).
 			WithError(err).
 			Error("error api endpoint")
 		return nil, err
 	}
+
 	u.Path = path.Join(u.Path, CustomersPath)
-	u.Path = path.Join(u.Path, grok.OnlyDigits(document))
+	u.Path = path.Join(u.Path, grok.OnlyDigits(identifier))
+
 	if isAccountPath == true {
 		u.Path = path.Join(u.Path, AccountsPath)
 	}
+
 	if resultLevel != nil {
 		q := u.Query()
 		q.Set("resultLevel", string(*resultLevel))
 		u.RawQuery = q.Encode()
 	}
+
 	endpoint := u.String()
+
+	fields["endpoint"] = endpoint
+	logrus.
+		WithFields(fields).
+		Info("get endpoint success")
+
 	return &endpoint, nil
 }
 
