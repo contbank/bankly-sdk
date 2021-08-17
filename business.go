@@ -42,7 +42,7 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 		"request_id": requestID,
 	}
 
-	endpoint, err := c.getBusinessAPIEndpoint(requestID, businessRequest.Document, false)
+	endpoint, err := c.getBusinessAPIEndpoint(requestID, businessRequest.Document, false, nil)
 	if err != nil {
 		logrus.
 			WithFields(fields).
@@ -125,7 +125,7 @@ func (c *Business) UpdateBusiness(ctx context.Context,
 		"request_id": requestID,
 	}
 
-	endpoint, err := c.getBusinessAPIEndpoint(requestID, businessDocument, false)
+	endpoint, err := c.getBusinessAPIEndpoint(requestID, businessDocument, false, nil)
 	if err != nil {
 		return err
 	}
@@ -203,7 +203,7 @@ func (c *Business) CreateBusinessAccount(ctx context.Context,
 		"request_id": requestID,
 	}
 
-	endpoint, err := c.getBusinessAPIEndpoint(requestID, businessAccountRequest.Document, true)
+	endpoint, err := c.getBusinessAPIEndpoint(requestID, businessAccountRequest.Document, true, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -283,15 +283,16 @@ func (c *Business) CreateBusinessAccount(ctx context.Context,
 }
 
 //FindBusiness ...
-func (c *Business) FindBusiness(ctx context.Context, document string) (*BusinessResponse, error) {
+func (c *Business) FindBusiness(ctx context.Context, identifier string) (*BusinessResponse, error) {
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id": requestID,
-		"document":   document,
+		"request_id" : requestID,
+		"identifier" : identifier,
 	}
 
-	endpoint, err := c.getBusinessAPIEndpoint(requestID, document, false)
+	resultLevel := ResultLevelDetailed
+	endpoint, err := c.getBusinessAPIEndpoint(requestID, identifier, false, &resultLevel)
 	if err != nil {
 		return nil, err
 	}
@@ -334,10 +335,19 @@ func (c *Business) FindBusiness(ctx context.Context, document string) (*Business
 			return nil, err
 		}
 
+		fields["response"] = response
+		logrus.
+			WithFields(fields).
+			Info("response with success")
+
 		return &response, nil
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
+		logrus.
+			WithFields(fields).
+			WithError(ErrEntryNotFound).
+			Error("entry not found")
 		return nil, ErrEntryNotFound
 	}
 
@@ -368,15 +378,15 @@ func (c *Business) FindBusiness(ctx context.Context, document string) (*Business
 }
 
 //FindBusinessAccounts ...
-func (c *Business) FindBusinessAccounts(ctx context.Context, document string) ([]AccountResponse, error) {
+func (c *Business) FindBusinessAccounts(ctx context.Context, identifier string) ([]AccountResponse, error) {
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id": requestID,
-		"document":   document,
+		"request_id" : requestID,
+		"identifier" : identifier,
 	}
 
-	endpoint, err := c.getBusinessAPIEndpoint(requestID, document, true)
+	endpoint, err := c.getBusinessAPIEndpoint(requestID, identifier, true, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -427,10 +437,19 @@ func (c *Business) FindBusinessAccounts(ctx context.Context, document string) ([
 			return nil, err
 		}
 
+		fields["response"] = response
+		logrus.
+			WithFields(fields).
+			Info("response with success")
+
 		return response, nil
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
+		logrus.
+			WithFields(fields).
+			WithError(ErrEntryNotFound).
+			Error("error entry not found")
 		return nil, ErrEntryNotFound
 	}
 
@@ -461,23 +480,44 @@ func (c *Business) FindBusinessAccounts(ctx context.Context, document string) ([
 }
 
 // getBusinessAPIEndpoint
-func (c *Business) getBusinessAPIEndpoint(requestID string,
-	document string, isAccountPath bool) (*string, error) {
+func (c *Business) getBusinessAPIEndpoint(requestID string, identifier string,
+	isAccountPath bool, resultLevel *ResultLevel) (*string, error) {
+
+	fields := logrus.Fields {
+		"request_id" : requestID,
+		"identifier" : identifier,
+		"is_account_path" : isAccountPath,
+		"result_level" : resultLevel,
+	}
+
 	u, err := url.Parse(c.session.APIEndpoint)
 	if err != nil {
 		logrus.
-			WithFields(logrus.Fields{
-				"request_id": requestID,
-			}).
+			WithFields(fields).
 			WithError(err).
 			Error("error api endpoint")
 		return nil, err
 	}
+
 	u.Path = path.Join(u.Path, BusinessPath)
-	u.Path = path.Join(u.Path, grok.OnlyDigits(document))
+	u.Path = path.Join(u.Path, grok.OnlyDigits(identifier))
+
 	if isAccountPath == true {
 		u.Path = path.Join(u.Path, AccountsPath)
 	}
+
+	if resultLevel != nil {
+		q := u.Query()
+		q.Set("resultLevel", string(*resultLevel))
+		u.RawQuery = q.Encode()
+	}
+
 	endpoint := u.String()
+
+	fields["endpoint"] = endpoint
+	logrus.
+		WithFields(fields).
+		Info("get endpoint success")
+
 	return &endpoint, nil
 }

@@ -191,11 +191,30 @@ func (s *BusinessTestSuite) TestCreateBusinessAccountErrorDoesntHaveAnApprovedRe
 	s.assert.Nil(account)
 }
 
-func (s *BusinessTestSuite) TestFindBusiness() {
-	account, err := s.business.FindBusiness(context.Background(), "59619372000143")
+func (s *BusinessTestSuite) TestFindBusiness_APPROVED() {
+	identifier := "59619372000143"
+	account, err := s.business.FindBusiness(context.Background(), identifier)
 
 	s.assert.NoError(err)
 	s.assert.NotNil(account)
+	s.assert.Equal(identifier, account.Document)
+}
+
+func (s *BusinessTestSuite) TestFindBusiness_PENDING() {
+	identifier := "88427552000121"
+	account, err := s.business.FindBusiness(context.Background(), identifier)
+
+	s.assert.NoError(err)
+	s.assert.NotNil(account)
+	s.assert.Equal(identifier, account.Document)
+}
+
+func (s *BusinessTestSuite) TestFindBusiness_NOT_FOUND() {
+	account, err := s.business.FindBusiness(context.Background(), "00000000000000")
+
+	s.assert.Error(err)
+	s.assert.Nil(account)
+	s.assert.Equal("Code: 404 - Messages: not found", err.Error())
 }
 
 func (s *BusinessTestSuite) TestFindBusinessAccounts() {
