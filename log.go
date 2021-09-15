@@ -24,18 +24,15 @@ func (lrt LoggingRoundTripper) RoundTrip(req *http.Request) (res *http.Response,
 		"worker_request_id": req.Context().Value("Worker-Request-Id"),
 	}
 
-	logrus.WithFields(fields).Infof("sending request to %v", req.URL)
-
 	now := time.Now()
 
 	fields["request"] = request(req)
 
+	logrus.WithFields(fields).Infof("sending request to %v", req.URL)
+
 	res, err = lrt.Proxied.RoundTrip(req)
 
 	elapsed := time.Since(now)
-
-	fields["response"] = response(res)
-	fields["latency"] = elapsed.Seconds()
 
 	if err != nil {
 		logrus.
@@ -44,6 +41,9 @@ func (lrt LoggingRoundTripper) RoundTrip(req *http.Request) (res *http.Response,
 			Error("error while receiving response")
 		return
 	}
+
+	fields["response"] = response(res)
+	fields["latency"] = elapsed.Seconds()
 
 	logrus.
 		WithFields(fields).
