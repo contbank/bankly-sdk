@@ -88,6 +88,11 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 
 	if resp.StatusCode == http.StatusAccepted {
 		return nil
+	} else if respBody == nil {
+		logrus.
+			WithFields(fields).
+			Error("error response body nil - CreateBusiness")
+		return ErrDefaultBusinessAccounts
 	}
 
 	var bodyErr *ErrorResponse
@@ -97,7 +102,7 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 		logrus.
 			WithFields(fields).
 			WithError(err).
-			Error("error unmarshal")
+			Error("error unmarshal - CreateBusiness")
 		return err
 	}
 
@@ -169,6 +174,11 @@ func (c *Business) UpdateBusiness(ctx context.Context,
 		return nil
 	} else if resp.StatusCode == http.StatusMethodNotAllowed {
 		return ErrMethodNotAllowed
+	} else if respBody == nil {
+		logrus.
+			WithFields(fields).
+			Error("error response body nil - UpdateBusiness")
+		return ErrDefaultBusinessAccounts
 	}
 
 	var bodyErr *ErrorResponse
@@ -252,11 +262,16 @@ func (c *Business) CreateBusinessAccount(ctx context.Context,
 			logrus.
 				WithFields(fields).
 				WithError(err).
-				Error("error unmarshal")
+				Error("error unmarshal - CreateBusinessAccount")
 			return nil, err
 		}
 
 		return bodyResp, nil
+	} else if respBody == nil {
+		logrus.
+			WithFields(fields).
+			Error("error response body nil - CreateBusinessAccount")
+		return nil, ErrDefaultBusinessAccounts
 	}
 
 	var bodyErr *ErrorResponse
@@ -338,17 +353,20 @@ func (c *Business) FindBusiness(ctx context.Context, identifier string) (*Busine
 		fields["response"] = response
 		logrus.
 			WithFields(fields).
-			Info("response with success")
+			Info("response with success - FindBusiness")
 
 		return &response, nil
-	}
-
-	if resp.StatusCode == http.StatusNotFound {
+	} else if resp.StatusCode == http.StatusNotFound {
 		logrus.
 			WithFields(fields).
 			WithError(ErrEntryNotFound).
-			Error("entry not found")
+			Error("entry not found - FindBusiness")
 		return nil, ErrEntryNotFound
+	} else if respBody == nil {
+		logrus.
+			WithFields(fields).
+			Error("error response body nil - FindBusiness")
+		return nil, ErrDefaultBusinessAccounts
 	}
 
 	var bodyErr *ErrorResponse
@@ -440,17 +458,20 @@ func (c *Business) FindBusinessAccounts(ctx context.Context, identifier string) 
 		fields["response"] = response
 		logrus.
 			WithFields(fields).
-			Info("response with success")
+			Info("response with success - FindBusiness")
 
 		return response, nil
-	}
-
-	if resp.StatusCode == http.StatusNotFound {
+	} else if resp.StatusCode == http.StatusNotFound {
 		logrus.
 			WithFields(fields).
 			WithError(ErrEntryNotFound).
-			Error("error entry not found")
+			Error("error entry not found - FindBusiness")
 		return nil, ErrEntryNotFound
+	} else if respBody == nil {
+		logrus.
+			WithFields(fields).
+			Error("error response body nil - FindBusiness")
+		return nil, ErrDefaultBusinessAccounts
 	}
 
 	var bodyErr *ErrorResponse
