@@ -88,10 +88,10 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 
 	if resp.StatusCode == http.StatusAccepted {
 		return nil
-	} else if respBody == nil {
+	} else if resp.StatusCode == http.StatusInternalServerError {
 		logrus.
 			WithFields(fields).
-			Error("error response body nil - CreateBusiness")
+			Error("internal server error - CreateBusiness")
 		return ErrDefaultBusinessAccounts
 	}
 
@@ -174,10 +174,10 @@ func (c *Business) UpdateBusiness(ctx context.Context,
 		return nil
 	} else if resp.StatusCode == http.StatusMethodNotAllowed {
 		return ErrMethodNotAllowed
-	} else if respBody == nil {
+	} else if resp.StatusCode == http.StatusInternalServerError {
 		logrus.
 			WithFields(fields).
-			Error("error response body nil - UpdateBusiness")
+			Error("internal server error - UpdateBusiness")
 		return ErrDefaultBusinessAccounts
 	}
 
@@ -267,10 +267,10 @@ func (c *Business) CreateBusinessAccount(ctx context.Context,
 		}
 
 		return bodyResp, nil
-	} else if respBody == nil {
+	} else if resp.StatusCode == http.StatusInternalServerError {
 		logrus.
 			WithFields(fields).
-			Error("error response body nil - CreateBusinessAccount")
+			Error("internal server error - CreateBusinessAccount")
 		return nil, ErrDefaultBusinessAccounts
 	}
 
@@ -362,10 +362,10 @@ func (c *Business) FindBusiness(ctx context.Context, identifier string) (*Busine
 			WithError(ErrEntryNotFound).
 			Error("entry not found - FindBusiness")
 		return nil, ErrEntryNotFound
-	} else if respBody == nil {
+	} else if resp.StatusCode == http.StatusInternalServerError {
 		logrus.
 			WithFields(fields).
-			Error("error response body nil - FindBusiness")
+			Error("internal server error - FindBusiness")
 		return nil, ErrDefaultBusinessAccounts
 	}
 
@@ -467,10 +467,10 @@ func (c *Business) FindBusinessAccounts(ctx context.Context, identifier string) 
 			WithError(ErrEntryNotFound).
 			Error("error entry not found - FindBusiness")
 		return nil, ErrEntryNotFound
-	} else if respBody == nil {
+	} else if resp.StatusCode == http.StatusInternalServerError {
 		logrus.
 			WithFields(fields).
-			Error("error response body nil - FindBusiness")
+			Error("internal server error - FindBusiness")
 		return nil, ErrDefaultBusinessAccounts
 	}
 
