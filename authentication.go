@@ -19,12 +19,10 @@ type Authentication struct {
 }
 
 //NewAuthentication ...
-func NewAuthentication(session Session) *Authentication {
+func NewAuthentication(httpClient *http.Client, session Session) *Authentication {
 	return &Authentication{
-		session: session,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
+		session : session,
+		httpClient : httpClient,
 	}
 }
 

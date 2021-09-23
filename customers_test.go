@@ -4,7 +4,6 @@ import (
 	"context"
 	"math/rand"
 	"net/http"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -30,8 +29,8 @@ func (s *CustomersTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 
 	session, err := bankly.NewSession(bankly.Config{
-		ClientID:     bankly.String(os.Getenv("BANKLY_CLIENT_ID")),
-		ClientSecret: bankly.String(os.Getenv("BANKLY_CLIENT_SECRET")),
+		ClientID : bankly.String(*bankly.GetEnvBanklyClientID()),
+		ClientSecret : bankly.String(*bankly.GetEnvBanklyClientSecret()),
 	})
 
 	s.assert.NoError(err)

@@ -26,7 +26,7 @@ func NewTransfers(httpClient *http.Client, session Session) *Transfers {
 	return &Transfers{
 		session:        session,
 		httpClient:     httpClient,
-		authentication: NewAuthentication(session),
+		authentication: NewAuthentication(httpClient, session),
 	}
 }
 

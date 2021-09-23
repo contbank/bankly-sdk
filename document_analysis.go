@@ -14,7 +14,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"time"
 
 	"github.com/contbank/grok"
 	"github.com/sirupsen/logrus"
@@ -28,13 +27,11 @@ type DocumentAnalysis struct {
 }
 
 // NewDocumentAnalysis ...
-func NewDocumentAnalysis(session Session) *DocumentAnalysis {
+func NewDocumentAnalysis(httpClient *http.Client, session Session) *DocumentAnalysis {
 	return &DocumentAnalysis{
 		session: session,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
-		authentication: NewAuthentication(session),
+		httpClient: httpClient,
+		authentication: NewAuthentication(httpClient, session),
 	}
 }
 

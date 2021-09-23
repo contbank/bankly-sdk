@@ -25,7 +25,7 @@ func NewCustomers(httpClient *http.Client, session Session) *Customers {
 	return &Customers{
 		session:        session,
 		httpClient:     httpClient,
-		authentication: NewAuthentication(session),
+		authentication: NewAuthentication(httpClient, session),
 	}
 }
 

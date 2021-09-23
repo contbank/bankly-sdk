@@ -2,7 +2,6 @@ package bankly_test
 
 import (
 	"net/http"
-	"os"
 	"testing"
 	"time"
 
@@ -27,8 +26,8 @@ func (s *PaymentTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 
 	session, err := bankly.NewSession(bankly.Config{
-		ClientID:     bankly.String(os.Getenv("BANKLY_CLIENT_ID")),
-		ClientSecret: bankly.String(os.Getenv("BANKLY_CLIENT_SECRET")),
+		ClientID : bankly.String(*bankly.GetEnvBanklyClientID()),
+		ClientSecret : bankly.String(*bankly.GetEnvBanklyClientSecret()),
 	})
 
 	s.assert.NoError(err)

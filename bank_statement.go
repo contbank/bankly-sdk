@@ -25,7 +25,7 @@ func NewBankStatement(httpClient *http.Client, session Session) *BankStatement {
 	return &BankStatement{
 		session:        session,
 		httpClient:     httpClient,
-		authentication: NewAuthentication(session),
+		authentication: NewAuthentication(httpClient, session),
 	}
 }
 
