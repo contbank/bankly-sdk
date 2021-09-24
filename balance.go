@@ -23,7 +23,7 @@ func NewBalance(httpClient *http.Client, session Session) *Balance {
 	return &Balance{
 		session:        session,
 		httpClient:     httpClient,
-		authentication: NewAuthentication(session),
+		authentication: NewAuthentication(httpClient, session),
 	}
 }
 

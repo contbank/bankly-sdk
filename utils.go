@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 	"unicode"
@@ -143,4 +144,16 @@ func RandStringBytes(n int) string {
 	}
 
 	return string(b)
+}
+
+// GetEnvBanklyClientID ...
+func GetEnvBanklyClientID() *string {
+	clientID := os.Getenv("BANKLY_CLIENT_ID")
+	return &clientID
+}
+
+// GetEnvBanklyClientSecret ...
+func GetEnvBanklyClientSecret() *string {
+	clientSecret := os.Getenv("BANKLY_CLIENT_SECRET")
+	return &clientSecret
 }

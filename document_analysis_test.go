@@ -2,6 +2,7 @@ package bankly_test
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -32,16 +33,20 @@ func (s *DocumentAnalysisTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 	s.ctx = context.Background()
 
-	newSession, err := bankly.NewSession(bankly.Config{
-		ClientID:     bankly.String(os.Getenv("BANKLY_CLIENT_ID")),
-		ClientSecret: bankly.String(os.Getenv("BANKLY_CLIENT_SECRET")),
+	session, err := bankly.NewSession(bankly.Config{
+		ClientID : bankly.String(*bankly.GetEnvBanklyClientID()),
+		ClientSecret : bankly.String(*bankly.GetEnvBanklyClientSecret()),
 	})
 
 	s.assert.NoError(err)
 
-	s.bankSession = newSession
+	httpClient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
 
-	s.documentAnalysis = bankly.NewDocumentAnalysis(*s.bankSession)
+	s.bankSession = session
+
+	s.documentAnalysis = bankly.NewDocumentAnalysis(httpClient, *s.bankSession)
 }
 
 func (s *DocumentAnalysisTestSuite) TestSendDocumentAnalysis() {

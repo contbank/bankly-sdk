@@ -27,7 +27,7 @@ func NewBoletos(httpClient *http.Client, session Session) *Boletos {
 	return &Boletos{
 		session:        session,
 		httpClient:     httpClient,
-		authentication: NewAuthentication(session),
+		authentication: NewAuthentication(httpClient, session),
 	}
 }
 

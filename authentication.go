@@ -19,12 +19,10 @@ type Authentication struct {
 }
 
 //NewAuthentication ...
-func NewAuthentication(session Session) *Authentication {
+func NewAuthentication(httpClient *http.Client, session Session) *Authentication {
 	return &Authentication{
-		session: session,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
+		session : session,
+		httpClient : httpClient,
 	}
 }
 
@@ -70,6 +68,7 @@ func (a *Authentication) login(ctx context.Context) (*AuthenticationResponse, er
 		if err != nil {
 			return nil, err
 		}
+
 		return response, nil
 	}
 	if resp.StatusCode == http.StatusBadRequest {

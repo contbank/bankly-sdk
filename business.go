@@ -25,7 +25,7 @@ func NewBusiness(httpClient *http.Client, session Session) *Business {
 	return &Business{
 		session:        session,
 		httpClient:     httpClient,
-		authentication: NewAuthentication(session),
+		authentication: NewAuthentication(httpClient, session),
 	}
 }
 

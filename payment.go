@@ -26,7 +26,7 @@ func NewPayment(httpClient *http.Client, session Session) *Payment {
 	return &Payment{
 		session:        session,
 		httpClient:     httpClient,
-		authentication: NewAuthentication(session),
+		authentication: NewAuthentication(httpClient, session),
 	}
 }
 
