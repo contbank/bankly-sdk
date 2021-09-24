@@ -68,6 +68,7 @@ func (a *Authentication) login(ctx context.Context) (*AuthenticationResponse, er
 		if err != nil {
 			return nil, err
 		}
+
 		return response, nil
 	}
 	if resp.StatusCode == http.StatusBadRequest {
