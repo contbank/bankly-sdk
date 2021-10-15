@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 
 	"github.com/contbank/grok"
 	"github.com/sirupsen/logrus"
@@ -33,7 +34,12 @@ func NewBusiness(httpClient *http.Client, session Session) *Business {
 func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessRequest) error {
 
 	if businessRequest.BusinessType == BusinessTypeMEI {
-		businessName := businessRequest.LegalRepresentative.RegisterName + " " + businessRequest.LegalRepresentative.Document
+		businessName := businessRequest.LegalRepresentative.RegisterName
+
+		if !strings.Contains(businessRequest.LegalRepresentative.RegisterName, businessRequest.LegalRepresentative.Document) {
+			businessName = businessRequest.LegalRepresentative.RegisterName + " " + businessRequest.LegalRepresentative.Document
+		}
+
 		businessRequest.BusinessName = businessName
 	}
 
@@ -302,8 +308,8 @@ func (c *Business) FindBusiness(ctx context.Context, identifier string) (*Busine
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"identifier" : identifier,
+		"request_id": requestID,
+		"identifier": identifier,
 	}
 
 	resultLevel := ResultLevelDetailed
@@ -400,8 +406,8 @@ func (c *Business) FindBusinessAccounts(ctx context.Context, identifier string) 
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"identifier" : identifier,
+		"request_id": requestID,
+		"identifier": identifier,
 	}
 
 	endpoint, err := c.getBusinessAPIEndpoint(requestID, identifier, true, nil)
@@ -504,11 +510,11 @@ func (c *Business) FindBusinessAccounts(ctx context.Context, identifier string) 
 func (c *Business) getBusinessAPIEndpoint(requestID string, identifier string,
 	isAccountPath bool, resultLevel *ResultLevel) (*string, error) {
 
-	fields := logrus.Fields {
-		"request_id" : requestID,
-		"identifier" : identifier,
-		"is_account_path" : isAccountPath,
-		"result_level" : resultLevel,
+	fields := logrus.Fields{
+		"request_id":      requestID,
+		"identifier":      identifier,
+		"is_account_path": isAccountPath,
+		"result_level":    resultLevel,
 	}
 
 	u, err := url.Parse(c.session.APIEndpoint)
