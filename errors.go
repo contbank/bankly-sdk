@@ -93,6 +93,10 @@ var (
 	ErrDefaultBoletos = grok.NewError(http.StatusInternalServerError, "error bank boletos")
 	//ErrClientIDClientSecret ...
 	ErrClientIDClientSecret = grok.NewError(http.StatusInternalServerError, "error client id or client secret")
+	// ErrInvalidRecipientBranch ...
+	ErrInvalidRecipientBranch = grok.NewError(http.StatusConflict, "invalid recipient branch number")
+	// ErrInvalidRecipientAccount ...
+	ErrInvalidRecipientAccount = grok.NewError(http.StatusConflict, "invalid recipient account number")
 )
 
 // BanklyError ...
@@ -200,6 +204,14 @@ var transferErrorList = []TransferError{
 	{
 		banklyTransferError: BanklyTransferError{Key: "CASHOUT_LIMIT_NOT_ENOUGH"},
 		grokError:           ErrCashoutLimitNotEnough,
+	},
+	{
+		banklyTransferError: BanklyTransferError{Key: "Recipient.Branch"},
+		grokError:           ErrInvalidRecipientBranch,
+	},
+	{
+		banklyTransferError: BanklyTransferError{Key: "Recipient.Account"},
+		grokError:           ErrInvalidRecipientAccount,
 	},
 }
 
