@@ -64,6 +64,65 @@ func (s *TransfersTestSuite) TestCreateInternalTransfer0() {
 }
 
 /*
+// TODO Mockar
+func (s *TransfersTestSuite) TestCreateInternalTransfer_InvalidRecipientBranch() {
+	correlationID := uuid.New().String()
+
+	amount := int64(075)
+	sender := *accountA()
+	recipient := *accountB()
+	recipient.Branch = "1111111111111111111"
+
+	senderBalance, _ := s.balance.Balance(s.ctx, sender.Account)
+	expectedSenderAvailableAmount := senderBalance.Balance.Available.Amount
+
+	recipientBalance, _ := s.balance.Balance(s.ctx, recipient.Account)
+	expectedRecipientAvailableAmount := recipientBalance.Balance.Available.Amount
+
+	transferRequest := createInternalTransferRequest(amount, sender, recipient)
+
+	resp, err := s.transfers.CreateInternalTransfer(s.ctx, correlationID, transferRequest)
+
+	time.Sleep(time.Second * 3)
+
+	senderBalance, _ = s.balance.Balance(s.ctx, sender.Account)
+	recipientBalance, _ = s.balance.Balance(s.ctx, recipient.Account)
+
+	s.assert.Error(err)
+	s.assert.Nil(resp)
+	s.assert.Contains(err.Error(), bankly.ErrInvalidRecipientBranch.Messages[0])
+	s.assert.Equal(toDecimal(expectedSenderAvailableAmount), toDecimal(senderBalance.Balance.Available.Amount))
+	s.assert.Equal(toDecimal(expectedRecipientAvailableAmount), toDecimal(recipientBalance.Balance.Available.Amount))
+}
+
+// TODO Mockar
+func (s *TransfersTestSuite) TestCreateInternalTransfer_InvalidRecipientAccount() {
+	correlationID := uuid.New().String()
+
+	amount := int64(075)
+	sender := *accountA()
+	recipient := *accountB()
+	recipient.Account = "1111111111111111111"
+
+	senderBalance, _ := s.balance.Balance(s.ctx, sender.Account)
+	expectedSenderAvailableAmount := senderBalance.Balance.Available.Amount
+
+	s.balance.Balance(s.ctx, recipient.Account)
+
+	transferRequest := createInternalTransferRequest(amount, sender, recipient)
+
+	resp, err := s.transfers.CreateInternalTransfer(s.ctx, correlationID, transferRequest)
+
+	time.Sleep(time.Second * 3)
+
+	senderBalance, _ = s.balance.Balance(s.ctx, sender.Account)
+
+	s.assert.Error(err)
+	s.assert.Nil(resp)
+	s.assert.Contains(err.Error(), bankly.ErrInvalidRecipientAccount.Messages[0])
+	s.assert.Equal(toDecimal(expectedSenderAvailableAmount), toDecimal(senderBalance.Balance.Available.Amount))
+}
+
 func (s *TransfersTestSuite) TestCreateInternalTransfer1() {
 	s.createInternalTransferTestLogic(internalTransferAmount[1], *accountA(), *accountB())
 }

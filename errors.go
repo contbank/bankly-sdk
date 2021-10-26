@@ -43,6 +43,18 @@ var (
 	ErrCashoutLimitNotEnough = grok.NewError(http.StatusBadRequest, "cashout limit not enough")
 	// ErrInvalidParameter ...
 	ErrInvalidParameter = grok.NewError(http.StatusBadRequest, "invalid parameter")
+	// ErrInvalidParameterLength ...
+	ErrInvalidParameterLength = grok.NewError(http.StatusBadRequest, "invalid parameter length")
+	// ErrInvalidAddressNumberLength ...
+	ErrInvalidAddressNumberLength = grok.NewError(http.StatusBadRequest, "invalid address number length")
+	// ErrInvalidRegisterNameLength ...
+	ErrInvalidRegisterNameLength = grok.NewError(http.StatusBadRequest, "invalid register name length")
+	// ErrInvalidParameterSpecialCharacters ...
+	ErrInvalidParameterSpecialCharacters = grok.NewError(http.StatusBadRequest, "invalid parameter with special characters")
+	// ErrInvalidSocialNameLength ...
+	ErrInvalidSocialNameLength = grok.NewError(http.StatusBadRequest, "invalid social name length")
+	// ErrInvalidEmailLength ...
+	ErrInvalidEmailLength = grok.NewError(http.StatusBadRequest, "invalid email length")
 	// ErrInvalidAPIEndpoint ...
 	ErrInvalidAPIEndpoint = grok.NewError(http.StatusBadRequest, "invalid api endpoint")
 	// ErrMethodNotAllowed ...
@@ -85,6 +97,10 @@ var (
 	ErrDefaultFreshDesk = grok.NewError(http.StatusInternalServerError, "error in fresh desk api")
 	// ErrFreshDeskTicketNotFound ...
 	ErrFreshDeskTicketNotFound = grok.NewError(http.StatusNotFound, "error in fresh desk ticket not found")
+	// ErrInvalidRecipientBranch ...
+	ErrInvalidRecipientBranch = grok.NewError(http.StatusConflict, "invalid recipient branch number")
+	// ErrInvalidRecipientAccount ...
+	ErrInvalidRecipientAccount = grok.NewError(http.StatusConflict, "invalid recipient account number")
 )
 
 // BanklyError ...
@@ -122,10 +138,6 @@ var errorList = []Error{
 		GrokError: ErrHolderAlreadyHaveAAccount,
 	},
 	{
-		ErrorKey:  "INVALID_PARAMETER",
-		GrokError: ErrInvalidParameter,
-	},
-	{
 		ErrorKey:  "SCOUTER_QUANTITY",
 		GrokError: ErrScouterQuantity,
 	},
@@ -136,6 +148,34 @@ var errorList = []Error{
 	{
 		ErrorKey:  "BAR_CODE_NOT_FOUND",
 		GrokError: ErrBarcodeNotFound,
+	},
+	{
+		ErrorKey:  "INVALID_PARAMETER",
+		GrokError: ErrInvalidParameter,
+	},
+	{
+		ErrorKey:  "INVALID_PARAMETER_LENGTH",
+		GrokError: ErrInvalidParameterLength,
+	},
+	{
+		ErrorKey:  "INVALID_PARAMETER_SPECIAL_CHARACTERS",
+		GrokError: ErrInvalidParameterSpecialCharacters,
+	},
+	{
+		ErrorKey:  "INVALID_ADDRESS_NUMBER_LENGTH",
+		GrokError: ErrInvalidAddressNumberLength,
+	},
+	{
+		ErrorKey:  "INVALID_REGISTER_NAME_LENGTH",
+		GrokError: ErrInvalidRegisterNameLength,
+	},
+	{
+		ErrorKey:  "INVALID_SOCIAL_NAME_LENGTH",
+		GrokError: ErrInvalidSocialNameLength,
+	},
+	{
+		ErrorKey:  "INVALID_EMAIL_LENGTH",
+		GrokError: ErrInvalidEmailLength,
 	},
 }
 
@@ -169,10 +209,21 @@ var transferErrorList = []TransferError{
 		banklyTransferError: BanklyTransferError{Key: "CASHOUT_LIMIT_NOT_ENOUGH"},
 		grokError:           ErrCashoutLimitNotEnough,
 	},
+	{
+		banklyTransferError: BanklyTransferError{Key: "Recipient.Branch"},
+		grokError:           ErrInvalidRecipientBranch,
+	},
+	{
+		banklyTransferError: BanklyTransferError{Key: "Recipient.Account"},
+		grokError:           ErrInvalidRecipientAccount,
+	},
 }
 
 // FindError ..
 func FindError(code string, messages ...string) *Error {
+
+	code = verifyInvalidParameter(code, messages)
+
 	for _, v := range errorList {
 		if v.ErrorKey == code {
 			return &v
@@ -183,6 +234,27 @@ func FindError(code string, messages ...string) *Error {
 		ErrorKey:  code,
 		GrokError: grok.NewError(http.StatusConflict, messages...),
 	}
+}
+
+func verifyInvalidParameter(code string, messages []string) string {
+	if code == "INVALID_PARAMETER" {
+		for _, m := range messages {
+			if strings.Contains(strings.ToLower(m), "length of 'building number'") {
+				return "INVALID_ADDRESS_NUMBER_LENGTH"
+			} else if strings.Contains(strings.ToLower(m), "length of 'register name'") {
+				return "INVALID_REGISTER_NAME_LENGTH"
+			} else if strings.Contains(strings.ToLower(m), "length of 'social name'") {
+				return "INVALID_SOCIAL_NAME_LENGTH"
+			} else if strings.Contains(strings.ToLower(m), "length of 'email'") {
+				return "INVALID_EMAIL_LENGTH"
+			} else if strings.Contains(strings.ToLower(m), "not allowed to include numbers or special characters") {
+				return "INVALID_PARAMETER_SPECIAL_CHARACTERS"
+			} else if strings.Contains(strings.ToLower(m), "length of") {
+				return "INVALID_PARAMETER_LENGTH"
+			}
+		}
+	}
+	return code
 }
 
 // ParseErr ..
