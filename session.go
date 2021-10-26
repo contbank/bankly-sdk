@@ -28,6 +28,18 @@ type Session struct {
 	Cache         cache.Cache
 }
 
+//ServiceDeskConfig ...
+type ServiceDeskConfig struct {
+	APIEndpoint *string
+	APIKey      *string
+}
+
+//ServiceDeskSession ...
+type ServiceDeskSession struct {
+	APIEndpoint string
+	APIKey      string
+}
+
 //NewSession ...
 func NewSession(config Config) (*Session, error) {
 	err := grok.Validator.Struct(config)
@@ -71,6 +83,30 @@ func NewSession(config Config) (*Session, error) {
 		ClientSecret:  *config.ClientSecret,
 		APIVersion:    *config.APIVersion,
 		Cache:         *config.Cache,
+	}
+
+	return session, nil
+}
+
+//NewServiceDeskSession ...
+func NewServiceDeskSession(config ServiceDeskConfig) (*ServiceDeskSession, error) {
+	err := grok.Validator.Struct(config)
+
+	if err != nil {
+		return nil, grok.FromValidationErros(err)
+	}
+
+	if config.APIEndpoint == nil {
+		config.APIEndpoint = String("https://meuacesso.freshdesk.com")
+	}
+
+	if config.APIKey == nil {
+		config.APIKey = String(os.Getenv("FRESH_DESK_API_KEY"))
+	}
+
+	var session = &ServiceDeskSession{
+		APIEndpoint: *config.APIEndpoint,
+		APIKey:      *config.APIKey,
 	}
 
 	return session, nil

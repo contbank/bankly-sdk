@@ -26,8 +26,8 @@ func (s *BoletosTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 
 	session, err := bankly.NewSession(bankly.Config{
-		ClientID : bankly.String(*bankly.GetEnvBanklyClientID()),
-		ClientSecret : bankly.String(*bankly.GetEnvBanklyClientSecret()),
+		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
+		ClientSecret: bankly.String(*bankly.GetEnvBanklyClientSecret()),
 	})
 
 	s.assert.NoError(err)
@@ -41,19 +41,38 @@ func (s *BoletosTestSuite) SetupTest() {
 	s.customers = bankly.NewCustomers(httpClient, *s.session)
 }
 
+// func (s *BoletosTestSuite) TestCreateBoleto() {
+
+// 	res, err := s.boletos.CreateBoleto(context.Background(), &bankly.BoletoRequest{
+// 		Document: "36183588814",
+// 		Amount:   100,
+// 		DueDate:  time.Now().Add(24 * time.Hour),
+// 		Type:     bankly.Levy,
+// 		Account: &bankly.Account{
+// 			Branch: "0001",
+// 			Number: "184152",
+// 		},
+// 		Payer: &bankly.Payer{
+// 			Name:      grok.GeneratorIDBase(50) + grok.GeneratorIDBase(50),
+// 			TradeName: grok.GeneratorIDBase(500),
+// 			Document:  "36183588814",
+// 			Address: &bankly.BoletoAddress{
+// 				AddressLine: grok.GeneratorIDBase(24) + " " + grok.GeneratorIDBase(34),
+// 				ZipCode:     grok.GeneratorIDBase(500),
+// 				State:       grok.GeneratorIDBase(500),
+// 				City:        grok.GeneratorIDBase(500),
+// 			},
+// 		},
+// 	})
+
+// 	s.assert.NoError(err)
+// 	s.assert.NotEmpty(res.Account)
+// 	s.assert.NotEmpty(res.Account.Branch)
+// 	s.assert.NotEmpty(res.Account.Number)
+// 	s.assert.NotEmpty(res.AuthenticationCode)
+// }
+
 /*
-func (s *BoletosTestSuite) TestCreateBoleto() {
-	document, account := s.createCustomerAndAccount()
-	boleto := s.createBoleto(document, account)
-
-	res, err := s.boletos.CreateBoleto(boleto)
-
-	s.assert.NoError(err)
-	s.assert.NotEmpty(res.Account)
-	s.assert.NotEmpty(res.Account.Branch)
-	s.assert.NotEmpty(res.Account.Number)
-	s.assert.NotEmpty(res.AuthenticationCode)
-}
 
 func (s *BoletosTestSuite) TestFindBoleto() {
 	document, account := s.createCustomerAndAccount()

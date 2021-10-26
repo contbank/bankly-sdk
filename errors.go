@@ -81,6 +81,10 @@ var (
 	ErrDefaultBoletos = grok.NewError(http.StatusInternalServerError, "error bank boletos")
 	//ErrClientIDClientSecret ...
 	ErrClientIDClientSecret = grok.NewError(http.StatusInternalServerError, "error client id or client secret")
+	// ErrDefaultFreshDesk ...
+	ErrDefaultFreshDesk = grok.NewError(http.StatusInternalServerError, "error in fresh desk api")
+	// ErrFreshDeskTicketNotFound ...
+	ErrFreshDeskTicketNotFound = grok.NewError(http.StatusNotFound, "error in fresh desk ticket not found")
 )
 
 // BanklyError ...
@@ -204,7 +208,7 @@ func FindTransferError(transferErrorResponse TransferErrorResponse) *grok.Error 
 			return v.grokError
 		}
 	}
-	return grok.NewError(http.StatusBadRequest, errorModel.Key + " - " + errorModel.Value)
+	return grok.NewError(http.StatusBadRequest, errorModel.Key+" - "+errorModel.Value)
 }
 
 func (e *Error) Error() string {
