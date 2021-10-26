@@ -106,7 +106,7 @@ func (s *FreshDeskTestSuite) setupCreateTicket(id int) {
 		Body:   string(bodyResponse),
 	}
 
-	s.httpMock.AddMock("/api/v2/tickets", response)
+	s.httpMock.AddMock("api/v2/tickets", response)
 }
 
 func (s *FreshDeskTestSuite) setupGetTicket(id, status int) {
@@ -120,7 +120,7 @@ func (s *FreshDeskTestSuite) setupGetTicket(id, status int) {
 		Body:   string(bodyResponse),
 	}
 
-	s.httpMock.AddMock(fmt.Sprintf("/api/v2/tickets/%d", id), response)
+	s.httpMock.AddMock(fmt.Sprintf("api/v2/tickets/%d", id), response)
 }
 
 func (s *FreshDeskTestSuite) setupFilterTickets(id, status int) {
@@ -134,7 +134,7 @@ func (s *FreshDeskTestSuite) setupFilterTickets(id, status int) {
 		Body:   string(bodyResponse),
 	}
 
-	s.httpMock.AddMock("/api/v2/search/tickets?query=%22status%3A2%22", response)
+	s.httpMock.AddMock("api/v2/search/tickets?query=%22status%3A4%22", response)
 }
 
 func randomNumber() int {
