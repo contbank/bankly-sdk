@@ -26,6 +26,8 @@ const (
 	BankStatementsPath = "events"
 	// DocumentAnalysisPath ...
 	DocumentAnalysisPath = "/document-analysis"
+	// CardDocumentPath ...
+	CardDocumentPath = "cards/document"
 )
 
 const (
@@ -899,4 +901,55 @@ func ParseDocumentAnalysisResponse(documentNumber string, banklyResponse *Bankly
 		Liveness:        banklyResponse.Liveness,
 		AnalyzedAt:      banklyResponse.AnalyzedAt,
 	}
+}
+
+// CardResponse ...
+type CardResponse struct {
+	Created          string              `json:"created"`
+	CompanyKey       string              `json:"companyKey"`
+	DocumentNumber   string              `json:"documentNumber"`
+	ActivateCode     string              `json:"activateCode"`
+	BankAgency       string              `json:"bankAgency"`
+	BankAccount      string              `json:"bankAccount"`
+	LastFourDigits   string              `json:"lastFourDigits"`
+	Proxy            string              `json:"proxy"`
+	Name             string              `json:"name"`
+	Alias            string              `json:"alias"`
+	CardType         string              `json:"cardType"`
+	Status           string              `json:"status"`
+	PhysicalBinds    []CardBind          `json:"physicalBinds"`
+	VirtualBind      CardBind            `json:"virtualBind"`
+	AllowContactless bool                `json:"allowContactless"`
+	Address          CardAddress         `json:"address"`
+	HistoryStatus    []CardHistoryStatus `json:"historyStatus"`
+	ActivatedAt      *time.Time          `json:"activatedAt"`
+	LastUpdatedAt    time.Time           `json:"lastUpdatedAt"`
+	IsActivated      bool                `json:"isActivated"`
+	IsLocked         bool                `json:"isLocked"`
+	IsCanceled       bool                `json:"isCanceled"`
+	IsBuilding       bool                `json:"isBuilding"`
+	IsFirtual        bool                `json:"isFirtual"`
+	IsPre            bool                `json:"isPre"`
+	IsPos            bool                `json:"isPos"`
+}
+
+type CardBind struct {
+	Proxy   string    `json:"proxy"`
+	Created time.Time `json:"created"`
+}
+
+type CardAddress struct {
+	ZipCode      string `json:"zipCode"`
+	Address      string `json:"address"`
+	Number       string `json:"number"`
+	Neighborhood string `json:"neighborhood"`
+	Complement   string `json:"complement"`
+	City         string `json:"city"`
+	State        string `json:"state"`
+	Country      string `json:"country"`
+}
+
+type CardHistoryStatus struct {
+	Modified time.Time `json:"modified"`
+	Value    string    `json:"value"`
 }
