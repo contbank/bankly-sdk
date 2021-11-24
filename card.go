@@ -19,8 +19,8 @@ type Card struct {
 }
 
 //NewCard ...
-func NewCard(httpClient *http.Client, session Session) *Balance {
-	return &Balance{
+func NewCard(httpClient *http.Client, session Session) *Card {
+	return &Card{
 		session:        session,
 		httpClient:     httpClient,
 		authentication: NewAuthentication(httpClient, session),
