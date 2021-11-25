@@ -808,21 +808,24 @@ type FilterPaymentsRequest struct {
 
 // PaymentResponse ...
 type PaymentResponse struct {
-	AuthenticationCode string    `json:"authenticationCode,omitempty"`
-	Status             string    `json:"status,omitempty"`
-	Digitable          string    `json:"digitable,omitempty"`
-	Description        *string   `json:"description,omitempty"`
-	BankBranch         string    `json:"bankBranch,omitempty"`
-	BankAccount        string    `json:"bankAccount,omitempty"`
-	RecipientDocument  string    `json:"recipientDocument,omitempty"`
-	RecipientName      string    `json:"recipientName,omitempty"`
-	Amount             float64   `json:"amount,omitempty"`
-	OriginalAmount     float64   `json:"originalAmount,omitempty"`
-	Asignor            float64   `json:"asignor,omitempty"`
-	Charges            *Charges  `json:"charges,omitempty"`
-	SettleDate         time.Time `json:"settleDate,omitempty"`
-	PaymentDate        time.Time `json:"paymentDate,omitempty"`
-	ConfirmedAt        time.Time `json:"confirmedAt,omitempty"`
+	AuthenticationCode string     `json:"authenticationCode,omitempty"`
+	Status             string     `json:"status,omitempty"`
+	Digitable          string     `json:"digitable,omitempty"`
+	Description        *string    `json:"description,omitempty"`
+	BankBranch         string     `json:"bankBranch,omitempty"`
+	BankAccount        string     `json:"bankAccount,omitempty"`
+	RecipientDocument  string     `json:"recipientDocument,omitempty"`
+	RecipientName      string     `json:"recipientName,omitempty"`
+	Amount             float64    `json:"amount,omitempty"`
+	OriginalAmount     float64    `json:"originalAmount,omitempty"`
+	Assignor           float64    `json:"assignor,omitempty"`
+	Charges            *Charges   `json:"charges,omitempty"`
+	SettleDate         time.Time  `json:"settleDate,omitempty"`
+	PaymentDate        time.Time  `json:"paymentDate,omitempty"`
+	ConfirmedAt        time.Time  `json:"confirmedAt,omitempty"`
+	DueDate            *time.Time `json:"dueDate,omitempty"`
+	CompanyKey         *string    `json:"companyKey,omitempty"`
+	DocumentNumber     *string    `json:"documentNumber,omitempty"`
 }
 
 // FilterPaymentsResponse ...
