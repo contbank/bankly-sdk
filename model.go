@@ -775,8 +775,8 @@ type ValidatePaymentResponse struct {
 	MinAmount         float64        `json:"minAmount,omitempty"`
 	MaxAmount         float64        `json:"maxAmount,omitempty"`
 	AllowChangeAmount bool           `json:"allowChangeAmount,omitempty"`
-	DueDate           string         `json:"dueDate,omitempty"`
-	SettleDate        string         `json:"settleDate,omitempty"`
+	DueDate           *time.Time     `json:"dueDate,omitempty"`
+	SettleDate        *time.Time     `json:"settleDate,omitempty"`
 	NextSettle        bool           `json:"nextSettle,omitempty"`
 	Payer             *PaymentPayer  `json:"payer,omitempty"`
 	Recipient         *PaymentPayer  `json:"recipient,omitempty"`
