@@ -772,11 +772,12 @@ type ValidatePaymentResponse struct {
 	Digitable         string         `json:"digitable,omitempty"`
 	Amount            float64        `json:"amount,omitempty"`
 	OriginalAmount    float64        `json:"originalAmount,omitempty"`
+	MinAmount         float64        `json:"minAmount,omitempty"`
 	MaxAmount         float64        `json:"maxAmount,omitempty"`
-	NextSettle        bool           `json:"nextSettle,omitempty"`
 	AllowChangeAmount bool           `json:"allowChangeAmount,omitempty"`
 	DueDate           string         `json:"dueDate,omitempty"`
 	SettleDate        string         `json:"settleDate,omitempty"`
+	NextSettle        bool           `json:"nextSettle,omitempty"`
 	Payer             *PaymentPayer  `json:"payer,omitempty"`
 	Recipient         *PaymentPayer  `json:"recipient,omitempty"`
 	BusinessHours     *BusinessHours `json:"businessHours,omitempty"`
