@@ -125,8 +125,8 @@ func (c *Customers) FindRegistration(ctx context.Context, identifier string) (*C
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"identifier" : identifier,
+		"request_id": requestID,
+		"identifier": identifier,
 	}
 
 	resultLevel := ResultLevelDetailed
@@ -455,11 +455,11 @@ func (c *Customers) FindAccounts(ctx context.Context, document string) ([]Accoun
 func (c *Customers) getCustomerAPIEndpoint(requestID string, identifier string,
 	isAccountPath bool, resultLevel *ResultLevel) (*string, error) {
 
-	fields := logrus.Fields {
-		"request_id" : requestID,
-		"identifier" : identifier,
-		"is_account_path" : isAccountPath,
-		"result_level" : resultLevel,
+	fields := logrus.Fields{
+		"request_id":      requestID,
+		"identifier":      identifier,
+		"is_account_path": isAccountPath,
+		"result_level":    resultLevel,
 	}
 
 	u, err := url.Parse(c.session.APIEndpoint)

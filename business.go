@@ -529,7 +529,7 @@ func (c *Business) getBusinessAPIEndpoint(requestID string, identifier string,
 	u.Path = path.Join(u.Path, BusinessPath)
 	u.Path = path.Join(u.Path, grok.OnlyDigits(identifier))
 
-	if isAccountPath == true {
+	if isAccountPath {
 		u.Path = path.Join(u.Path, AccountsPath)
 	}
 
