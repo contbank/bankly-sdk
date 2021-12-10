@@ -957,3 +957,18 @@ type CardHistoryStatus struct {
 	Modified time.Time `json:"modified"`
 	Value    string    `json:"value"`
 }
+
+type CardCreateRequest struct {
+	DocumentNumber string `json:"documentNumber"`
+	CardName       string `json:"cardName"`
+	Alias          string `json:"alias"`
+	BankAgency     string `json:"bankAgency"`
+	BankAccount    string `json:"bankAccount"`
+	ProgramId      int16  `json:"programId,omitempty"`
+	Password       string `json:"password"`
+}
+
+type CardCreateResponse struct {
+	Proxy        string `json:"proxy"`
+	ActivateCode string `json:"activateCode"`
+}

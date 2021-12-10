@@ -21,8 +21,8 @@ type Authentication struct {
 //NewAuthentication ...
 func NewAuthentication(httpClient *http.Client, session Session) *Authentication {
 	return &Authentication{
-		session : session,
-		httpClient : httpClient,
+		session:    session,
+		httpClient: httpClient,
 	}
 }
 
