@@ -35,9 +35,14 @@ func (s *CardTestSuite) SetupTest() {
 	httpClient := &http.Client{
 		Timeout: 30 * time.Second,
 	}
+	
+	newHttpClient := bankly.NewHttpClient{
+		Session: *session,
+		HttpClient: httpClient,
+		Authentication: bankly.NewAuthentication(httpClient, *session),
+	}
 
-	s.session = session
-	s.card = bankly.NewCard(httpClient, *s.session)
+	s.card = bankly.NewCard(newHttpClient)
 }
 
 func (c *CardTestSuite) TestGetCardsByIdentifier_OK() {
@@ -52,4 +57,36 @@ func (c *CardTestSuite) TestGetCardsByIdentifier_NOT_FOUND() {
 	c.assert.Error(err)
 	c.assert.Nil(card)
 	c.assert.Equal("Code: 404 - Messages: not found", err.Error())
+}
+
+func (c *CardTestSuite) TestCreateCardVirtual_OK() {
+	/* Partindo do principio que ao criar um cartao a API não retorna mais proxy, activateCode */
+	body := bankly.CardCreateRequest{
+		DocumentNumber: "21632071000187",
+		CardName:       "NOME DA PESSOA",
+		Alias:          "NOME PESSOA",
+		BankAgency:     "0001",
+		BankAccount:    "202142",
+		Password:       "1234",
+	}
+	card, err := c.card.CreateCardVirtual(context.Background(), body)
+
+	c.assert.NoError(err)
+	c.assert.NotNil(card)
+}
+
+func (c *CardTestSuite) TestCreateCardVirtual_INVALID_PARAMETER_EMPTY() {
+	/* Partindo do principio que ao criar um cartao a API não retorna mais proxy, activateCode */
+	body := bankly.CardCreateRequest{
+		DocumentNumber: "",
+		CardName:       "NOME DA PESSOA",
+		Alias:          "NOME PESSOA",
+		BankAgency:     "0001",
+		BankAccount:    "184152",
+		Password:       "1234",
+	}
+	card, err := c.card.CreateCardVirtual(context.Background(), body)
+
+	c.assert.Error(err)
+	c.assert.Nil(card)
 }

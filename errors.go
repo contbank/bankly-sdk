@@ -114,6 +114,18 @@ type Error struct {
 	GrokError *grok.Error
 }
 
+type ErrorCard struct {
+	Code         string
+	Messages     []string
+	Metadata     interface{}
+	PropertyName string
+	Reasons      []interface{}
+}
+
+type BanklyCardError struct {
+	ErrorsCard ErrorCard
+}
+
 var errorList = []Error{
 	{
 		ErrorKey:  "INVALID_PERSONAL_BUSINESS_SIZE",
@@ -253,6 +265,33 @@ func verifyInvalidParameter(code string, messages []string) string {
 				return "INVALID_PARAMETER_SPECIAL_CHARACTERS"
 			} else if strings.Contains(strings.ToLower(m), "length of") {
 				return "INVALID_PARAMETER_LENGTH"
+			}
+		}
+	}
+	return code
+}
+
+// Card
+func FindCardError(code string, messages ...string) *Error {
+
+	code = verifyInvalidCardParameter(code, messages)
+
+	return &Error{
+		ErrorKey:  code,
+		GrokError: grok.NewError(http.StatusConflict, messages...),
+	}
+}
+
+func verifyInvalidCardParameter(code string, messages []string) string {
+	if code == "INVALID_PARAMETER" {
+		for _, m := range messages {
+			switch {
+			case strings.Contains(strings.ToLower(m), "card name"):
+				return "INVALID_CARD_NAME_EMPTY"
+			case strings.Contains(strings.ToLower(m), "document number"):
+				return "INVALID_DOCUMENT_NUMBER_EMPTY"
+			default:
+				return "INVALID_PARAMETER_CARD"
 			}
 		}
 	}
