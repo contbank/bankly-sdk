@@ -13,8 +13,9 @@ import (
 )
 
 const (
-	GET  = "GET"
-	POST = "POST"
+	GET   = "GET"
+	POST  = "POST"
+	PATCH = "PATCH"
 )
 
 type NewHttpClient struct {
@@ -23,7 +24,7 @@ type NewHttpClient struct {
 	Authentication *Authentication
 }
 
-func (client *NewHttpClient) Post(ctx context.Context, method string, url string, body interface{}) (*http.Response, error) {
+func (client *NewHttpClient) Post(ctx context.Context, url string, body interface{}) (*http.Response, error) {
 	fields := initLog(ctx)
 	data, err := json.Marshal(body)
 	if err != nil {
@@ -33,7 +34,7 @@ func (client *NewHttpClient) Post(ctx context.Context, method string, url string
 
 	endpoint, _ := client.getEndpointAPI(fields, url)
 
-	req, err := http.NewRequestWithContext(ctx, method, endpoint, bytes.NewReader(data))
+	req, err := http.NewRequestWithContext(ctx, POST, endpoint, bytes.NewReader(data))
 	if err != nil {
 		logErrorWithFields(fields, err, "error new request", nil)
 		return nil, err
@@ -56,12 +57,45 @@ func (client *NewHttpClient) Post(ctx context.Context, method string, url string
 	return handleResponse(resp, fields)
 }
 
-func (client *NewHttpClient) Get(ctx context.Context, method string, url string) (*http.Response, error) {
+func (client *NewHttpClient) Get(ctx context.Context, url string) (*http.Response, error) {
 	fields := initLog(ctx)
 
 	endpoint, _ := client.getEndpointAPI(fields, url)
 
-	req, err := http.NewRequestWithContext(ctx, method, endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, GET, endpoint, nil)
+	if err != nil {
+		logErrorWithFields(fields, err, "error new request", nil)
+		return nil, err
+	}
+
+	token, err := client.Authentication.Token(ctx)
+	if err != nil {
+		logErrorWithFields(fields, err, "error authentication", nil)
+		return nil, err
+	}
+
+	req = setRequestHeader(req, token, client.Session.APIVersion)
+
+	resp, err := client.HttpClient.Do(req)
+	if err != nil {
+		logErrorWithFields(fields, err, "error http client", nil)
+		return nil, err
+	}
+
+	return handleResponse(resp, fields)
+}
+
+func (client *NewHttpClient) Patch(ctx context.Context, url string, body interface{}) (*http.Response, error) {
+	fields := initLog(ctx)
+	data, err := json.Marshal(body)
+	if err != nil {
+		logErrorWithFields(fields, err, "error marshal body request", nil)
+		return nil, err
+	}
+
+	endpoint, _ := client.getEndpointAPI(fields, url)
+
+	req, err := http.NewRequestWithContext(ctx, PATCH, endpoint, bytes.NewReader(data))
 	if err != nil {
 		logErrorWithFields(fields, err, "error new request", nil)
 		return nil, err

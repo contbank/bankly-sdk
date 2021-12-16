@@ -11,11 +11,42 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+const (
+	DocumentNumber = "21632071000187"
+	Status         = "CanceledByCustomer"
+)
+
 type CardTestSuite struct {
 	suite.Suite
-	assert  *assert.Assertions
-	session *bankly.Session
-	card    *bankly.Card
+	assert *assert.Assertions
+	card   *bankly.Card
+}
+
+func mockCreateCard(documentNumber string, cardType bankly.CardType) bankly.CardCreateDTO {
+	return bankly.CardCreateDTO{
+		CardData: bankly.CardCreateRequest{
+			DocumentNumber: documentNumber,
+			CardName:       "NOME DA PESSOA",
+			Alias:          "NOME PESSOA",
+			BankAgency:     "0001",
+			BankAccount:    "202142",
+			Password:       "1234",
+		},
+		CardType: cardType,
+	}
+}
+
+func (c *CardTestSuite) mockAlterCardCanceled(proxy string) {
+	alterCardBody := bankly.CardUpdateStatusDTO{
+		Status:           "CanceledByCustomer",
+		Password:         "1234",
+		UpdateCardBinded: true,
+	}
+
+	altered, err := c.card.UpdateStatusCard(context.Background(), proxy, alterCardBody)
+
+	c.assert.NoError(err)
+	c.assert.NotNil(altered)
 }
 
 func TestCardTestSuite(t *testing.T) {
@@ -29,16 +60,15 @@ func (s *CardTestSuite) SetupTest() {
 		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
 		ClientSecret: bankly.String(*bankly.GetEnvBanklyClientSecret()),
 	})
-
 	s.assert.NoError(err)
 
 	httpClient := &http.Client{
 		Timeout: 30 * time.Second,
 	}
-	
+
 	newHttpClient := bankly.NewHttpClient{
-		Session: *session,
-		HttpClient: httpClient,
+		Session:        *session,
+		HttpClient:     httpClient,
 		Authentication: bankly.NewAuthentication(httpClient, *session),
 	}
 
@@ -46,7 +76,7 @@ func (s *CardTestSuite) SetupTest() {
 }
 
 func (c *CardTestSuite) TestGetCardsByIdentifier_OK() {
-	card, err := c.card.GetCardsByIdentifier(context.Background(), "21632071000187")
+	card, err := c.card.GetCardsByIdentifier(context.Background(), DocumentNumber)
 	c.assert.NoError(err)
 	c.assert.NotNil(card)
 }
@@ -60,33 +90,47 @@ func (c *CardTestSuite) TestGetCardsByIdentifier_NOT_FOUND() {
 }
 
 func (c *CardTestSuite) TestCreateCardVirtual_OK() {
-	/* Partindo do principio que ao criar um cartao a API não retorna mais proxy, activateCode */
-	body := bankly.CardCreateRequest{
-		DocumentNumber: "21632071000187",
-		CardName:       "NOME DA PESSOA",
-		Alias:          "NOME PESSOA",
-		BankAgency:     "0001",
-		BankAccount:    "202142",
-		Password:       "1234",
-	}
-	card, err := c.card.CreateCardVirtual(context.Background(), body)
+	body := mockCreateCard(DocumentNumber, bankly.VirtualCardType)
+
+	card, err := c.card.CreateCard(context.Background(), body)
 
 	c.assert.NoError(err)
 	c.assert.NotNil(card)
 }
 
 func (c *CardTestSuite) TestCreateCardVirtual_INVALID_PARAMETER_EMPTY() {
-	/* Partindo do principio que ao criar um cartao a API não retorna mais proxy, activateCode */
-	body := bankly.CardCreateRequest{
-		DocumentNumber: "",
-		CardName:       "NOME DA PESSOA",
-		Alias:          "NOME PESSOA",
-		BankAgency:     "0001",
-		BankAccount:    "184152",
-		Password:       "1234",
-	}
-	card, err := c.card.CreateCardVirtual(context.Background(), body)
+	body := mockCreateCard("1234567", bankly.VirtualCardType)
+
+	card, err := c.card.CreateCard(context.Background(), body)
 
 	c.assert.Error(err)
 	c.assert.Nil(card)
+}
+
+func (c *CardTestSuite) TestCreateCardPhysical_OK() {
+	body := mockCreateCard(DocumentNumber, bankly.PhysicalCardType)
+
+	card, err := c.card.CreateCard(context.Background(), body)
+
+	c.assert.NoError(err)
+	c.assert.NotNil(card)
+}
+
+func (c *CardTestSuite) TestCreateCardPhysical_INVALID_PARAMETER_EMPTY() {
+	body := mockCreateCard("123456", bankly.PhysicalCardType)
+
+	card, err := c.card.CreateCard(context.Background(), body)
+
+	c.assert.Error(err)
+	c.assert.Nil(card)
+}
+
+func (c *CardTestSuite) TestAlteredStatusCard_OK() {
+	card, err := c.card.GetCardsByIdentifier(context.Background(), DocumentNumber)
+
+	c.assert.NoError(err)
+	c.assert.NotNil(card)
+
+	c.mockAlterCardCanceled(card[len(card)-1].Proxy)
+	c.mockAlterCardCanceled(card[len(card)-2].Proxy)
 }
