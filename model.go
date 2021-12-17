@@ -908,6 +908,11 @@ func ParseDocumentAnalysisResponse(documentNumber string, banklyResponse *Bankly
 }
 
 // CardResponse ...
+const (
+	VirtualCardType  = "virtual"
+	PhysicalCardType = "physical"
+)
+
 type CardResponse struct {
 	Created          string              `json:"created"`
 	CompanyKey       string              `json:"companyKey"`
@@ -956,6 +961,19 @@ type CardAddress struct {
 type CardHistoryStatus struct {
 	Modified time.Time `json:"modified"`
 	Value    string    `json:"value"`
+}
+
+type CardType string
+
+type CardCreateDTO struct {
+	CardType CardType `json:"cardType"`
+	CardData CardCreateRequest
+}
+
+type CardUpdateStatusDTO struct {
+	Status           CardType `json:"status"`
+	Password         string   `json:"password"`
+	UpdateCardBinded bool     `json:"updateCardBinded"`
 }
 
 type CardCreateRequest struct {
