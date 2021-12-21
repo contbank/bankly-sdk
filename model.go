@@ -933,6 +933,31 @@ type CardResponse struct {
 	HistoryStatus    []CardHistoryStatus `json:"historyStatus"`
 	ActivatedAt      *time.Time          `json:"activatedAt"`
 	LastUpdatedAt    time.Time           `json:"lastUpdatedAt"`
+	IsFirtual        bool                `json:"isFirtual"`
+	IsPos            bool                `json:"isPos"`
+	SettlementDay    int16               `json:"settlementDay"`
+}
+
+type CardResponseDTO struct {
+	Created          string              `json:"created"`
+	CompanyKey       string              `json:"companyKey"`
+	DocumentNumber   string              `json:"documentNumber"`
+	ActivateCode     string              `json:"activateCode"`
+	BankAgency       string              `json:"bankAgency"`
+	BankAccount      string              `json:"bankAccount"`
+	LastFourDigits   string              `json:"lastFourDigits"`
+	Proxy            string              `json:"proxy"`
+	Name             string              `json:"name"`
+	Alias            string              `json:"alias"`
+	CardType         string              `json:"cardType"`
+	Status           string              `json:"status"`
+	PhysicalBinds    []CardBind          `json:"physicalBinds"`
+	VirtualBind      CardBind            `json:"virtualBind"`
+	AllowContactless bool                `json:"allowContactless"`
+	Address          CardAddress         `json:"address"`
+	HistoryStatus    []CardHistoryStatus `json:"historyStatus"`
+	ActivatedAt      *time.Time          `json:"activatedAt"`
+	LastUpdatedAt    time.Time           `json:"lastUpdatedAt"`
 	IsActivated      bool                `json:"isActivated"`
 	IsLocked         bool                `json:"isLocked"`
 	IsCanceled       bool                `json:"isCanceled"`
@@ -940,6 +965,8 @@ type CardResponse struct {
 	IsFirtual        bool                `json:"isFirtual"`
 	IsPre            bool                `json:"isPre"`
 	IsPos            bool                `json:"isPos"`
+	IsDebit          bool                `json:"isDebit"`
+	PaymentDay       int16               `json:"paymentDay"`
 }
 
 type CardBind struct {

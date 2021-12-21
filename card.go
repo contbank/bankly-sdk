@@ -19,7 +19,7 @@ func NewCard(newHttpClient NewHttpClient) *Card {
 }
 
 //Cards ...
-func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]CardResponse, error) {
+func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]CardResponseDTO, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id": requestID,
@@ -40,7 +40,7 @@ func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]C
 		return nil, err
 	}
 
-	var response []CardResponse
+	var response []CardResponseDTO
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
 		logErrorWithFields(fields, err, "error decoding json response", nil)
@@ -49,6 +49,38 @@ func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]C
 
 	defer resp.Body.Close()
 	return response, nil
+}
+
+func (c *Card) GetCardByProxy(ctx context.Context, proxy string) (*CardResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+		"identifier": proxy,
+	}
+
+	url := "cards/" + proxy
+
+	resp, err := c.httpClient.Get(ctx, url)
+	if err != nil {
+		logErrorWithFields(fields, err, err.Error(), nil)
+		return nil, err
+	}
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logErrorWithFields(fields, err, "error decoding body response", nil)
+		return nil, err
+	}
+
+	var cardResponseDTO *CardResponseDTO
+	err = json.Unmarshal(respBody, &cardResponseDTO)
+	if err != nil {
+		logErrorWithFields(fields, err, "error decoding json response", nil)
+		return nil, ErrDefaultCard
+	}
+
+	defer resp.Body.Close()
+	return parseResponseCard(cardResponseDTO), nil
 }
 
 func (c *Card) CreateCard(ctx context.Context, cardDTO CardCreateDTO) (*CardCreateResponse, error) {
@@ -132,4 +164,31 @@ func logInfoWithFields(fields logrus.Fields, msg string) {
 	logrus.
 		WithFields(fields).
 		Info(msg)
+}
+
+func parseResponseCard(cardResponseDTO *CardResponseDTO) *CardResponse {
+	return &CardResponse{
+		Created:          cardResponseDTO.Created,
+		CompanyKey:       cardResponseDTO.CompanyKey,
+		DocumentNumber:   cardResponseDTO.DocumentNumber,
+		ActivateCode:     cardResponseDTO.ActivateCode,
+		BankAgency:       cardResponseDTO.BankAgency,
+		BankAccount:      cardResponseDTO.BankAccount,
+		LastFourDigits:   cardResponseDTO.LastFourDigits,
+		Proxy:            cardResponseDTO.Proxy,
+		Name:             cardResponseDTO.Name,
+		Alias:            cardResponseDTO.Alias,
+		CardType:         cardResponseDTO.CardType,
+		Status:           cardResponseDTO.Status,
+		PhysicalBinds:    cardResponseDTO.PhysicalBinds,
+		VirtualBind:      cardResponseDTO.VirtualBind,
+		AllowContactless: cardResponseDTO.AllowContactless,
+		Address:          cardResponseDTO.Address,
+		HistoryStatus:    cardResponseDTO.HistoryStatus,
+		ActivatedAt:      cardResponseDTO.ActivatedAt,
+		LastUpdatedAt:    cardResponseDTO.LastUpdatedAt,
+		IsFirtual:        cardResponseDTO.IsFirtual,
+		IsPos:            cardResponseDTO.IsPos,
+		SettlementDay:    cardResponseDTO.PaymentDay,
+	}
 }
