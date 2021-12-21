@@ -19,7 +19,7 @@ func NewCard(newHttpClient NewHttpClient) *Card {
 }
 
 //Cards ...
-func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]CardResponseDTO, error) {
+func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]CardResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id": requestID,
@@ -28,7 +28,7 @@ func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]C
 
 	url := "cards/document/" + identifier
 
-	resp, err := c.httpClient.Get(ctx, url)
+	resp, err := c.httpClient.Get(ctx, url, nil)
 	if err != nil {
 		logErrorWithFields(fields, err, err.Error(), nil)
 		return nil, err
@@ -40,15 +40,20 @@ func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]C
 		return nil, err
 	}
 
-	var response []CardResponseDTO
-	err = json.Unmarshal(respBody, &response)
+	var cardsResponseDTO []CardResponseDTO
+	err = json.Unmarshal(respBody, &cardsResponseDTO)
 	if err != nil {
 		logErrorWithFields(fields, err, "error decoding json response", nil)
 		return nil, ErrDefaultCard
 	}
 
+	var cards []CardResponse
+	for _, crd := range cardsResponseDTO {
+		cards = append(cards, *parseResponseCard(&crd))
+	}
+
 	defer resp.Body.Close()
-	return response, nil
+	return cards, nil
 }
 
 func (c *Card) GetCardByProxy(ctx context.Context, proxy string) (*CardResponse, error) {
@@ -60,7 +65,7 @@ func (c *Card) GetCardByProxy(ctx context.Context, proxy string) (*CardResponse,
 
 	url := "cards/" + proxy
 
-	resp, err := c.httpClient.Get(ctx, url)
+	resp, err := c.httpClient.Get(ctx, url, nil)
 	if err != nil {
 		logErrorWithFields(fields, err, err.Error(), nil)
 		return nil, err
@@ -81,6 +86,47 @@ func (c *Card) GetCardByProxy(ctx context.Context, proxy string) (*CardResponse,
 
 	defer resp.Body.Close()
 	return parseResponseCard(cardResponseDTO), nil
+}
+
+func (c *Card) GetCardByAccount(ctx context.Context, bankAccount, bankAgency, documentNumber string) ([]CardResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+		"identifier": bankAccount,
+	}
+
+	url := "cards/account/" + bankAccount
+	query := make(map[string]string)
+
+	query["agency"] = bankAgency
+	query["documentNumber"] = documentNumber
+
+	resp, err := c.httpClient.Get(ctx, url, query)
+	if err != nil {
+		logErrorWithFields(fields, err, err.Error(), nil)
+		return nil, err
+	}
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logErrorWithFields(fields, err, "error decoding body response", nil)
+		return nil, err
+	}
+
+	var cardsResponseDTO []CardResponseDTO
+	err = json.Unmarshal(respBody, &cardsResponseDTO)
+	if err != nil {
+		logErrorWithFields(fields, err, "error decoding json response", nil)
+		return nil, ErrDefaultCard
+	}
+
+	var cards []CardResponse
+	for _, crd := range cardsResponseDTO {
+		cards = append(cards, *parseResponseCard(&crd))
+	}
+
+	defer resp.Body.Close()
+	return cards, nil
 }
 
 func (c *Card) CreateCard(ctx context.Context, cardDTO CardCreateDTO) (*CardCreateResponse, error) {

@@ -15,6 +15,8 @@ const (
 	Proxy          = "2229041000054459062"
 	DocumentNumber = "21632071000187"
 	Status         = "CanceledByCustomer"
+	BankAccount    = "202142"
+	BankAgency     = "0001"
 )
 
 type CardTestSuite struct {
@@ -98,6 +100,19 @@ func (c *CardTestSuite) TestGetCardsByProxy_OK() {
 
 func (c *CardTestSuite) TestGetCardsByProxy_NOT_FOUND() {
 	card, err := c.card.GetCardByProxy(context.Background(), "00000000000000")
+	c.assert.Error(err)
+	c.assert.Nil(card)
+	c.assert.Equal("Code: 404 - Messages: not found", err.Error())
+}
+
+func (c *CardTestSuite) TestGetCardByAccount_OK() {
+	card, err := c.card.GetCardByAccount(context.Background(), BankAccount, BankAgency, DocumentNumber)
+	c.assert.NoError(err)
+	c.assert.NotNil(card)
+}
+
+func (c *CardTestSuite) TestGetCardByAccount_NOT_FOUND() {
+	card, err := c.card.GetCardByAccount(context.Background(), "0", "0", "0")
 	c.assert.Error(err)
 	c.assert.Nil(card)
 	c.assert.Equal("Code: 404 - Messages: not found", err.Error())

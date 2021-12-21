@@ -57,10 +57,14 @@ func (client *NewHttpClient) Post(ctx context.Context, url string, body interfac
 	return handleResponse(resp, fields)
 }
 
-func (client *NewHttpClient) Get(ctx context.Context, url string) (*http.Response, error) {
+func (client *NewHttpClient) Get(ctx context.Context, url string, query map[string]string) (*http.Response, error) {
 	fields := initLog(ctx)
 
 	endpoint, _ := client.getEndpointAPI(fields, url)
+
+	if query != nil {
+		endpoint = buildQueryParams(endpoint, query)
+	}
 
 	req, err := http.NewRequestWithContext(ctx, GET, endpoint, nil)
 	if err != nil {
@@ -173,4 +177,12 @@ func initLog(ctx context.Context) logrus.Fields {
 	return logrus.Fields{
 		"request_id": requestID,
 	}
+}
+
+func buildQueryParams(endpoint string, query map[string]string) string {
+	endpoint = endpoint + "?"
+	for key, value := range query {
+		endpoint += key + "=" + value + "&"
+	}
+	return endpoint
 }
