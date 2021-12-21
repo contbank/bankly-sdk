@@ -129,6 +129,8 @@ func handleResponse(resp *http.Response, fields logrus.Fields) (*http.Response, 
 		return resp, nil
 	case resp.StatusCode == http.StatusAccepted:
 		return resp, nil
+	case resp.StatusCode == http.StatusNoContent:
+		return resp, nil
 	case resp.StatusCode == http.StatusNotFound:
 		return nil, ErrEntryNotFound
 	}

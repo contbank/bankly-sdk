@@ -105,6 +105,19 @@ func (c *CardTestSuite) TestGetCardsByProxy_NOT_FOUND() {
 	c.assert.Equal("Code: 404 - Messages: not found", err.Error())
 }
 
+func (c *CardTestSuite) TestGetNextStatusByProxy_OK() {
+	card, err := c.card.GetNextStatusByProxy(context.Background(), "2229131000063855144")
+	c.assert.NoError(err)
+	c.assert.NotNil(card)
+}
+
+func (c *CardTestSuite) TestGetNextStatusByProxy_NOT_FOUND() {
+	card, err := c.card.GetNextStatusByProxy(context.Background(), "00000000000000")
+	c.assert.Error(err)
+	c.assert.Nil(card)
+	c.assert.Equal("Code: 404 - Messages: not found", err.Error())
+}
+
 func (c *CardTestSuite) TestGetCardByAccount_OK() {
 	card, err := c.card.GetCardByAccount(context.Background(), BankAccount, BankAgency, DocumentNumber)
 	c.assert.NoError(err)

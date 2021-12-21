@@ -88,6 +88,42 @@ func (c *Card) GetCardByProxy(ctx context.Context, proxy string) (*CardResponse,
 	return parseResponseCard(cardResponseDTO), nil
 }
 
+func (c *Card) GetNextStatusByProxy(ctx context.Context, proxy string) ([]CardNextStatus, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+		"identifier": proxy,
+	}
+
+	url := "cards/" + proxy + "/nextStatus"
+
+	resp, err := c.httpClient.Get(ctx, url, nil)
+	if err != nil {
+		logErrorWithFields(fields, err, err.Error(), nil)
+		return nil, err
+	}
+
+	if resp.StatusCode == 204 {
+		return []CardNextStatus{}, nil
+	}
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logErrorWithFields(fields, err, "error decoding body response", nil)
+		return nil, err
+	}
+
+	var cardNextStatus []CardNextStatus
+	err = json.Unmarshal(respBody, &cardNextStatus)
+	if err != nil {
+		logErrorWithFields(fields, err, "error decoding json response", nil)
+		return nil, ErrDefaultCard
+	}
+
+	defer resp.Body.Close()
+	return cardNextStatus, nil
+}
+
 func (c *Card) GetCardByAccount(ctx context.Context, bankAccount, bankAgency, documentNumber string) ([]CardResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
