@@ -141,7 +141,7 @@ func (c *BankStatement) FilterBankStatements(ctx context.Context, model *FilterB
 
 	if len(bodyErr.Errors) > 0 {
 		errModel := bodyErr.Errors[0]
-		err = FindError(errModel.Code, errModel.Messages...)
+		err = FindErrorByErrorModel(errModel)
 
 		logrus.
 			WithError(err).

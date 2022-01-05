@@ -119,7 +119,7 @@ func (p *Payment) ValidatePayment(ctx context.Context, correlationID string, mod
 		return response, nil
 	}
 
-	var bodyErr *PaymentErrorResponse
+	var bodyErr *ErrorResponse
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
@@ -232,7 +232,7 @@ func (p *Payment) ConfirmPayment(ctx context.Context, correlationID string, mode
 
 		return response, nil
 	}
-	var bodyErr *PaymentErrorResponse
+	var bodyErr *ErrorResponse
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
@@ -350,7 +350,7 @@ func (p *Payment) FilterPayments(ctx context.Context, correlationID string, mode
 		return nil, ErrEntryNotFound
 	}
 
-	var bodyErr *PaymentErrorResponse
+	var bodyErr *ErrorResponse
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
@@ -465,7 +465,7 @@ func (p *Payment) DetailPayment(ctx context.Context, correlationID string, model
 		return nil, ErrEntryNotFound
 	}
 
-	var bodyErr *PaymentErrorResponse
+	var bodyErr *ErrorResponse
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {

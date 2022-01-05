@@ -119,7 +119,7 @@ func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*Bole
 		return body, nil
 	}
 
-	var bodyErr []*BoletoErrorResponse
+	var bodyErr []*ErrorResponse
 
 	err = json.Unmarshal(respBody, &bodyErr)
 
@@ -663,7 +663,7 @@ func (b *Boletos) SimulatePayment(ctx context.Context, model *SimulatePaymentReq
 		return nil
 	}
 
-	var bodyErr []*BoletoErrorResponse
+	var bodyErr []*ErrorResponse
 
 	err = json.Unmarshal(respBody, &bodyErr)
 

@@ -18,7 +18,6 @@ type BankStatementTestSuite struct {
 	ctx     context.Context
 	session *bankly.Session
 	bank    *bankly.BankStatement
-	boletos *bankly.Boletos
 }
 
 func TestBankStatementTestSuite(t *testing.T) {
@@ -27,6 +26,7 @@ func TestBankStatementTestSuite(t *testing.T) {
 
 func (s *BankStatementTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
+	s.ctx = context.Background()
 
 	session, err := bankly.NewSession(bankly.Config{
 		ClientID : bankly.String(*bankly.GetEnvBanklyClientID()),
@@ -41,11 +41,9 @@ func (s *BankStatementTestSuite) SetupTest() {
 
 	s.session = session
 	s.bank = bankly.NewBankStatement(httpClient, *s.session)
-	s.boletos = bankly.NewBoletos(httpClient, *s.session)
 }
 
 func (s *BankStatementTestSuite) TestFilterBankStatements() {
-
 	// TODO corrigir este teste. Pode ser que não tenha esta conta.
 	s.T().Skip("Criar a conta e depois dar um filter.")
 
@@ -64,4 +62,22 @@ func (s *BankStatementTestSuite) TestFilterBankStatements() {
 
 	s.assert.NoError(err)
 	s.assert.NotEmpty(r)
+}
+
+func (s *BankStatementTestSuite) TestFilterBankStatements_InvalidPageSizeError() {
+	endTime := time.Now().Add(-24 * time.Hour)
+	req := &bankly.FilterBankStatementRequest{
+		Branch:         "0001",
+		Account:        "184039",
+		Page:           1,
+		PageSize:       500,
+		IncludeDetails: true,
+		EndDateTime:    &endTime,
+		CardProxy:      []string{"123", "456"},
+	}
+
+	r, err := s.bank.FilterBankStatements(s.ctx, req)
+
+	s.assert.Error(err)
+	s.assert.Nil(r)
 }
