@@ -235,7 +235,6 @@ var transferErrorList = []TransferError{
 
 // FindError ..
 func FindError(code string, messages ...string) *Error {
-
 	code = verifyInvalidParameter(code, messages)
 
 	for _, v := range errorList {
@@ -247,6 +246,17 @@ func FindError(code string, messages ...string) *Error {
 	return &Error{
 		ErrorKey:  code,
 		GrokError: grok.NewError(http.StatusConflict, messages...),
+	}
+}
+
+// FindErrorByErrorModel ..
+func FindErrorByErrorModel(response ErrorModel) *Error {
+	if response.Code != "" {
+		return FindError(response.Code, response.Messages...)
+	}
+	return &Error{
+		ErrorKey:  response.Key,
+		GrokError: grok.NewError(http.StatusBadRequest, response.Value),
 	}
 }
 

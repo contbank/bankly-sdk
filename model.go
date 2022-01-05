@@ -208,27 +208,21 @@ type Payer struct {
 type ErrorResponse struct {
 	Errors    []ErrorModel `json:"errors,omitempty"`
 	Reference string       `json:"reference,omitempty"`
+	CodeMessageErrorResponse
 }
 
-//BoletoErrorResponse ...
-type BoletoErrorResponse struct {
-	Code    string `json:"code,omitempty"`
-	Message string `json:"message,omitempty"`
-}
-
-//PaymentErrorResponse ...
-type PaymentErrorResponse struct {
+// CodeMessageErrorResponse ...
+type CodeMessageErrorResponse struct {
 	Code    string `json:"code,omitempty"`
 	Message string `json:"message,omitempty"`
 }
 
 // TransferErrorResponse ...
 type TransferErrorResponse struct {
-	Code            string               `json:"code,omitempty"`
-	Message         string               `json:"message,omitempty"`
 	Layer           string               `json:"layer,omitempty"`
 	ApplicationName string               `json:"applicationName,omitempty"`
 	Errors          []KeyValueErrorModel `json:"errors,omitempty"`
+	CodeMessageErrorResponse
 }
 
 // ErrorModel ...
@@ -236,6 +230,7 @@ type ErrorModel struct {
 	Code         string   `json:"code,omitempty"`
 	PropertyName string   `json:"propertyName,omitempty"`
 	Messages     []string `json:"messages,omitempty"`
+	KeyValueErrorModel
 }
 
 // KeyValueErrorModel ...
