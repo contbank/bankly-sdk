@@ -985,6 +985,11 @@ type CardHistoryStatus struct {
 	Value    string    `json:"value"`
 }
 
+type CardNextStatus struct {
+	Value        string `json:"value"`
+	IsDefinitive bool   `json:"isDefinitive"`
+}
+
 type CardType string
 
 type CardCreateDTO struct {
