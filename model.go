@@ -1017,3 +1017,30 @@ type CardCreateResponse struct {
 	Proxy        string `json:"proxy"`
 	ActivateCode string `json:"activateCode"`
 }
+
+type CardTransactionsResponse struct {
+	Account struct { 
+		Number string `json:"number"`
+		Agency string `json:"agency"`
+	} `json:"account"`
+	Amount struct {
+		Value float64 	`json:"value"`
+		Local float64 	`json:"local"`
+		Net float64			`json:"net"`
+		Iof float64			`json:"iof"`
+		Markup float64 	`json:"markup"`
+	} `json:"amount"`
+	Merchant struct {
+		ID string 		`json:"id"`
+		Name string 	`json:"name"`
+		MCC string 		`json:"mcc"`
+		City string   `json:"city"`
+	} 							`json:"merchant"`
+	AuthorizationCode string 		`json:"authorizationCode"`
+	CountryCode string 					`json:"countryCode"`
+	CurrencyCode string 				`json:"currencyCode"`
+	EntryMode string 						`json:"entryMode"`
+	Status string 							`json:"status"`
+	TransactionTimestamp string `json:"transactionTimestamp"`
+	TransactionType string 			`json:"transactionType"`
+}

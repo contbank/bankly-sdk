@@ -23,6 +23,7 @@ type CardTestSuite struct {
 	suite.Suite
 	assert *assert.Assertions
 	card   *bankly.Card
+	ctx 		context.Context
 }
 
 func mockCreateCard(documentNumber string, cardType bankly.CardType) bankly.CardCreateDTO {
@@ -58,6 +59,7 @@ func TestCardTestSuite(t *testing.T) {
 
 func (s *CardTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
+	s.ctx = context.Background()
 
 	session, err := bankly.NewSession(bankly.Config{
 		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
@@ -90,6 +92,24 @@ func (c *CardTestSuite) TestGetCardsByIdentifier_NOT_FOUND() {
 	c.assert.Error(err)
 	c.assert.Nil(card)
 	c.assert.Equal("Code: 404 - Messages: not found", err.Error())
+}
+
+func (c *CardTestSuite) TestGetTransactionByProxy_OK() {
+	card, err := c.card.GetTransactionsByProxy(c.ctx, Proxy, "1", "2021-01-01", "2021-01-08", "10")
+	c.assert.NoError(err)
+	c.assert.NotNil(card)
+}
+
+func (c *CardTestSuite) TestGetTransactionByProxy_INTERVAL_DATE_NOT_OK() {
+	card, err := c.card.GetTransactionsByProxy(c.ctx, Proxy, "1", "2021-01-01", "2021-01-09", "10")
+	c.assert.Error(err)
+	c.assert.Nil(card)
+}
+
+func (c *CardTestSuite) TestGetTransactionByProxy_ENDDATE_NOTFOUND_NOT_OK() {
+	card, err := c.card.GetTransactionsByProxy(c.ctx, Proxy, "1", "2021-01-01", "", "10")
+	c.assert.Error(err)
+	c.assert.Nil(card)
 }
 
 func (c *CardTestSuite) TestGetCardsByProxy_OK() {
