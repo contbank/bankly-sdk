@@ -225,6 +225,39 @@ func (c *Card) UpdateStatusCard(ctx context.Context, proxy string, cardUpdateSta
 	return resp, nil
 }
 
+func (c *Card) GetTransactionsByProxy(ctx context.Context, proxy, page, startDate, endDate, pageSize string) (*CardTransactionsResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+	}
+
+	url := "cards/" + proxy + "/transactions"
+	
+	query := make(map[string]string)
+	query["page"] = page
+	query["startDate"] = startDate
+	query["endDate"] = endDate
+	query["pageSize"] = pageSize
+
+	resp, err := c.httpClient.Get(ctx, url, query)
+	if err != nil {
+		logErrorWithFields(fields, err, err.Error(), nil)
+		return nil, err
+	}
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
+	var response *CardTransactionsResponse
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		logErrorWithFields(fields, err, "error decoding json response", nil)
+		return nil, ErrDefaultCard
+	}
+
+	defer resp.Body.Close()
+	return response, nil
+}
+
 func logErrorWithFields(fields logrus.Fields, err error, msg string, hasField map[string]interface{}) {
 	if hasField != nil {
 		for prop, value := range hasField {
