@@ -28,7 +28,7 @@ func (client *NewHttpClient) Post(ctx context.Context, url string, body interfac
 	fields := initLog(ctx)
 	data, err := json.Marshal(body)
 	if err != nil {
-		logErrorWithFields(fields, err, "error marshal body request", nil)
+		logrus.WithFields(fields).WithError(err).Error("error marshal body request")
 		return nil, err
 	}
 
@@ -36,13 +36,13 @@ func (client *NewHttpClient) Post(ctx context.Context, url string, body interfac
 
 	req, err := http.NewRequestWithContext(ctx, POST, endpoint, bytes.NewReader(data))
 	if err != nil {
-		logErrorWithFields(fields, err, "error new request", nil)
+		logrus.WithFields(fields).WithError(err).Error("error new request")
 		return nil, err
 	}
 
 	token, err := client.Authentication.Token(ctx)
 	if err != nil {
-		logErrorWithFields(fields, err, "error authentication", nil)
+		logrus.WithFields(fields).WithError(err).Error("error authentication")
 		return nil, err
 	}
 
@@ -50,7 +50,7 @@ func (client *NewHttpClient) Post(ctx context.Context, url string, body interfac
 
 	resp, err := client.HttpClient.Do(req)
 	if err != nil {
-		logErrorWithFields(fields, err, "error http client", nil)
+		logrus.WithFields(fields).WithError(err).Error("error http client")
 		return nil, err
 	}
 
@@ -68,13 +68,13 @@ func (client *NewHttpClient) Get(ctx context.Context, url string, query map[stri
 
 	req, err := http.NewRequestWithContext(ctx, GET, endpoint, nil)
 	if err != nil {
-		logErrorWithFields(fields, err, "error new request", nil)
+		logrus.WithFields(fields).WithError(err).Error("error new request")
 		return nil, err
 	}
 
 	token, err := client.Authentication.Token(ctx)
 	if err != nil {
-		logErrorWithFields(fields, err, "error authentication", nil)
+		logrus.WithFields(fields).WithError(err).Error("error authentication")
 		return nil, err
 	}
 
@@ -82,7 +82,7 @@ func (client *NewHttpClient) Get(ctx context.Context, url string, query map[stri
 
 	resp, err := client.HttpClient.Do(req)
 	if err != nil {
-		logErrorWithFields(fields, err, "error http client", nil)
+		logrus.WithFields(fields).WithError(err).Error("error http client")
 		return nil, err
 	}
 
@@ -93,7 +93,7 @@ func (client *NewHttpClient) Patch(ctx context.Context, url string, body interfa
 	fields := initLog(ctx)
 	data, err := json.Marshal(body)
 	if err != nil {
-		logErrorWithFields(fields, err, "error marshal body request", nil)
+		logrus.WithFields(fields).WithError(err).Error("error marshal body request")
 		return nil, err
 	}
 
@@ -101,13 +101,13 @@ func (client *NewHttpClient) Patch(ctx context.Context, url string, body interfa
 
 	req, err := http.NewRequestWithContext(ctx, PATCH, endpoint, bytes.NewReader(data))
 	if err != nil {
-		logErrorWithFields(fields, err, "error new request", nil)
+		logrus.WithFields(fields).WithError(err).Error("error new request")
 		return nil, err
 	}
 
 	token, err := client.Authentication.Token(ctx)
 	if err != nil {
-		logErrorWithFields(fields, err, "error authentication", nil)
+		logrus.WithFields(fields).WithError(err).Error("error authentication")
 		return nil, err
 	}
 
@@ -115,7 +115,7 @@ func (client *NewHttpClient) Patch(ctx context.Context, url string, body interfa
 
 	resp, err := client.HttpClient.Do(req)
 	if err != nil {
-		logErrorWithFields(fields, err, "error http client", nil)
+		logrus.WithFields(fields).WithError(err).Error("error http client")
 		return nil, err
 	}
 
@@ -143,7 +143,7 @@ func responseIsError(fields logrus.Fields, resp *http.Response) (*http.Response,
 	respBody, _ := ioutil.ReadAll(resp.Body)
 	err := json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
-		logErrorWithFields(fields, err, "error decoding json response", nil)
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultCard
 	}
 
@@ -153,7 +153,7 @@ func responseIsError(fields logrus.Fields, resp *http.Response) (*http.Response,
 
 		var hasField = make(map[string]interface{})
 		hasField["bankly_error"] = bodyErr
-		logErrorWithFields(fields, err, "bankly get card error", hasField)
+		logrus.WithFields(fields).WithError(err).Error("error bankly get card")
 
 		return nil, err
 	}
@@ -163,14 +163,14 @@ func responseIsError(fields logrus.Fields, resp *http.Response) (*http.Response,
 func (client *NewHttpClient) getEndpointAPI(fields logrus.Fields, URLpath string) (string, error) {
 	u, err := url.Parse(client.Session.APIEndpoint)
 	if err != nil {
-		logErrorWithFields(fields, err, "error parsing api endpoint", nil)
+		logrus.WithFields(fields).WithError(err).Error("error parsing api endpoint")
 		return "", err
 	}
 
 	u.Path = path.Join(u.Path, URLpath)
 	endpoint := u.String()
 	fields["endpoint"] = endpoint
-	logInfoWithFields(fields, "get endpoint sucess")
+	logrus.WithFields(fields).Info("get endpoint success")
 	return endpoint, nil
 }
 
