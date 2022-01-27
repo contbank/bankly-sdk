@@ -10,11 +10,12 @@ import (
 )
 
 type Card struct {
-	httpClient NewHttpClient
+	httpClient BanklyHttpClient
 }
 
 //NewCard ...
-func NewCard(newHttpClient NewHttpClient) *Card {
+func NewCard(newHttpClient BanklyHttpClient) *Card {
+	newHttpClient.errorHandler = CardErrorHandler
 	return &Card{newHttpClient}
 }
 
@@ -28,7 +29,7 @@ func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]C
 
 	url := "cards/document/" + identifier
 
-	resp, err := c.httpClient.Get(ctx, url, nil)
+	resp, err := c.httpClient.Get(ctx, url, nil, nil)
 	if err != nil {
 		logErrorWithFields(fields, err, err.Error(), nil)
 		return nil, err
@@ -65,7 +66,7 @@ func (c *Card) GetCardByProxy(ctx context.Context, proxy string) (*CardResponse,
 
 	url := "cards/" + proxy
 
-	resp, err := c.httpClient.Get(ctx, url, nil)
+	resp, err := c.httpClient.Get(ctx, url, nil, nil)
 	if err != nil {
 		logErrorWithFields(fields, err, err.Error(), nil)
 		return nil, err
@@ -97,7 +98,7 @@ func (c *Card) GetNextStatusByProxy(ctx context.Context, proxy string) ([]CardNe
 
 	url := "cards/" + proxy + "/nextStatus"
 
-	resp, err := c.httpClient.Get(ctx, url, nil)
+	resp, err := c.httpClient.Get(ctx, url, nil, nil)
 	if err != nil {
 		logErrorWithFields(fields, err, err.Error(), nil)
 		return nil, err
@@ -137,7 +138,7 @@ func (c *Card) GetCardByAccount(ctx context.Context, bankAccount, bankAgency, do
 	query["agency"] = bankAgency
 	query["documentNumber"] = documentNumber
 
-	resp, err := c.httpClient.Get(ctx, url, query)
+	resp, err := c.httpClient.Get(ctx, url, query, nil)
 	if err != nil {
 		logErrorWithFields(fields, err, err.Error(), nil)
 		return nil, err
@@ -189,7 +190,7 @@ func (c *Card) CreateCard(ctx context.Context, cardDTO CardCreateDTO) (*CardCrea
 		Password:       cardDTO.CardData.Password,
 	}
 
-	resp, err := c.httpClient.Post(ctx, url, body)
+	resp, err := c.httpClient.Post(ctx, url, body, nil)
 	if err != nil {
 		logErrorWithFields(fields, err, err.Error(), nil)
 		return nil, err
@@ -216,7 +217,7 @@ func (c *Card) UpdateStatusCard(ctx context.Context, proxy string, cardUpdateSta
 
 	url := "cards/" + proxy + "/status"
 
-	resp, err := c.httpClient.Patch(ctx, url, cardUpdateStatusDTO)
+	resp, err := c.httpClient.Patch(ctx, url, cardUpdateStatusDTO, nil)
 	if err != nil {
 		logErrorWithFields(fields, err, err.Error(), nil)
 		return nil, err
@@ -232,14 +233,14 @@ func (c *Card) GetTransactionsByProxy(ctx context.Context, proxy, page, startDat
 	}
 
 	url := "cards/" + proxy + "/transactions"
-	
+
 	query := make(map[string]string)
 	query["page"] = page
 	query["startDate"] = startDate
 	query["endDate"] = endDate
 	query["pageSize"] = pageSize
 
-	resp, err := c.httpClient.Get(ctx, url, query)
+	resp, err := c.httpClient.Get(ctx, url, query, nil)
 	if err != nil {
 		logErrorWithFields(fields, err, err.Error(), nil)
 		return nil, err
@@ -306,4 +307,27 @@ func parseResponseCard(cardResponseDTO *CardResponseDTO) *CardResponse {
 		IsPos:            cardResponseDTO.IsPos,
 		SettlementDay:    cardResponseDTO.PaymentDay,
 	}
+}
+
+//CardErrorHandler ...
+func CardErrorHandler(fields logrus.Fields, resp *http.Response) error {
+	var bodyErr *ErrorResponse
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	err := json.Unmarshal(respBody, &bodyErr)
+	if err != nil {
+		logErrorWithFields(fields, err, "error decoding json response", nil)
+		return ErrDefaultCard
+	}
+
+	if len(bodyErr.Errors) > 0 {
+		errModel := bodyErr.Errors[0]
+		err := FindCardError(errModel.Code, errModel.Messages...)
+
+		var hasField = make(map[string]interface{})
+		hasField["bankly_error"] = bodyErr
+		logErrorWithFields(fields, err, "bankly get card error", hasField)
+
+		return err
+	}
+	return ErrDefaultCard
 }

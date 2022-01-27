@@ -23,7 +23,7 @@ type CardTestSuite struct {
 	suite.Suite
 	assert *assert.Assertions
 	card   *bankly.Card
-	ctx 		context.Context
+	ctx    context.Context
 }
 
 func mockCreateCard(documentNumber string, cardType bankly.CardType) bankly.CardCreateDTO {
@@ -71,7 +71,7 @@ func (s *CardTestSuite) SetupTest() {
 		Timeout: 30 * time.Second,
 	}
 
-	newHttpClient := bankly.NewHttpClient{
+	newHttpClient := bankly.BanklyHttpClient{
 		Session:        *session,
 		HttpClient:     httpClient,
 		Authentication: bankly.NewAuthentication(httpClient, *session),

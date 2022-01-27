@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"os"
 	"strconv"
 	"time"
 	"unicode"
@@ -148,12 +147,12 @@ func RandStringBytes(n int) string {
 
 // GetEnvBanklyClientID ...
 func GetEnvBanklyClientID() *string {
-	clientID := os.Getenv("BANKLY_CLIENT_ID")
+	clientID := "0a9f5c95-4b73-44b5-b3dd-03569c570630"
 	return &clientID
 }
 
 // GetEnvBanklyClientSecret ...
 func GetEnvBanklyClientSecret() *string {
-	clientSecret := os.Getenv("BANKLY_CLIENT_SECRET")
+	clientSecret := "V$^YzR$sI#Qhh4b!e0cHu6B1*r#*vkVj"
 	return &clientSecret
 }

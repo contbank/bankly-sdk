@@ -9,8 +9,11 @@ import (
 	"net/url"
 	"path"
 
+	"github.com/contbank/grok"
 	"github.com/sirupsen/logrus"
 )
+
+type ErrorHandler func(fields logrus.Fields, resp *http.Response) error
 
 const (
 	GET   = "GET"
@@ -18,13 +21,25 @@ const (
 	PATCH = "PATCH"
 )
 
-type NewHttpClient struct {
+type BanklyHttpClient struct {
 	Session        Session
 	HttpClient     *http.Client
 	Authentication *Authentication
+	errorHandler   ErrorHandler
 }
 
-func (client *NewHttpClient) Post(ctx context.Context, url string, body interface{}) (*http.Response, error) {
+//NewBanklyHttpClient ...
+func NewBanklyHttpClient(session Session,
+	httpClient *http.Client,
+	authentication *Authentication) *BanklyHttpClient {
+	return &BanklyHttpClient{
+		Session:        session,
+		HttpClient:     httpClient,
+		Authentication: authentication,
+	}
+}
+
+func (client *BanklyHttpClient) Post(ctx context.Context, url string, body interface{}, header *http.Header) (*http.Response, error) {
 	fields := initLog(ctx)
 	data, err := json.Marshal(body)
 	if err != nil {
@@ -46,7 +61,7 @@ func (client *NewHttpClient) Post(ctx context.Context, url string, body interfac
 		return nil, err
 	}
 
-	req = setRequestHeader(req, token, client.Session.APIVersion)
+	req = setRequestHeader(req, token, client.Session.APIVersion, header)
 
 	resp, err := client.HttpClient.Do(req)
 	if err != nil {
@@ -54,10 +69,10 @@ func (client *NewHttpClient) Post(ctx context.Context, url string, body interfac
 		return nil, err
 	}
 
-	return handleResponse(resp, fields)
+	return handleResponse(resp, fields, client.errorHandler)
 }
 
-func (client *NewHttpClient) Get(ctx context.Context, url string, query map[string]string) (*http.Response, error) {
+func (client *BanklyHttpClient) Get(ctx context.Context, url string, query map[string]string, header *http.Header) (*http.Response, error) {
 	fields := initLog(ctx)
 
 	endpoint, _ := client.getEndpointAPI(fields, url)
@@ -78,7 +93,7 @@ func (client *NewHttpClient) Get(ctx context.Context, url string, query map[stri
 		return nil, err
 	}
 
-	req = setRequestHeader(req, token, client.Session.APIVersion)
+	req = setRequestHeader(req, token, client.Session.APIVersion, header)
 
 	resp, err := client.HttpClient.Do(req)
 	if err != nil {
@@ -86,10 +101,10 @@ func (client *NewHttpClient) Get(ctx context.Context, url string, query map[stri
 		return nil, err
 	}
 
-	return handleResponse(resp, fields)
+	return handleResponse(resp, fields, client.errorHandler)
 }
 
-func (client *NewHttpClient) Patch(ctx context.Context, url string, body interface{}) (*http.Response, error) {
+func (client *BanklyHttpClient) Patch(ctx context.Context, url string, body interface{}, header *http.Header) (*http.Response, error) {
 	fields := initLog(ctx)
 	data, err := json.Marshal(body)
 	if err != nil {
@@ -111,7 +126,7 @@ func (client *NewHttpClient) Patch(ctx context.Context, url string, body interfa
 		return nil, err
 	}
 
-	req = setRequestHeader(req, token, client.Session.APIVersion)
+	req = setRequestHeader(req, token, client.Session.APIVersion, header)
 
 	resp, err := client.HttpClient.Do(req)
 	if err != nil {
@@ -119,10 +134,10 @@ func (client *NewHttpClient) Patch(ctx context.Context, url string, body interfa
 		return nil, err
 	}
 
-	return handleResponse(resp, fields)
+	return handleResponse(resp, fields, client.errorHandler)
 }
 
-func handleResponse(resp *http.Response, fields logrus.Fields) (*http.Response, error) {
+func handleResponse(resp *http.Response, fields logrus.Fields, handler ErrorHandler) (*http.Response, error) {
 
 	switch {
 	case resp.StatusCode == http.StatusOK:
@@ -135,32 +150,15 @@ func handleResponse(resp *http.Response, fields logrus.Fields) (*http.Response, 
 		return nil, ErrEntryNotFound
 	}
 
-	return responseIsError(fields, resp)
-}
+	if handler != nil {
+		return nil, handler(fields, resp)
+	}
 
-func responseIsError(fields logrus.Fields, resp *http.Response) (*http.Response, error) {
-	var bodyErr *ErrorResponse
 	respBody, _ := ioutil.ReadAll(resp.Body)
-	err := json.Unmarshal(respBody, &bodyErr)
-	if err != nil {
-		logErrorWithFields(fields, err, "error decoding json response", nil)
-		return nil, ErrDefaultCard
-	}
-
-	if len(bodyErr.Errors) > 0 {
-		errModel := bodyErr.Errors[0]
-		err := FindCardError(errModel.Code, errModel.Messages...)
-
-		var hasField = make(map[string]interface{})
-		hasField["bankly_error"] = bodyErr
-		logErrorWithFields(fields, err, "bankly get card error", hasField)
-
-		return nil, err
-	}
-	return nil, ErrDefaultCard
+	return nil, grok.NewError(resp.StatusCode, string(respBody))
 }
 
-func (client *NewHttpClient) getEndpointAPI(fields logrus.Fields, URLpath string) (string, error) {
+func (client *BanklyHttpClient) getEndpointAPI(fields logrus.Fields, URLpath string) (string, error) {
 	u, err := url.Parse(client.Session.APIEndpoint)
 	if err != nil {
 		logErrorWithFields(fields, err, "error parsing api endpoint", nil)
