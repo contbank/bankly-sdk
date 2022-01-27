@@ -94,7 +94,7 @@ func (c *BankStatement) FilterBankStatements(ctx context.Context, model *FilterB
 		return nil, err
 	}
 
-	req = setRequestHeader(req, token, c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion, nil)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

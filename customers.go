@@ -153,7 +153,7 @@ func (c *Customers) FindRegistration(ctx context.Context, identifier string) (*C
 		return nil, err
 	}
 
-	req = setRequestHeader(req, token, c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion, nil)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -247,7 +247,7 @@ func (c *Customers) UpdateRegistration(ctx context.Context, document string, cus
 		return err
 	}
 
-	req = setRequestHeader(req, token, c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion, nil)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -314,7 +314,7 @@ func (c *Customers) CreateAccount(ctx context.Context, document string, accountT
 		return nil, err
 	}
 
-	req = setRequestHeader(req, token, c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion, nil)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -388,7 +388,7 @@ func (c *Customers) FindAccounts(ctx context.Context, document string) ([]Accoun
 		return nil, err
 	}
 
-	req = setRequestHeader(req, token, c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion, nil)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -495,9 +495,14 @@ func (c *Customers) getCustomerAPIEndpoint(requestID string, identifier string,
 }
 
 // setRequestHeader
-func setRequestHeader(request *http.Request, token string, apiVersion string) *http.Request {
+func setRequestHeader(request *http.Request, token string, apiVersion string, headers *http.Header) *http.Request {
+	if headers != nil {
+		request.Header = *headers
+	}
+
 	request.Header.Add("Authorization", token)
 	request.Header.Add("Content-type", "application/json")
 	request.Header.Add("api-version", apiVersion)
+
 	return request
 }

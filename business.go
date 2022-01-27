@@ -77,7 +77,7 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 		return err
 	}
 
-	req = setRequestHeader(req, token, c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion, nil)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -161,7 +161,7 @@ func (c *Business) UpdateBusiness(ctx context.Context,
 		return err
 	}
 
-	req = setRequestHeader(req, token, c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion, nil)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -244,7 +244,7 @@ func (c *Business) CreateBusinessAccount(ctx context.Context,
 		return nil, err
 	}
 
-	req = setRequestHeader(req, token, c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion, nil)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -328,7 +328,7 @@ func (c *Business) FindBusiness(ctx context.Context, identifier string) (*Busine
 		return nil, err
 	}
 
-	req = setRequestHeader(req, token, c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion, nil)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -433,7 +433,7 @@ func (c *Business) FindBusinessAccounts(ctx context.Context, identifier string) 
 		return nil, err
 	}
 
-	req = setRequestHeader(req, token, c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion, nil)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

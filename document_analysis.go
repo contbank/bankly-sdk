@@ -29,8 +29,8 @@ type DocumentAnalysis struct {
 // NewDocumentAnalysis ...
 func NewDocumentAnalysis(httpClient *http.Client, session Session) *DocumentAnalysis {
 	return &DocumentAnalysis{
-		session: session,
-		httpClient: httpClient,
+		session:        session,
+		httpClient:     httpClient,
 		authentication: NewAuthentication(httpClient, session),
 	}
 }
@@ -143,7 +143,7 @@ func (c *DocumentAnalysis) FindDocumentAnalysis(ctx context.Context, documentNum
 		return nil, err
 	}
 
-	req = setRequestHeader(req, token, c.session.APIVersion)
+	req = setRequestHeader(req, token, c.session.APIVersion, nil)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

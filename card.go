@@ -3,20 +3,22 @@ package bankly
 import (
 	"context"
 	"encoding/json"
-	"github.com/contbank/grok"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/contbank/grok"
 
 	"github.com/sirupsen/logrus"
 )
 
 type Card struct {
-	httpClient NewHttpClient
+	httpClient BanklyHttpClient
 }
 
-// NewCard ...
-func NewCard(newHttpClient NewHttpClient) *Card {
+//NewCard ...
+func NewCard(newHttpClient BanklyHttpClient) *Card {
+	newHttpClient.errorHandler = CardErrorHandler
 	return &Card{newHttpClient}
 }
 
@@ -24,13 +26,13 @@ func NewCard(newHttpClient NewHttpClient) *Card {
 func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]CardResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"identifier" : identifier,
+		"request_id": requestID,
+		"identifier": identifier,
 	}
 
 	url := "cards/document/" + grok.OnlyDigits(identifier)
 
-	resp, err := c.httpClient.Get(ctx, url, nil)
+	resp, err := c.httpClient.Get(ctx, url, nil, nil)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
@@ -63,13 +65,13 @@ func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]C
 func (c *Card) GetCardByProxy(ctx context.Context, proxy string) (*CardResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"proxy" : proxy,
+		"request_id": requestID,
+		"proxy":      proxy,
 	}
 
 	url := "cards/" + proxy
 
-	resp, err := c.httpClient.Get(ctx, url, nil)
+	resp, err := c.httpClient.Get(ctx, url, nil, nil)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
@@ -96,13 +98,13 @@ func (c *Card) GetCardByProxy(ctx context.Context, proxy string) (*CardResponse,
 func (c *Card) GetCardByActivateCode(ctx context.Context, activateCode string) ([]CardResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"activate_code" : activateCode,
+		"request_id":    requestID,
+		"activate_code": activateCode,
 	}
 
 	url := "cards/activateCode/" + activateCode
 
-	resp, err := c.httpClient.Get(ctx, url, nil)
+	resp, err := c.httpClient.Get(ctx, url, nil, nil)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
@@ -135,13 +137,13 @@ func (c *Card) GetCardByActivateCode(ctx context.Context, activateCode string) (
 func (c *Card) GetNextStatusByProxy(ctx context.Context, proxy string) ([]CardNextStatus, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"proxy" : proxy,
+		"request_id": requestID,
+		"proxy":      proxy,
 	}
 
 	url := "cards/" + proxy + "/nextStatus"
 
-	resp, err := c.httpClient.Get(ctx, url, nil)
+	resp, err := c.httpClient.Get(ctx, url, nil, nil)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
@@ -172,8 +174,8 @@ func (c *Card) GetNextStatusByProxy(ctx context.Context, proxy string) ([]CardNe
 func (c *Card) GetCardByAccount(ctx context.Context, accountNumber, accountBranch, identifier string) ([]CardResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id": requestID,
-		"identifier": identifier,
+		"request_id":     requestID,
+		"identifier":     identifier,
 		"account_branch": accountBranch,
 		"account_number": accountNumber,
 	}
@@ -184,7 +186,7 @@ func (c *Card) GetCardByAccount(ctx context.Context, accountNumber, accountBranc
 	query["agency"] = grok.OnlyLettersOrDigits(accountBranch)
 	query["documentNumber"] = grok.OnlyDigits(identifier)
 
-	resp, err := c.httpClient.Get(ctx, url, query)
+	resp, err := c.httpClient.Get(ctx, url, query, nil)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
@@ -217,7 +219,7 @@ func (c *Card) GetCardByAccount(ctx context.Context, accountNumber, accountBranc
 func (c *Card) CreateCard(ctx context.Context, cardDTO CardCreateDTO) (*CardCreateResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
+		"request_id": requestID,
 	}
 
 	cardLog := cardDTO
@@ -236,7 +238,7 @@ func (c *Card) CreateCard(ctx context.Context, cardDTO CardCreateDTO) (*CardCrea
 		Password:       cardDTO.CardData.Password,
 	}
 
-	resp, err := c.httpClient.Post(ctx, url, body)
+	resp, err := c.httpClient.Post(ctx, url, body, nil)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
@@ -269,7 +271,7 @@ func (c *Card) UpdateStatusCard(ctx context.Context, proxy string, cardUpdateSta
 
 	url := "cards/" + proxy + "/status"
 
-	resp, err := c.httpClient.Patch(ctx, url, cardUpdateStatusDTO)
+	resp, err := c.httpClient.Patch(ctx, url, cardUpdateStatusDTO, nil)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
@@ -282,19 +284,19 @@ func (c *Card) UpdateStatusCard(ctx context.Context, proxy string, cardUpdateSta
 func (c *Card) GetTransactionsByProxy(ctx context.Context, proxy, page, startDate, endDate, pageSize string) (*CardTransactionsResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"proxy" : proxy,
+		"request_id": requestID,
+		"proxy":      proxy,
 	}
 
 	url := "cards/" + proxy + "/transactions"
-	
+
 	query := make(map[string]string)
 	query["page"] = page
 	query["startDate"] = startDate
 	query["endDate"] = endDate
 	query["pageSize"] = pageSize
 
-	resp, err := c.httpClient.Get(ctx, url, query)
+	resp, err := c.httpClient.Get(ctx, url, query, nil)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
@@ -312,4 +314,26 @@ func (c *Card) GetTransactionsByProxy(ctx context.Context, proxy, page, startDat
 
 	defer resp.Body.Close()
 	return response, nil
+}
+
+//CardErrorHandler ...
+func CardErrorHandler(fields logrus.Fields, resp *http.Response) error {
+	var bodyErr *ErrorResponse
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	err := json.Unmarshal(respBody, &bodyErr)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		return ErrDefaultCard
+	}
+
+	if len(bodyErr.Errors) > 0 {
+		errModel := bodyErr.Errors[0]
+		err := FindCardError(errModel.Code, errModel.Messages...)
+
+		fields["bankly_error"] = bodyErr
+		logrus.WithFields(fields).WithError(err).Error("bankly get card error")
+
+		return err
+	}
+	return ErrDefaultCard
 }
