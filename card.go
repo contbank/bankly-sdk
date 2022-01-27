@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
+
+	"github.com/contbank/grok"
 
 	"github.com/sirupsen/logrus"
 )
@@ -19,7 +22,7 @@ func NewCard(newHttpClient BanklyHttpClient) *Card {
 	return &Card{newHttpClient}
 }
 
-//Cards ...
+// GetCardsByIdentifier ...
 func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]CardResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
@@ -27,80 +30,122 @@ func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]C
 		"identifier": identifier,
 	}
 
-	url := "cards/document/" + identifier
+	url := "cards/document/" + grok.OnlyDigits(identifier)
 
 	resp, err := c.httpClient.Get(ctx, url, nil, nil)
 	if err != nil {
-		logErrorWithFields(fields, err, err.Error(), nil)
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logErrorWithFields(fields, err, "error decoding body response", nil)
+		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
 		return nil, err
 	}
 
 	var cardsResponseDTO []CardResponseDTO
+
 	err = json.Unmarshal(respBody, &cardsResponseDTO)
 	if err != nil {
-		logErrorWithFields(fields, err, "error decoding json response", nil)
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultCard
 	}
 
 	var cards []CardResponse
 	for _, crd := range cardsResponseDTO {
-		cards = append(cards, *parseResponseCard(&crd))
+		cards = append(cards, *ParseResponseCard(&crd))
 	}
 
 	defer resp.Body.Close()
 	return cards, nil
 }
 
+// GetCardByProxy ...
 func (c *Card) GetCardByProxy(ctx context.Context, proxy string) (*CardResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id": requestID,
-		"identifier": proxy,
+		"proxy":      proxy,
 	}
 
 	url := "cards/" + proxy
 
 	resp, err := c.httpClient.Get(ctx, url, nil, nil)
 	if err != nil {
-		logErrorWithFields(fields, err, err.Error(), nil)
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logErrorWithFields(fields, err, "error decoding body response", nil)
+		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
 		return nil, err
 	}
 
 	var cardResponseDTO *CardResponseDTO
 	err = json.Unmarshal(respBody, &cardResponseDTO)
 	if err != nil {
-		logErrorWithFields(fields, err, "error decoding json response", nil)
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultCard
 	}
 
 	defer resp.Body.Close()
-	return parseResponseCard(cardResponseDTO), nil
+	return ParseResponseCard(cardResponseDTO), nil
 }
 
+// GetCardByActivateCode ...
+func (c *Card) GetCardByActivateCode(ctx context.Context, activateCode string) ([]CardResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id":    requestID,
+		"activate_code": activateCode,
+	}
+
+	url := "cards/activateCode/" + activateCode
+
+	resp, err := c.httpClient.Get(ctx, url, nil, nil)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
+		return nil, err
+	}
+
+	var cardsResponseDTO []CardResponseDTO
+
+	err = json.Unmarshal(respBody, &cardsResponseDTO)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		return nil, ErrDefaultCard
+	}
+
+	var cards []CardResponse
+	for _, crd := range cardsResponseDTO {
+		cards = append(cards, *ParseResponseCard(&crd))
+	}
+
+	defer resp.Body.Close()
+	return cards, nil
+}
+
+// GetNextStatusByProxy ...
 func (c *Card) GetNextStatusByProxy(ctx context.Context, proxy string) ([]CardNextStatus, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id": requestID,
-		"identifier": proxy,
+		"proxy":      proxy,
 	}
 
 	url := "cards/" + proxy + "/nextStatus"
 
 	resp, err := c.httpClient.Get(ctx, url, nil, nil)
 	if err != nil {
-		logErrorWithFields(fields, err, err.Error(), nil)
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
 	}
 
@@ -110,14 +155,14 @@ func (c *Card) GetNextStatusByProxy(ctx context.Context, proxy string) ([]CardNe
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logErrorWithFields(fields, err, "error decoding body response", nil)
+		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
 		return nil, err
 	}
 
 	var cardNextStatus []CardNextStatus
 	err = json.Unmarshal(respBody, &cardNextStatus)
 	if err != nil {
-		logErrorWithFields(fields, err, "error decoding json response", nil)
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultCard
 	}
 
@@ -125,83 +170,87 @@ func (c *Card) GetNextStatusByProxy(ctx context.Context, proxy string) ([]CardNe
 	return cardNextStatus, nil
 }
 
-func (c *Card) GetCardByAccount(ctx context.Context, bankAccount, bankAgency, documentNumber string) ([]CardResponse, error) {
+// GetCardByAccount ...
+func (c *Card) GetCardByAccount(ctx context.Context, accountNumber, accountBranch, identifier string) ([]CardResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id": requestID,
-		"identifier": bankAccount,
+		"request_id":     requestID,
+		"identifier":     identifier,
+		"account_branch": accountBranch,
+		"account_number": accountNumber,
 	}
 
-	url := "cards/account/" + bankAccount
-	query := make(map[string]string)
+	url := "cards/account/" + grok.OnlyLettersOrDigits(accountNumber)
 
-	query["agency"] = bankAgency
-	query["documentNumber"] = documentNumber
+	query := make(map[string]string)
+	query["agency"] = grok.OnlyLettersOrDigits(accountBranch)
+	query["documentNumber"] = grok.OnlyDigits(identifier)
 
 	resp, err := c.httpClient.Get(ctx, url, query, nil)
 	if err != nil {
-		logErrorWithFields(fields, err, err.Error(), nil)
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logErrorWithFields(fields, err, "error decoding body response", nil)
+		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
 		return nil, err
 	}
 
 	var cardsResponseDTO []CardResponseDTO
 	err = json.Unmarshal(respBody, &cardsResponseDTO)
 	if err != nil {
-		logErrorWithFields(fields, err, "error decoding json response", nil)
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultCard
 	}
 
 	var cards []CardResponse
+
 	for _, crd := range cardsResponseDTO {
-		cards = append(cards, *parseResponseCard(&crd))
+		cards = append(cards, *ParseResponseCard(&crd))
 	}
 
 	defer resp.Body.Close()
 	return cards, nil
 }
 
+// CreateCard ...
 func (c *Card) CreateCard(ctx context.Context, cardDTO CardCreateDTO) (*CardCreateResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id": requestID,
 	}
 
-	url := "cards/"
-	switch cardDTO.CardType {
-	case VirtualCardType:
-		url = url + VirtualCardType
-	case PhysicalCardType:
-		url = url + PhysicalCardType
-	}
+	cardLog := cardDTO
+	cardLog.CardData.Password = ""
+	fields["object"] = cardLog
+
+	url := "cards/" + strings.ToLower(string(cardDTO.CardType))
 
 	body := CardCreateRequest{
-		DocumentNumber: cardDTO.CardData.DocumentNumber,
-		CardName:       cardDTO.CardData.CardName,
-		Alias:          cardDTO.CardData.Alias,
-		BankAgency:     cardDTO.CardData.BankAgency,
-		BankAccount:    cardDTO.CardData.BankAccount,
+		DocumentNumber: grok.OnlyDigits(cardDTO.CardData.DocumentNumber),
+		CardName:       grok.ToTitle(cardDTO.CardData.CardName),
+		Alias:          grok.ToTitle(cardDTO.CardData.Alias),
+		BankAgency:     grok.OnlyLettersOrDigits(cardDTO.CardData.BankAgency),
+		BankAccount:    grok.OnlyLettersOrDigits(cardDTO.CardData.BankAccount),
 		ProgramId:      cardDTO.CardData.ProgramId,
 		Password:       cardDTO.CardData.Password,
 	}
 
 	resp, err := c.httpClient.Post(ctx, url, body, nil)
 	if err != nil {
-		logErrorWithFields(fields, err, err.Error(), nil)
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
 	var response *CardCreateResponse
+
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
-		logErrorWithFields(fields, err, "error decoding json response", nil)
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultCard
 	}
 
@@ -209,27 +258,34 @@ func (c *Card) CreateCard(ctx context.Context, cardDTO CardCreateDTO) (*CardCrea
 	return response, nil
 }
 
+// UpdateStatusCard ...
 func (c *Card) UpdateStatusCard(ctx context.Context, proxy string, cardUpdateStatusDTO CardUpdateStatusDTO) (*http.Response, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id": requestID,
 	}
 
+	cardLog := cardUpdateStatusDTO
+	cardLog.Password = ""
+	fields["object"] = cardLog
+
 	url := "cards/" + proxy + "/status"
 
 	resp, err := c.httpClient.Patch(ctx, url, cardUpdateStatusDTO, nil)
 	if err != nil {
-		logErrorWithFields(fields, err, err.Error(), nil)
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	return resp, nil
 }
 
+// GetTransactionsByProxy ...
 func (c *Card) GetTransactionsByProxy(ctx context.Context, proxy, page, startDate, endDate, pageSize string) (*CardTransactionsResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id": requestID,
+		"proxy":      proxy,
 	}
 
 	url := "cards/" + proxy + "/transactions"
@@ -242,71 +298,22 @@ func (c *Card) GetTransactionsByProxy(ctx context.Context, proxy, page, startDat
 
 	resp, err := c.httpClient.Get(ctx, url, query, nil)
 	if err != nil {
-		logErrorWithFields(fields, err, err.Error(), nil)
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
 	var response *CardTransactionsResponse
+
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
-		logErrorWithFields(fields, err, "error decoding json response", nil)
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultCard
 	}
 
 	defer resp.Body.Close()
 	return response, nil
-}
-
-func logErrorWithFields(fields logrus.Fields, err error, msg string, hasField map[string]interface{}) {
-	if hasField != nil {
-		for prop, value := range hasField {
-			logrus.
-				WithField(prop, value).
-				WithFields(fields).
-				WithError(err).
-				Error(msg)
-		}
-	} else {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error(msg)
-	}
-}
-
-func logInfoWithFields(fields logrus.Fields, msg string) {
-	logrus.
-		WithFields(fields).
-		Info(msg)
-}
-
-func parseResponseCard(cardResponseDTO *CardResponseDTO) *CardResponse {
-	return &CardResponse{
-		Created:          cardResponseDTO.Created,
-		CompanyKey:       cardResponseDTO.CompanyKey,
-		DocumentNumber:   cardResponseDTO.DocumentNumber,
-		ActivateCode:     cardResponseDTO.ActivateCode,
-		BankAgency:       cardResponseDTO.BankAgency,
-		BankAccount:      cardResponseDTO.BankAccount,
-		LastFourDigits:   cardResponseDTO.LastFourDigits,
-		Proxy:            cardResponseDTO.Proxy,
-		Name:             cardResponseDTO.Name,
-		Alias:            cardResponseDTO.Alias,
-		CardType:         cardResponseDTO.CardType,
-		Status:           cardResponseDTO.Status,
-		PhysicalBinds:    cardResponseDTO.PhysicalBinds,
-		VirtualBind:      cardResponseDTO.VirtualBind,
-		AllowContactless: cardResponseDTO.AllowContactless,
-		Address:          cardResponseDTO.Address,
-		HistoryStatus:    cardResponseDTO.HistoryStatus,
-		ActivatedAt:      cardResponseDTO.ActivatedAt,
-		LastUpdatedAt:    cardResponseDTO.LastUpdatedAt,
-		IsFirtual:        cardResponseDTO.IsFirtual,
-		IsPos:            cardResponseDTO.IsPos,
-		SettlementDay:    cardResponseDTO.PaymentDay,
-	}
 }
 
 //CardErrorHandler ...
@@ -315,7 +322,7 @@ func CardErrorHandler(fields logrus.Fields, resp *http.Response) error {
 	respBody, _ := ioutil.ReadAll(resp.Body)
 	err := json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
-		logErrorWithFields(fields, err, "error decoding json response", nil)
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
 		return ErrDefaultCard
 	}
 
@@ -323,9 +330,8 @@ func CardErrorHandler(fields logrus.Fields, resp *http.Response) error {
 		errModel := bodyErr.Errors[0]
 		err := FindCardError(errModel.Code, errModel.Messages...)
 
-		var hasField = make(map[string]interface{})
-		hasField["bankly_error"] = bodyErr
-		logErrorWithFields(fields, err, "bankly get card error", hasField)
+		fields["bankly_error"] = bodyErr
+		logrus.WithFields(fields).WithError(err).Error("bankly get card error")
 
 		return err
 	}

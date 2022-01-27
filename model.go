@@ -3,6 +3,8 @@ package bankly
 import (
 	"os"
 	"time"
+
+	"github.com/contbank/grok"
 )
 
 const (
@@ -902,10 +904,16 @@ func ParseDocumentAnalysisResponse(documentNumber string, banklyResponse *Bankly
 	}
 }
 
+type CardType string
+
 // CardResponse ...
 const (
-	VirtualCardType  = "virtual"
-	PhysicalCardType = "physical"
+	// VirtualCardType cartao virtual
+	VirtualCardType CardType = "VIRTUAL"
+	// PhysicalCardType cartao fisico
+	PhysicalCardType CardType = "PHYSICAL"
+	// MultipleCardType cartao multiplo
+	MultipleCardType CardType = "MULTIPLE"
 )
 
 type CardResponse struct {
@@ -919,7 +927,7 @@ type CardResponse struct {
 	Proxy            string              `json:"proxy"`
 	Name             string              `json:"name"`
 	Alias            string              `json:"alias"`
-	CardType         string              `json:"cardType"`
+	CardType         CardType            `json:"cardType"`
 	Status           string              `json:"status"`
 	PhysicalBinds    []CardBind          `json:"physicalBinds"`
 	VirtualBind      CardBind            `json:"virtualBind"`
@@ -944,7 +952,7 @@ type CardResponseDTO struct {
 	Proxy            string              `json:"proxy"`
 	Name             string              `json:"name"`
 	Alias            string              `json:"alias"`
-	CardType         string              `json:"cardType"`
+	CardType         CardType            `json:"cardType"`
 	Status           string              `json:"status"`
 	PhysicalBinds    []CardBind          `json:"physicalBinds"`
 	VirtualBind      CardBind            `json:"virtualBind"`
@@ -989,8 +997,6 @@ type CardNextStatus struct {
 	Value        string `json:"value"`
 	IsDefinitive bool   `json:"isDefinitive"`
 }
-
-type CardType string
 
 type CardCreateDTO struct {
 	CardType CardType `json:"cardType"`
@@ -1064,4 +1070,32 @@ type PixHolder struct {
 	Name       string       `json:"name"`
 	SocialName string       `json:"socialName"`
 	Document   PixTypeValue `json:"document"`
+}
+
+// ParseResponseCard ...
+func ParseResponseCard(cardResponseDTO *CardResponseDTO) *CardResponse {
+	return &CardResponse{
+		Created:          cardResponseDTO.Created,
+		CompanyKey:       cardResponseDTO.CompanyKey,
+		DocumentNumber:   grok.OnlyDigits(cardResponseDTO.DocumentNumber),
+		ActivateCode:     cardResponseDTO.ActivateCode,
+		BankAgency:       grok.OnlyLettersOrDigits(cardResponseDTO.BankAgency),
+		BankAccount:      grok.OnlyLettersOrDigits(cardResponseDTO.BankAccount),
+		LastFourDigits:   cardResponseDTO.LastFourDigits,
+		Proxy:            cardResponseDTO.Proxy,
+		Name:             grok.ToTitle(cardResponseDTO.Name),
+		Alias:            grok.ToTitle(cardResponseDTO.Alias),
+		CardType:         cardResponseDTO.CardType,
+		Status:           cardResponseDTO.Status,
+		PhysicalBinds:    cardResponseDTO.PhysicalBinds,
+		VirtualBind:      cardResponseDTO.VirtualBind,
+		AllowContactless: cardResponseDTO.AllowContactless,
+		Address:          cardResponseDTO.Address,
+		HistoryStatus:    cardResponseDTO.HistoryStatus,
+		ActivatedAt:      cardResponseDTO.ActivatedAt,
+		LastUpdatedAt:    cardResponseDTO.LastUpdatedAt,
+		IsFirtual:        cardResponseDTO.IsFirtual,
+		IsPos:            cardResponseDTO.IsPos,
+		SettlementDay:    cardResponseDTO.PaymentDay,
+	}
 }

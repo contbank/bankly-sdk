@@ -13,6 +13,7 @@ import (
 
 const (
 	Proxy          = "2229041000054459062"
+	ActivateCode   = "F6D8B3C1269D"
 	DocumentNumber = "21632071000187"
 	Status         = "CanceledByCustomer"
 	BankAccount    = "202142"
@@ -120,6 +121,19 @@ func (c *CardTestSuite) TestGetCardsByProxy_OK() {
 
 func (c *CardTestSuite) TestGetCardsByProxy_NOT_FOUND() {
 	card, err := c.card.GetCardByProxy(context.Background(), "00000000000000")
+	c.assert.Error(err)
+	c.assert.Nil(card)
+	c.assert.Equal("Code: 404 - Messages: not found", err.Error())
+}
+
+func (c *CardTestSuite) TestGetCardsByActivateCode_OK() {
+	card, err := c.card.GetCardByActivateCode(context.Background(), ActivateCode)
+	c.assert.NoError(err)
+	c.assert.NotNil(card)
+}
+
+func (c *CardTestSuite) TestGetCardsByActivateCode_NOT_FOUND() {
+	card, err := c.card.GetCardByActivateCode(context.Background(), "000000000000")
 	c.assert.Error(err)
 	c.assert.Nil(card)
 	c.assert.Equal("Code: 404 - Messages: not found", err.Error())

@@ -43,7 +43,7 @@ func (client *BanklyHttpClient) Post(ctx context.Context, url string, body inter
 	fields := initLog(ctx)
 	data, err := json.Marshal(body)
 	if err != nil {
-		logErrorWithFields(fields, err, "error marshal body request", nil)
+		logrus.WithFields(fields).WithError(err).Error("error marshal body request")
 		return nil, err
 	}
 
@@ -51,13 +51,13 @@ func (client *BanklyHttpClient) Post(ctx context.Context, url string, body inter
 
 	req, err := http.NewRequestWithContext(ctx, POST, endpoint, bytes.NewReader(data))
 	if err != nil {
-		logErrorWithFields(fields, err, "error new request", nil)
+		logrus.WithFields(fields).WithError(err).Error("error new request")
 		return nil, err
 	}
 
 	token, err := client.Authentication.Token(ctx)
 	if err != nil {
-		logErrorWithFields(fields, err, "error authentication", nil)
+		logrus.WithFields(fields).WithError(err).Error("error authentication")
 		return nil, err
 	}
 
@@ -65,7 +65,7 @@ func (client *BanklyHttpClient) Post(ctx context.Context, url string, body inter
 
 	resp, err := client.HttpClient.Do(req)
 	if err != nil {
-		logErrorWithFields(fields, err, "error http client", nil)
+		logrus.WithFields(fields).WithError(err).Error("error http client")
 		return nil, err
 	}
 
@@ -83,13 +83,13 @@ func (client *BanklyHttpClient) Get(ctx context.Context, url string, query map[s
 
 	req, err := http.NewRequestWithContext(ctx, GET, endpoint, nil)
 	if err != nil {
-		logErrorWithFields(fields, err, "error new request", nil)
+		logrus.WithFields(fields).WithError(err).Error("error new request")
 		return nil, err
 	}
 
 	token, err := client.Authentication.Token(ctx)
 	if err != nil {
-		logErrorWithFields(fields, err, "error authentication", nil)
+		logrus.WithFields(fields).WithError(err).Error("error authentication")
 		return nil, err
 	}
 
@@ -97,7 +97,7 @@ func (client *BanklyHttpClient) Get(ctx context.Context, url string, query map[s
 
 	resp, err := client.HttpClient.Do(req)
 	if err != nil {
-		logErrorWithFields(fields, err, "error http client", nil)
+		logrus.WithFields(fields).WithError(err).Error("error http client")
 		return nil, err
 	}
 
@@ -108,7 +108,7 @@ func (client *BanklyHttpClient) Patch(ctx context.Context, url string, body inte
 	fields := initLog(ctx)
 	data, err := json.Marshal(body)
 	if err != nil {
-		logErrorWithFields(fields, err, "error marshal body request", nil)
+		logrus.WithFields(fields).WithError(err).Error("error marshal body request")
 		return nil, err
 	}
 
@@ -116,13 +116,13 @@ func (client *BanklyHttpClient) Patch(ctx context.Context, url string, body inte
 
 	req, err := http.NewRequestWithContext(ctx, PATCH, endpoint, bytes.NewReader(data))
 	if err != nil {
-		logErrorWithFields(fields, err, "error new request", nil)
+		logrus.WithFields(fields).WithError(err).Error("error new request")
 		return nil, err
 	}
 
 	token, err := client.Authentication.Token(ctx)
 	if err != nil {
-		logErrorWithFields(fields, err, "error authentication", nil)
+		logrus.WithFields(fields).WithError(err).Error("error authentication")
 		return nil, err
 	}
 
@@ -130,7 +130,7 @@ func (client *BanklyHttpClient) Patch(ctx context.Context, url string, body inte
 
 	resp, err := client.HttpClient.Do(req)
 	if err != nil {
-		logErrorWithFields(fields, err, "error http client", nil)
+		logrus.WithFields(fields).WithError(err).Error("error http client")
 		return nil, err
 	}
 
@@ -161,14 +161,14 @@ func handleResponse(resp *http.Response, fields logrus.Fields, handler ErrorHand
 func (client *BanklyHttpClient) getEndpointAPI(fields logrus.Fields, URLpath string) (string, error) {
 	u, err := url.Parse(client.Session.APIEndpoint)
 	if err != nil {
-		logErrorWithFields(fields, err, "error parsing api endpoint", nil)
+		logrus.WithFields(fields).WithError(err).Error("error parsing api endpoint")
 		return "", err
 	}
 
 	u.Path = path.Join(u.Path, URLpath)
 	endpoint := u.String()
 	fields["endpoint"] = endpoint
-	logInfoWithFields(fields, "get endpoint sucess")
+	logrus.WithFields(fields).Info("get endpoint success")
 	return endpoint, nil
 }
 
