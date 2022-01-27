@@ -33,20 +33,20 @@ func (p *Pix) GetBankByKey(ctx context.Context, key string, currentIdentity stri
 
 	resp, err := p.httpClient.Get(ctx, url, nil, &header)
 	if err != nil {
-		logErrorWithFields(fields, err, err.Error(), nil)
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logErrorWithFields(fields, err, "error decoding body response", nil)
+		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
 		return nil, err
 	}
 
 	response := new(PixBanksByKeyResponse)
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
-		logErrorWithFields(fields, err, "error decoding json response", nil)
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultCard
 	}
 
