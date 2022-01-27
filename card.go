@@ -92,6 +92,45 @@ func (c *Card) GetCardByProxy(ctx context.Context, proxy string) (*CardResponse,
 	return ParseResponseCard(cardResponseDTO), nil
 }
 
+// GetCardByActivateCode ...
+func (c *Card) GetCardByActivateCode(ctx context.Context, activateCode string) ([]CardResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id" : requestID,
+		"activate_code" : activateCode,
+	}
+
+	url := "cards/activateCode/" + activateCode
+
+	resp, err := c.httpClient.Get(ctx, url, nil)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
+		return nil, err
+	}
+
+	var cardsResponseDTO []CardResponseDTO
+
+	err = json.Unmarshal(respBody, &cardsResponseDTO)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		return nil, ErrDefaultCard
+	}
+
+	var cards []CardResponse
+	for _, crd := range cardsResponseDTO {
+		cards = append(cards, *ParseResponseCard(&crd))
+	}
+
+	defer resp.Body.Close()
+	return cards, nil
+}
+
 // GetNextStatusByProxy ...
 func (c *Card) GetNextStatusByProxy(ctx context.Context, proxy string) ([]CardNextStatus, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
