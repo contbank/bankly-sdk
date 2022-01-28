@@ -280,6 +280,28 @@ func (c *Card) UpdateStatusCard(ctx context.Context, proxy string, cardUpdateSta
 	return resp, nil
 }
 
+// ActivateCardByProxy
+func (c *Card) ActivateCardByProxy(ctx context.Context, proxy string, cardActivateDTO CardActivateDTO) (*http.Response, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+	}
+
+	cardLog := cardActivateDTO
+	cardLog.Password = ""
+	fields["object"] = cardLog
+
+	url := "cards/" + proxy + "/activate"
+
+	resp, err := c.httpClient.Patch(ctx, url, cardActivateDTO, nil)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	return resp, nil
+}
+
 // GetTransactionsByProxy ...
 func (c *Card) GetTransactionsByProxy(ctx context.Context, proxy, page, startDate, endDate, pageSize string) (*CardTransactionsResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)

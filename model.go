@@ -1021,6 +1021,11 @@ type CardUpdateStatusDTO struct {
 	UpdateCardBinded bool     `json:"updateCardBinded"`
 }
 
+type CardActivateDTO struct {
+	Password     string `json:"password"`
+	ActivateCode string `json:"activateCode"`
+}
+
 type CardCreateRequest struct {
 	DocumentNumber string `json:"documentNumber"`
 	CardName       string `json:"cardName"`
