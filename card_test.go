@@ -201,6 +201,39 @@ func (c *CardTestSuite) TestCreateCardPhysical_INVALID_PARAMETER_EMPTY() {
 	c.assert.Nil(card)
 }
 
+func (c *CardTestSuite) TestGetPCIByProxy_OK() {
+	cardPCIDTO := bankly.CardPCIDTO{
+		Password: "1234",
+	}
+
+	card, err := c.card.GetPCIByProxy(c.ctx, "2229041000006610201", cardPCIDTO)
+
+	c.assert.NoError(err)
+	c.assert.NotNil(card)
+}
+
+func (c *CardTestSuite) TestGetPCIByProxy_PASSWORD_INVALID_NOT_OK() {
+	cardPCIDTO := bankly.CardPCIDTO{
+		Password: "1233",
+	}
+
+	card, err := c.card.GetPCIByProxy(c.ctx, "2229041000006610201", cardPCIDTO)
+
+	c.assert.Error(err)
+	c.assert.Nil(card)
+}
+
+func (c *CardTestSuite) TestGetPCIByProxy_PROXY_INVALID_NOT_OK() {
+	cardPCIDTO := bankly.CardPCIDTO{
+		Password: "1234",
+	}
+
+	card, err := c.card.GetPCIByProxy(c.ctx, "2229041000006610200", cardPCIDTO)
+
+	c.assert.Error(err)
+	c.assert.Nil(card)
+}
+
 func (c *CardTestSuite) TestAlteredStatusCard_OK() {
 	card, err := c.card.GetCardsByIdentifier(context.Background(), DocumentNumber)
 

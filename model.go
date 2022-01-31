@@ -885,6 +885,18 @@ type FilterTicketsResponse struct {
 	Results []*GetTicketResponse `json:"results"`
 }
 
+// CardPasswordDTO
+type CardPCIDTO struct {
+	Password string `json:"password"`
+}
+
+//
+type CardPCIResponse struct {
+	CardNumber     string `json:"cardNumber"`
+	Cvv            string `json:"cvv"`
+	ExpirationDate string `json:"expirationDate"`
+}
+
 // ParseDocumentAnalysisResponse ....
 func ParseDocumentAnalysisResponse(documentNumber string, banklyResponse *BanklyDocumentAnalysisResponse) *DocumentAnalysisResponse {
 	if banklyResponse == nil {
