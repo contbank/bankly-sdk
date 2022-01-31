@@ -1026,6 +1026,10 @@ type CardActivateDTO struct {
 	ActivateCode string `json:"activateCode"`
 }
 
+type CardAlterPasswordDTO struct {
+	Password string `json:"password"`
+}
+
 type CardCreateRequest struct {
 	DocumentNumber string `json:"documentNumber"`
 	CardName       string `json:"cardName"`

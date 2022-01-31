@@ -302,6 +302,28 @@ func (c *Card) ActivateCardByProxy(ctx context.Context, proxy string, cardActiva
 	return resp, nil
 }
 
+// AlterPasswordByProxy
+func (c *Card) AlterPasswordByProxy(ctx context.Context, proxy string, cardAlterPasswordDTO CardAlterPasswordDTO) (*http.Response, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+	}
+
+	cardLog := cardAlterPasswordDTO
+	cardLog.Password = ""
+	fields["object"] = cardLog
+
+	url := "cards/" + proxy + "/password"
+
+	resp, err := c.httpClient.Patch(ctx, url, cardAlterPasswordDTO, nil)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	return resp, nil
+}
+
 // GetTransactionsByProxy ...
 func (c *Card) GetTransactionsByProxy(ctx context.Context, proxy, page, startDate, endDate, pageSize string) (*CardTransactionsResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
