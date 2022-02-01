@@ -72,7 +72,7 @@ func (c *PixTestSuite) TestGetAddresskey_INVALID_PARAMETER_KEY_TYPE() {
 }
 
 func (c *PixTestSuite) TestQrCodeDecode_OK() {
-	response, err := c.pix.QrCodeDecode(context.Background(), &bankly.PixQrCodeRequest{
+	response, err := c.pix.QrCodeDecode(context.Background(), &bankly.PixQrCodeDecodeRequest{
 		EncodedValue: "MDAwMjAxMjYzMzAwMTRici5nb3YuYmNiLnBpeDAxMTEzNjE4MzU4ODgxNDUyMDQwMDAwNTMwMzk4NjU0MDUxMC4wMDU4MDJCUjU5MTlHdWlsaGVybWUgR29uY2FsdmVzNjAwOVNhbyBQYXVsbzYxMDgwMzUwMzAzMDYyMTQwNTEwMjMxMzEyMzEyMzYzMDQyRjU1",
 	})
 
@@ -81,7 +81,7 @@ func (c *PixTestSuite) TestQrCodeDecode_OK() {
 }
 
 func (c *PixTestSuite) TestQrCodeDecode_INVALID_QRCODE_PAYLOAD() {
-	response, err := c.pix.QrCodeDecode(context.Background(), &bankly.PixQrCodeRequest{
+	response, err := c.pix.QrCodeDecode(context.Background(), &bankly.PixQrCodeDecodeRequest{
 		EncodedValue: "INVALID",
 	})
 

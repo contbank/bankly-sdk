@@ -88,7 +88,7 @@ func (p *Pix) CashOut(ctx context.Context, pix *PixCashOutRequest) (*PixCashOutR
 }
 
 //QrCodeDecode ...
-func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeRequest) (*PixQrCodeResponse, error) {
+func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest) (*PixQrCodeDecodeResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id": requestID,
@@ -110,7 +110,7 @@ func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeRequest) (*PixQ
 		return nil, err
 	}
 
-	response := new(PixQrCodeResponse)
+	response := new(PixQrCodeDecodeResponse)
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error("error decoding json response")

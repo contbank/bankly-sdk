@@ -1169,11 +1169,7 @@ type PixCashOutResponse struct {
 	AuthenticationCode string                      `json:"authenticationCode"`
 }
 
-type PixQrCodeRequest struct {
-	EncodedValue string `json:"encodedValue"`
-}
-
-type PixQrCodeResponse struct {
+type PixQrCodeDecodeRequest struct {
 	EncodedValue string `json:"encodedValue"`
 }
 
