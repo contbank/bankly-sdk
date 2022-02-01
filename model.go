@@ -1051,7 +1051,17 @@ type CardTransactionsResponse struct {
 	TransactionType      string `json:"transactionType"`
 }
 
-type PixBanksByKeyResponse struct {
+type InitializationType string
+
+// CardResponse ...
+const (
+	Manual        InitializationType = "Manual"
+	Key           InitializationType = "Key"
+	StaticQrCode  InitializationType = "StaticQrCode"
+	DynamicQrCode InitializationType = "DynamicQrCode"
+)
+
+type PixAddressKeyResponse struct {
 	EndToEndID    string       `json:"endToEndId"`
 	AddressingKey PixTypeValue `json:"addressingKey"`
 	Holder        PixHolder    `json:"holder"`
@@ -1070,6 +1080,80 @@ type PixHolder struct {
 	Name       string       `json:"name"`
 	SocialName string       `json:"socialName"`
 	Document   PixTypeValue `json:"document"`
+}
+
+type PixCashOutRequest struct {
+	Sender             PixCashOutSenderRequest    `json:"sender"`
+	Recipient          PixCashOutRecipientRequest `json:"recipient"`
+	Amount             float64                    `json:"amount"`
+	Description        string                     `json:"description"`
+	InitializationType InitializationType         `json:"initializationType"`
+	EndToEndID         string                     `json:"endToEndId"`
+}
+
+type PixCashOutAccountRequest struct {
+	Branch string `json:"branch"`
+	Number string `json:"number"`
+}
+
+type PixCashOutBankRequest struct {
+	Ispb string `json:"ispb"`
+}
+
+type PixCashOutSenderRequest struct {
+	Account        PixCashOutAccountRequest `json:"account"`
+	Bank           PixCashOutBankRequest    `json:"bank"`
+	DocumentNumber string                   `json:"documentNumber"`
+	Name           string                   `json:"name"`
+}
+
+type PixCashOutRecipientRequest struct {
+	Account        PixCashOutAccountRequest `json:"account"`
+	Bank           PixCashOutBankRequest    `json:"bank"`
+	DocumentNumber string                   `json:"documentNumber"`
+	Name           string                   `json:"name"`
+}
+
+type PixCashOutAccountResponse struct {
+	Branch string `json:"branch"`
+	Number string `json:"number"`
+	Type   string `json:"type"`
+}
+
+type PixCashOutBankResponse struct {
+	Ispb  string `json:"ispb"`
+	Compe string `json:"compe"`
+	Name  string `json:"name"`
+}
+
+type PixCashOutSenderResponse struct {
+	Account        PixCashOutAccountResponse `json:"account"`
+	Bank           PixCashOutBankResponse    `json:"bank"`
+	DocumentNumber string                    `json:"documentNumber"`
+	Name           string                    `json:"name"`
+}
+
+type PixCashOutRecipientResponse struct {
+	Account        PixCashOutAccountResponse `json:"account"`
+	Bank           PixCashOutBankResponse    `json:"bank"`
+	DocumentNumber string                    `json:"documentNumber"`
+	Name           string                    `json:"name"`
+}
+
+type PixCashOutResponse struct {
+	Amount             float64                     `json:"amount"`
+	Description        string                      `json:"description"`
+	Sender             PixCashOutSenderRequest     `json:"sender"`
+	Recipient          PixCashOutRecipientResponse `json:"recipient"`
+	AuthenticationCode string                      `json:"authenticationCode"`
+}
+
+type PixQrCodeRequest struct {
+	EncodedValue string `json:"encodedValue"`
+}
+
+type PixQrCodeResponse struct {
+	EncodedValue string `json:"encodedValue"`
 }
 
 // ParseResponseCard ...
