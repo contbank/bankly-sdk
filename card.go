@@ -280,6 +280,50 @@ func (c *Card) UpdateStatusCard(ctx context.Context, proxy string, cardUpdateSta
 	return resp, nil
 }
 
+// ActivateCardByProxy
+func (c *Card) ActivateCardByProxy(ctx context.Context, proxy string, cardActivateDTO CardActivateDTO) (*http.Response, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+	}
+
+	cardLog := cardActivateDTO
+	cardLog.Password = ""
+	fields["object"] = cardLog
+
+	url := "cards/" + proxy + "/activate"
+
+	resp, err := c.httpClient.Patch(ctx, url, cardActivateDTO, nil)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+// AlterPasswordByProxy
+func (c *Card) AlterPasswordByProxy(ctx context.Context, proxy string, cardAlterPasswordDTO CardAlterPasswordDTO) (*http.Response, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+	}
+
+	cardLog := cardAlterPasswordDTO
+	cardLog.Password = ""
+	fields["object"] = cardLog
+
+	url := "cards/" + proxy + "/password"
+
+	resp, err := c.httpClient.Patch(ctx, url, cardAlterPasswordDTO, nil)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	return resp, nil
+}
+
 // GetTransactionsByProxy ...
 func (c *Card) GetTransactionsByProxy(ctx context.Context, proxy, page, startDate, endDate, pageSize string) (*CardTransactionsResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
@@ -305,6 +349,36 @@ func (c *Card) GetTransactionsByProxy(ctx context.Context, proxy, page, startDat
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
 	var response *CardTransactionsResponse
+
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		return nil, ErrDefaultCard
+	}
+
+	defer resp.Body.Close()
+	return response, nil
+}
+
+// GetPCIByProxy
+func (c *Card) GetPCIByProxy(ctx context.Context, proxy string, cardPCIDTO CardPCIDTO) (*CardPCIResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+		"proxy":      proxy,
+	}
+
+	url := "cards/" + proxy + "/pci"
+
+	resp, err := c.httpClient.Post(ctx, url, cardPCIDTO, nil)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
+	var response *CardPCIResponse
 
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
