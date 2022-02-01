@@ -1074,7 +1074,7 @@ type CardTransactionsResponse struct {
 
 type InitializationType string
 
-// CardResponse ...
+// InitializationType ...
 const (
 	Manual        InitializationType = "Manual"
 	Key           InitializationType = "Key"
@@ -1203,4 +1203,36 @@ func ParseResponseCard(cardResponseDTO *CardResponseDTO) *CardResponse {
 		IsPos:            cardResponseDTO.IsPos,
 		SettlementDay:    cardResponseDTO.PaymentDay,
 	}
+}
+
+type PixQrCodeBankResponse struct {
+	Name string `json:"name"`
+}
+
+type PixQrCodePaymentResponse struct {
+	BaseValue       float64    `json:"baseValue"`
+	InterestValue   float64    `json:"interestValue"`
+	PenaltyValue    float64    `json:"penaltyValue"`
+	DiscountValue   float64    `json:"discountValue"`
+	TotalValue      float64    `json:"totalValue"`
+	DueDate         *time.Time `json:"dueDate"`
+	ChangeValue     float64    `json:"changeValue"`
+	WithdrawalValue float64    `json:"withdrawalValue"`
+}
+
+type PixQrCodeLocationResponse struct {
+	City    string `json:"city"`
+	ZipCode string `json:"zipCode"`
+}
+
+type PixQrCodeDecodeResponse struct {
+	EndToEndID     string                    `json:"endToEndId"`
+	ConciliationID string                    `json:"conciliationId"`
+	AddressingKey  PixTypeValue              `json:"addressingKey"`
+	QrCodeType     string                    `json:"qrCodeType"`
+	Holder         PixHolder                 `json:"holder"`
+	Bank           PixQrCodeBankResponse     `json:"bank"`
+	Payment        PixQrCodePaymentResponse  `json:"payment"`
+	Location       PixQrCodeLocationResponse `json:"location"`
+	QrCodePurpose  string                    `json:"qrCodePurpose"`
 }
