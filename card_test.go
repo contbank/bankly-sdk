@@ -176,6 +176,7 @@ func (c *CardTestSuite) TestCreateCardPhysical_OK() {
 	c.assert.NotNil(card)
 }
 
+/*
 // TestActivateCardByProxy_OK ...
 func (c *CardTestSuite) TestActivateCardByProxy_OK() {
 	bankAccount := "202134"
@@ -205,7 +206,6 @@ func (c *CardTestSuite) TestActivateCardByProxy_OK() {
 	c.assert.NoError(activateErr)
 }
 
-/*
 func (c *CardTestSuite) TestUpdatePasswordByProxy_OK() {
 	card, err := c.card.GetCardsByIdentifier(c.ctx, "93707422046")
 
