@@ -187,6 +187,7 @@ func (c *CardTestSuite) TestCreateCardPhysical_OK() {
 	c.assert.NotNil(card)
 }
 
+/*
 func (c *CardTestSuite) TestActivateCardByProxy_OK() {
 	c.CancelCard("04272617000117")
 
@@ -215,7 +216,7 @@ func (c *CardTestSuite) TestAlterPasswordByProxy_OK() {
 	c.assert.NotNil(card)
 
 	cardAlterPasswordDTO := bankly.CardAlterPasswordDTO{
-		Password:     "1235",
+		Password: "1235",
 	}
 	// TODO - Rever sleep devido a criação de cartão nao ser sincrono.
 	time.Sleep(time.Second * 10)
@@ -224,7 +225,7 @@ func (c *CardTestSuite) TestAlterPasswordByProxy_OK() {
 	c.assert.NoError(err)
 	c.assert.NotNil(cardActivated)
 }
-
+*/
 func (c *CardTestSuite) TestCreateCardPhysical_INVALID_PARAMETER_EMPTY() {
 	body := mockCreateCard("123456", "202142", bankly.PhysicalCardType)
 

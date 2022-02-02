@@ -103,6 +103,20 @@ var (
 	ErrInvalidRecipientAccount = grok.NewError(http.StatusConflict, "invalid recipient account number")
 	// ErrDefaultCard ...
 	ErrDefaultCard = grok.NewError(http.StatusInternalServerError, "error card")
+	// ErrDefaultPix ...
+	ErrDefaultPix = grok.NewError(http.StatusInternalServerError, "error pix")
+	// ErrKeyNotFound ...
+	ErrKeyNotFound = grok.NewError(http.StatusNotFound, "key not found")
+	// ErrInvalidQrCodePayload ...
+	ErrInvalidQrCodePayload = grok.NewError(http.StatusConflict, "invalid qrcode payload")
+	// ErrInvalidKeyType ...
+	ErrInvalidKeyType = grok.NewError(http.StatusUnprocessableEntity, "invalid key type")
+	// ErrInvalidParameterPix ...
+	ErrInvalidParameterPix = grok.NewError(http.StatusUnprocessableEntity, "invalid parameter")
+	// ErrInsufficientBalancePix ...
+	ErrInsufficientBalancePix = grok.NewError(http.StatusConflict, "invalid parameter")
+	// ErrInvalidAccountType ...
+	ErrInvalidAccountType = grok.NewError(http.StatusUnprocessableEntity, "invalid parameter")
 )
 
 // BanklyError ...
@@ -306,6 +320,65 @@ func verifyInvalidCardParameter(code string, messages []string) string {
 		}
 	}
 	return code
+}
+
+var errorPixList = []Error{
+	{
+		ErrorKey:  "ENTRY_NOT_FOUND",
+		GrokError: ErrKeyNotFound,
+	},
+	{
+		ErrorKey:  "INVALID_QRCODE_PAYLOAD_CONTENT_TO_DECODE",
+		GrokError: ErrInvalidQrCodePayload,
+	},
+	{
+		ErrorKey:  "INVALID_KEY_TYPE",
+		GrokError: ErrInvalidKeyType,
+	},
+	{
+		ErrorKey:  "INVALID_PARAMETER_PIX",
+		GrokError: ErrInvalidParameterPix,
+	},
+	{
+		ErrorKey:  "INSUFFICIENT_BALANCE",
+		GrokError: ErrInsufficientBalancePix,
+	},
+	{
+		ErrorKey:  "INVALID_ACCOUNT_TYPE",
+		GrokError: ErrInvalidAccountType,
+	},
+}
+
+func verifyInvalidPixParameter(code string, messages []string) string {
+	if code == "INVALID_PARAMETER" {
+		for _, m := range messages {
+			switch {
+			case strings.Contains(strings.ToLower(m), "addressing key value does not match with addressing key type"):
+				return "INVALID_KEY_TYPE"
+			case strings.Contains(strings.ToLower(m), "sender.account.type"):
+				return "INVALID_ACCOUNT_TYPE"
+			default:
+				return "INVALID_PARAMETER_PIX"
+			}
+		}
+	}
+	return code
+}
+
+// FindPixError
+func FindPixError(code string, messages ...string) *Error {
+	code = verifyInvalidPixParameter(code, messages)
+
+	for _, v := range errorPixList {
+		if v.ErrorKey == code {
+			return &v
+		}
+	}
+
+	return &Error{
+		ErrorKey:  code,
+		GrokError: grok.NewError(http.StatusConflict, messages...),
+	}
 }
 
 // ParseErr ..
