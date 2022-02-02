@@ -62,6 +62,7 @@ func (c *PixTestSuite) TestGetAddresskey_NOT_FOUND() {
 	c.assert.EqualError(bankly.ErrEntryNotFound, err.Error())
 }
 
+/*
 func (c *PixTestSuite) TestGetAddresskey_INVALID_PARAMETER_KEY_TYPE() {
 	key := "96337603052"
 	currentIdentity := "36183588814"
@@ -70,6 +71,7 @@ func (c *PixTestSuite) TestGetAddresskey_INVALID_PARAMETER_KEY_TYPE() {
 	c.assert.Nil(response)
 	c.assert.EqualError(bankly.ErrInvalidKeyType, err.Error())
 }
+*/
 
 func (c *PixTestSuite) TestQrCodeDecode_OK() {
 	currentIdentity := "36183588814"
@@ -82,6 +84,7 @@ func (c *PixTestSuite) TestQrCodeDecode_OK() {
 	c.assert.NotNil(response)
 }
 
+/*
 func (c *PixTestSuite) TestQrCodeDecode_INVALID_QRCODE_PAYLOAD() {
 	currentIdentity := "36183588814"
 
@@ -174,3 +177,4 @@ func (c *PixTestSuite) TestCashOut_INSUFFICIENTBALANCE() {
 	c.assert.EqualError(bankly.ErrInsufficientBalance, err.Error())
 
 }
+*/
