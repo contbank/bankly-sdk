@@ -88,7 +88,7 @@ func (p *Pix) CashOut(ctx context.Context, pix *PixCashOutRequest) (*PixCashOutR
 }
 
 //QrCodeDecode ...
-func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest) (*PixQrCodeDecodeResponse, error) {
+func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest, currentIdentity string) (*PixQrCodeDecodeResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id": requestID,
@@ -97,7 +97,10 @@ func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest) 
 
 	url := "pix/qrcodes/decode"
 
-	resp, err := p.httpClient.Post(ctx, url, encode, nil)
+	header := http.Header{}
+	header.Add("x-bkly-pix-user-id", currentIdentity)
+
+	resp, err := p.httpClient.Post(ctx, url, encode, &header)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err

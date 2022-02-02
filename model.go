@@ -1164,7 +1164,7 @@ type PixCashOutRecipientResponse struct {
 type PixCashOutResponse struct {
 	Amount             float64                     `json:"amount"`
 	Description        string                      `json:"description"`
-	Sender             PixCashOutSenderRequest     `json:"sender"`
+	Sender             PixCashOutSenderResponse    `json:"sender"`
 	Recipient          PixCashOutRecipientResponse `json:"recipient"`
 	AuthenticationCode string                      `json:"authenticationCode"`
 }
@@ -1206,14 +1206,14 @@ type PixQrCodeBankResponse struct {
 }
 
 type PixQrCodePaymentResponse struct {
-	BaseValue       float64    `json:"baseValue"`
-	InterestValue   float64    `json:"interestValue"`
-	PenaltyValue    float64    `json:"penaltyValue"`
-	DiscountValue   float64    `json:"discountValue"`
-	TotalValue      float64    `json:"totalValue"`
-	DueDate         *time.Time `json:"dueDate"`
-	ChangeValue     float64    `json:"changeValue"`
-	WithdrawalValue float64    `json:"withdrawalValue"`
+	BaseValue       float64 `json:"baseValue"`
+	InterestValue   float64 `json:"interestValue"`
+	PenaltyValue    float64 `json:"penaltyValue"`
+	DiscountValue   float64 `json:"discountValue"`
+	TotalValue      float64 `json:"totalValue"`
+	DueDate         string  `json:"dueDate"`
+	ChangeValue     float64 `json:"changeValue"`
+	WithdrawalValue float64 `json:"withdrawalValue"`
 }
 
 type PixQrCodeLocationResponse struct {

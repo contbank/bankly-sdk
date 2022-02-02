@@ -72,18 +72,22 @@ func (c *PixTestSuite) TestGetAddresskey_INVALID_PARAMETER_KEY_TYPE() {
 }
 
 func (c *PixTestSuite) TestQrCodeDecode_OK() {
+	currentIdentity := "36183588814"
+
 	response, err := c.pix.QrCodeDecode(context.Background(), &bankly.PixQrCodeDecodeRequest{
 		EncodedValue: "MDAwMjAxMjYzMzAwMTRici5nb3YuYmNiLnBpeDAxMTEzNjE4MzU4ODgxNDUyMDQwMDAwNTMwMzk4NjU0MDUxMC4wMDU4MDJCUjU5MTlHdWlsaGVybWUgR29uY2FsdmVzNjAwOVNhbyBQYXVsbzYxMDgwMzUwMzAzMDYyMTQwNTEwMjMxMzEyMzEyMzYzMDQyRjU1",
-	})
+	}, currentIdentity)
 
 	c.assert.NoError(err)
 	c.assert.NotNil(response)
 }
 
 func (c *PixTestSuite) TestQrCodeDecode_INVALID_QRCODE_PAYLOAD() {
+	currentIdentity := "36183588814"
+
 	response, err := c.pix.QrCodeDecode(context.Background(), &bankly.PixQrCodeDecodeRequest{
 		EncodedValue: "INVALID",
-	})
+	}, currentIdentity)
 
 	c.assert.Error(err)
 	c.assert.Nil(response)
