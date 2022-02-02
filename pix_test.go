@@ -62,14 +62,14 @@ func (c *PixTestSuite) TestGetAddresskey_NOT_FOUND() {
 	c.assert.EqualError(bankly.ErrEntryNotFound, err.Error())
 }
 
-func (c *PixTestSuite) TestGetAddresskey_INVALID_PARAMETER_KEY_TYPE() {
+/*func (c *PixTestSuite) TestGetAddresskey_INVALID_PARAMETER_KEY_TYPE() {
 	key := "96337603052"
 	currentIdentity := "36183588814"
 	response, err := c.pix.GetAddresskey(context.Background(), key, currentIdentity)
 	c.assert.Error(err)
 	c.assert.Nil(response)
 	c.assert.EqualError(bankly.ErrInvalidKeyType, err.Error())
-}
+}*/
 
 func (c *PixTestSuite) TestQrCodeDecode_OK() {
 	currentIdentity := "36183588814"
@@ -82,7 +82,7 @@ func (c *PixTestSuite) TestQrCodeDecode_OK() {
 	c.assert.NotNil(response)
 }
 
-func (c *PixTestSuite) TestQrCodeDecode_INVALID_QRCODE_PAYLOAD() {
+/*func (c *PixTestSuite) TestQrCodeDecode_INVALID_QRCODE_PAYLOAD() {
 	currentIdentity := "36183588814"
 
 	response, err := c.pix.QrCodeDecode(context.Background(), &bankly.PixQrCodeDecodeRequest{
@@ -92,9 +92,9 @@ func (c *PixTestSuite) TestQrCodeDecode_INVALID_QRCODE_PAYLOAD() {
 	c.assert.Error(err)
 	c.assert.Nil(response)
 	c.assert.EqualError(bankly.ErrInvalidQrCodePayload, err.Error())
-}
+}*/
 
-func (c *PixTestSuite) TestCashOut_OK() {
+/*func (c *PixTestSuite) TestCashOut_OK() {
 	key := "36183588814"
 	currentIdentity := "16246241620"
 	keyResponse, err := c.pix.GetAddresskey(context.Background(), key, currentIdentity)
@@ -144,9 +144,9 @@ func (c *PixTestSuite) TestCashOut_OK() {
 
 	c.assert.NoError(err)
 	c.assert.NotNil(response)
-}
+}*/
 
-func (c *PixTestSuite) TestCashOut_INSUFFICIENTBALANCE() {
+/*func (c *PixTestSuite) TestCashOut_INSUFFICIENTBALANCE() {
 	key := "36183588814"
 	currentIdentity := "16246241620"
 	keyResponse, err := c.pix.GetAddresskey(context.Background(), key, currentIdentity)
@@ -173,4 +173,4 @@ func (c *PixTestSuite) TestCashOut_INSUFFICIENTBALANCE() {
 	c.assert.Nil(response)
 	c.assert.EqualError(bankly.ErrInsufficientBalance, err.Error())
 
-}
+}*/

@@ -97,7 +97,7 @@ func (c *Card) GetCardByProxy(ctx context.Context, proxy string) (*CardResponse,
 
 // GetCardByActivateCode ...
 func (c *Card) GetCardByActivateCode(ctx context.Context, activateCode string) ([]CardResponse, error) {
-	fields := logrus.Fields{
+	fields := logrus.Fields {
 		"request_id" : GetRequestID(ctx),
 		"activate_code" : activateCode,
 	}
