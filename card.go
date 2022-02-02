@@ -3,6 +3,7 @@ package bankly
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -24,13 +25,13 @@ func NewCard(newHttpClient BanklyHttpClient) *Card {
 
 // GetCardsByIdentifier ...
 func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]CardResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id": requestID,
-		"identifier": identifier,
+		"request_id" : GetRequestID(ctx),
+		"identifier" : grok.OnlyDigits(identifier),
 	}
 
-	url := "cards/document/" + grok.OnlyDigits(identifier)
+	url := fmt.Sprintf("cards/document/%s", grok.OnlyDigits(identifier))
+	fields["url"] = url
 
 	resp, err := c.httpClient.Get(ctx, url, nil, nil)
 	if err != nil {
@@ -63,13 +64,13 @@ func (c *Card) GetCardsByIdentifier(ctx context.Context, identifier string) ([]C
 
 // GetCardByProxy ...
 func (c *Card) GetCardByProxy(ctx context.Context, proxy string) (*CardResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id": requestID,
-		"proxy":      proxy,
+		"request_id" : GetRequestID(ctx),
+		"proxy" : proxy,
 	}
 
-	url := "cards/" + proxy
+	url := fmt.Sprintf("cards/%s", proxy)
+	fields["url"] = url
 
 	resp, err := c.httpClient.Get(ctx, url, nil, nil)
 	if err != nil {
@@ -96,13 +97,13 @@ func (c *Card) GetCardByProxy(ctx context.Context, proxy string) (*CardResponse,
 
 // GetCardByActivateCode ...
 func (c *Card) GetCardByActivateCode(ctx context.Context, activateCode string) ([]CardResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id":    requestID,
-		"activate_code": activateCode,
+		"request_id" : GetRequestID(ctx),
+		"activate_code" : activateCode,
 	}
 
-	url := "cards/activateCode/" + activateCode
+	url := fmt.Sprintf("cards/activateCode/%s", activateCode)
+	fields["url"] = url
 
 	resp, err := c.httpClient.Get(ctx, url, nil, nil)
 	if err != nil {
@@ -135,13 +136,13 @@ func (c *Card) GetCardByActivateCode(ctx context.Context, activateCode string) (
 
 // GetNextStatusByProxy ...
 func (c *Card) GetNextStatusByProxy(ctx context.Context, proxy string) ([]CardNextStatus, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id": requestID,
-		"proxy":      proxy,
+		"request_id" : GetRequestID(ctx),
+		"proxy" : proxy,
 	}
 
-	url := "cards/" + proxy + "/nextStatus"
+	url := fmt.Sprintf("cards/%s/nextStatus", proxy)
+	fields["url"] = url
 
 	resp, err := c.httpClient.Get(ctx, url, nil, nil)
 	if err != nil {
@@ -171,16 +172,17 @@ func (c *Card) GetNextStatusByProxy(ctx context.Context, proxy string) ([]CardNe
 }
 
 // GetCardByAccount ...
-func (c *Card) GetCardByAccount(ctx context.Context, accountNumber, accountBranch, identifier string) ([]CardResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
+func (c *Card) GetCardByAccount(ctx context.Context, accountNumber, accountBranch,
+	identifier string) ([]CardResponse, error) {
 	fields := logrus.Fields{
-		"request_id":     requestID,
-		"identifier":     identifier,
-		"account_branch": accountBranch,
-		"account_number": accountNumber,
+		"request_id" : GetRequestID(ctx),
+		"identifier" : grok.OnlyDigits(identifier),
+		"account_branch" : accountBranch,
+		"account_number" : accountNumber,
 	}
 
-	url := "cards/account/" + grok.OnlyLettersOrDigits(accountNumber)
+	url := fmt.Sprintf("cards/account/%s", grok.OnlyLettersOrDigits(accountNumber))
+	fields["url"] = url
 
 	query := make(map[string]string)
 	query["agency"] = grok.OnlyLettersOrDigits(accountBranch)
@@ -216,17 +218,22 @@ func (c *Card) GetCardByAccount(ctx context.Context, accountNumber, accountBranc
 }
 
 // CreateCard ...
-func (c *Card) CreateCard(ctx context.Context, cardDTO CardCreateDTO) (*CardCreateResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
+func (c *Card) CreateCard(ctx context.Context, cardDTO *CardCreateDTO) (*CardCreateResponse, error) {
+	cardLog := *cardDTO
+	cardLog.CardData.Password = ""
+
 	fields := logrus.Fields{
-		"request_id": requestID,
+		"request_id" : GetRequestID(ctx),
+		"object" : cardLog,
 	}
 
-	cardLog := cardDTO
-	cardLog.CardData.Password = ""
-	fields["object"] = cardLog
+	if cardDTO == nil {
+		logrus.WithFields(fields).WithError(ErrInvalidParameter).Error("error invalid parameter")
+		return nil, ErrInvalidParameter
+	}
 
-	url := "cards/" + strings.ToLower(string(cardDTO.CardType))
+	url := fmt.Sprintf("cards/%s", strings.ToLower(string(cardDTO.CardType)))
+	fields["url"] = url
 
 	body := CardCreateRequest{
 		DocumentNumber: grok.OnlyDigits(cardDTO.CardData.DocumentNumber),
@@ -258,81 +265,133 @@ func (c *Card) CreateCard(ctx context.Context, cardDTO CardCreateDTO) (*CardCrea
 	return response, nil
 }
 
-// UpdateStatusCard ...
-func (c *Card) UpdateStatusCard(ctx context.Context, proxy string, cardUpdateStatusDTO CardUpdateStatusDTO) (*http.Response, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
+// UpdateStatusCardByProxy ...
+func (c *Card) UpdateStatusCardByProxy(ctx context.Context, proxy *string,
+	cardUpdateStatusDTO *CardUpdateStatusDTO) error {
+
+	cardLog := *cardUpdateStatusDTO
+	cardLog.Password = ""
+
 	fields := logrus.Fields{
-		"request_id": requestID,
+		"request_id" : GetRequestID(ctx),
+		"proxy" : proxy,
+		"object" : cardLog,
 	}
 
-	cardLog := cardUpdateStatusDTO
-	cardLog.Password = ""
-	fields["object"] = cardLog
+	if proxy == nil || cardUpdateStatusDTO == nil {
+		logrus.WithFields(fields).WithError(ErrInvalidParameter).Error("error invalid parameter")
+		return ErrInvalidParameter
+	}
 
-	url := "cards/" + proxy + "/status"
+	url := fmt.Sprintf("cards/%s/status", *proxy)
+	fields["url"] = url
 
-	resp, err := c.httpClient.Patch(ctx, url, cardUpdateStatusDTO, nil)
+	response, err := c.httpClient.Patch(ctx, url, cardUpdateStatusDTO, nil)
+
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
-		return nil, err
+		return err
+	} else if response != nil &&
+		response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted {
+		logrus.WithFields(fields).WithError(ErrCardStatusUpdate).Error("error update status card")
+		return err
 	}
 
-	return resp, nil
+	logrus.WithFields(fields).Info("card status updated with success")
+	return nil
 }
 
 // ActivateCardByProxy
-func (c *Card) ActivateCardByProxy(ctx context.Context, proxy string, cardActivateDTO CardActivateDTO) (*http.Response, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
-	fields := logrus.Fields{
-		"request_id": requestID,
+func (c *Card) ActivateCardByProxy(ctx context.Context, proxy *string,
+	cardActivateDTO *CardActivateDTO) error {
+
+	cardLog := *cardActivateDTO
+	cardLog.Password = ""
+
+	fields := logrus.Fields {
+		"request_id" : GetRequestID(ctx),
+		"proxy" : proxy,
+		"object" : cardLog,
 	}
 
-	cardLog := cardActivateDTO
-	cardLog.Password = ""
-	fields["object"] = cardLog
+	if proxy == nil || cardActivateDTO == nil {
+		logrus.WithFields(fields).WithError(ErrInvalidParameter).Error("error invalid parameter")
+		return ErrInvalidParameter
+	}
 
-	url := "cards/" + proxy + "/activate"
+	url := fmt.Sprintf("cards/%s/activate", *proxy)
+	fields["url"] = url
 
-	resp, err := c.httpClient.Patch(ctx, url, cardActivateDTO, nil)
+	response, err := c.httpClient.Patch(ctx, url, cardActivateDTO, nil)
+
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
-		return nil, err
+		return err
+	} else if response != nil &&
+		response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted {
+		logrus.WithFields(fields).WithError(ErrCardActivate).Error(ErrCardActivate)
+		return ErrCardActivate
 	}
 
-	return resp, nil
+	logrus.WithFields(fields).Info("card activated with success")
+	return nil
 }
 
-// AlterPasswordByProxy
-func (c *Card) AlterPasswordByProxy(ctx context.Context, proxy string, cardAlterPasswordDTO CardAlterPasswordDTO) (*http.Response, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
+// UpdatePasswordByProxy
+func (c *Card) UpdatePasswordByProxy(ctx context.Context, proxy *string,
+	cardUpdatePasswordDTO *CardUpdatePasswordDTO) error {
+
+	cardLog := *cardUpdatePasswordDTO
+	cardLog.Password = ""
+
 	fields := logrus.Fields{
-		"request_id": requestID,
+		"request_id": GetRequestID(ctx),
+		"proxy" : proxy,
+		"object" : cardLog,
 	}
 
-	cardLog := cardAlterPasswordDTO
-	cardLog.Password = ""
-	fields["object"] = cardLog
+	if proxy == nil || cardUpdatePasswordDTO == nil {
+		logrus.WithFields(fields).WithError(ErrInvalidParameter).Error("error invalid parameter")
+		return ErrInvalidParameter
+	}
 
-	url := "cards/" + proxy + "/password"
+	url := fmt.Sprintf("cards/%s/password", *proxy)
+	fields["url"] = url
 
-	resp, err := c.httpClient.Patch(ctx, url, cardAlterPasswordDTO, nil)
+	resp, err := c.httpClient.Patch(ctx, url, cardUpdatePasswordDTO, nil)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
-		return nil, err
+		return err
+	} else if resp != nil &&
+		resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted {
+		logrus.WithFields(fields).WithError(ErrCardPasswordUpdate).Error(ErrCardPasswordUpdate.Error())
+		return err
 	}
 
-	return resp, nil
+	logrus.WithFields(fields).Info("card password updated with success")
+	return nil
 }
 
 // GetTransactionsByProxy ...
-func (c *Card) GetTransactionsByProxy(ctx context.Context, proxy, page, startDate, endDate, pageSize string) (*CardTransactionsResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
+func (c *Card) GetTransactionsByProxy(ctx context.Context, proxy *string,
+	page, startDate, endDate, pageSize string) (*CardTransactionsResponse, error) {
+
 	fields := logrus.Fields{
-		"request_id": requestID,
-		"proxy":      proxy,
+		"request_id" : GetRequestID(ctx),
+		"proxy" : proxy,
+		"page" : page,
+		"page_size" : pageSize,
+		"start_date" : startDate,
+		"end_date" : endDate,
 	}
 
-	url := "cards/" + proxy + "/transactions"
+	if proxy == nil {
+		logrus.WithFields(fields).WithError(ErrInvalidParameter).Error("error invalid parameter")
+		return nil, ErrInvalidParameter
+	}
+
+	url := fmt.Sprintf("cards/%s/transactions", *proxy)
+	fields["url"] = url
 
 	query := make(map[string]string)
 	query["page"] = page
@@ -361,14 +420,19 @@ func (c *Card) GetTransactionsByProxy(ctx context.Context, proxy, page, startDat
 }
 
 // GetPCIByProxy
-func (c *Card) GetPCIByProxy(ctx context.Context, proxy string, cardPCIDTO CardPCIDTO) (*CardPCIResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
+func (c *Card) GetPCIByProxy(ctx context.Context, proxy *string, cardPCIDTO *CardPCIDTO) (*CardPCIResponse, error) {
 	fields := logrus.Fields{
-		"request_id": requestID,
-		"proxy":      proxy,
+		"request_id" : GetRequestID(ctx),
+		"proxy" : proxy,
 	}
 
-	url := "cards/" + proxy + "/pci"
+	if proxy == nil || cardPCIDTO == nil {
+		logrus.WithFields(fields).WithError(ErrInvalidParameter).Error("error invalid parameter")
+		return nil, ErrInvalidParameter
+	}
+
+	url := fmt.Sprintf("cards/%s/pci", *proxy)
+	fields["url"] = url
 
 	resp, err := c.httpClient.Post(ctx, url, cardPCIDTO, nil)
 	if err != nil {
@@ -393,7 +457,9 @@ func (c *Card) GetPCIByProxy(ctx context.Context, proxy string, cardPCIDTO CardP
 //CardErrorHandler ...
 func CardErrorHandler(fields logrus.Fields, resp *http.Response) error {
 	var bodyErr *ErrorResponse
+
 	respBody, _ := ioutil.ReadAll(resp.Body)
+
 	err := json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
@@ -409,5 +475,6 @@ func CardErrorHandler(fields logrus.Fields, resp *http.Response) error {
 
 		return err
 	}
+
 	return ErrDefaultCard
 }

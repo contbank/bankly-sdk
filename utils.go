@@ -1,6 +1,7 @@
 package bankly
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"math/rand"
@@ -144,6 +145,12 @@ func RandStringBytes(n int) string {
 	}
 
 	return string(b)
+}
+
+// GetRequestID ...
+func GetRequestID(ctx context.Context) string {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	return requestID
 }
 
 // GetEnvBanklyClientID ...

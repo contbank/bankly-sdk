@@ -19,7 +19,7 @@ type PixTestSuite struct {
 }
 
 func TestPixTestSuite(t *testing.T) {
-	suite.Run(t, new(CardTestSuite))
+	suite.Run(t, new(PixTestSuite))
 }
 
 func (s *PixTestSuite) SetupTest() {
