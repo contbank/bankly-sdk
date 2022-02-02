@@ -2,6 +2,7 @@ package bankly_test
 
 import (
 	"context"
+	"github.com/contbank/grok"
 	"net/http"
 	"testing"
 	"time"
@@ -18,20 +19,6 @@ type CardTestSuite struct {
 	card   *bankly.Card
 }
 
-func mockCreateCard(documentNumber, bankAccount string, cardType bankly.CardType) bankly.CardCreateDTO {
-	return bankly.CardCreateDTO{
-		CardData: bankly.CardCreateRequest{
-			DocumentNumber: documentNumber,
-			CardName:       "NOME DA PESSOA",
-			Alias:          "NOME PESSOA",
-			BankAgency:     "0001",
-			BankAccount:    bankAccount,
-			Password:       "1234",
-		},
-		CardType: cardType,
-	}
-}
-
 func (c *CardTestSuite) mockAlterCardCanceled(proxy string) {
 	alterCardBody := bankly.CardUpdateStatusDTO{
 		Status:           "CanceledByCustomer",
@@ -39,10 +26,9 @@ func (c *CardTestSuite) mockAlterCardCanceled(proxy string) {
 		UpdateCardBinded: true,
 	}
 
-	altered, err := c.card.UpdateStatusCard(context.Background(), proxy, alterCardBody)
+	err := c.card.UpdateStatusCardByProxy(context.Background(), &proxy, &alterCardBody)
 
 	c.assert.NoError(err)
-	c.assert.NotNil(altered)
 }
 
 func TestCardTestSuite(t *testing.T) {
@@ -54,8 +40,8 @@ func (s *CardTestSuite) SetupTest() {
 	s.ctx = context.Background()
 
 	session, err := bankly.NewSession(bankly.Config{
-		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
-		ClientSecret: bankly.String(*bankly.GetEnvBanklyClientSecret()),
+		ClientID : bankly.String(*bankly.GetEnvBanklyClientID()),
+		ClientSecret : bankly.String(*bankly.GetEnvBanklyClientSecret()),
 	})
 	s.assert.NoError(err)
 
@@ -87,19 +73,22 @@ func (c *CardTestSuite) TestGetCardsByIdentifier_NOT_FOUND() {
 }
 
 func (c *CardTestSuite) TestGetTransactionByProxy_OK() {
-	card, err := c.card.GetTransactionsByProxy(c.ctx, "2229041000054459062", "1", "2021-01-01", "2021-01-08", "10")
+	proxy := "2229041000054459062"
+	card, err := c.card.GetTransactionsByProxy(c.ctx, &proxy, "1", "2021-01-01", "2021-01-08", "10")
 	c.assert.NoError(err)
 	c.assert.NotNil(card)
 }
 
 func (c *CardTestSuite) TestGetTransactionByProxy_INTERVAL_DATE_NOT_OK() {
-	card, err := c.card.GetTransactionsByProxy(c.ctx, "2229041000054459062", "1", "2021-01-01", "2021-01-09", "10")
+	proxy := "2229041000054459062"
+	card, err := c.card.GetTransactionsByProxy(c.ctx, &proxy, "1", "2021-01-01", "2021-01-09", "10")
 	c.assert.Error(err)
 	c.assert.Nil(card)
 }
 
 func (c *CardTestSuite) TestGetTransactionByProxy_ENDDATE_NOTFOUND_NOT_OK() {
-	card, err := c.card.GetTransactionsByProxy(c.ctx, "2229041000054459062", "1", "2021-01-01", "", "10")
+	proxy := "2229041000054459062"
+	card, err := c.card.GetTransactionsByProxy(c.ctx, &proxy, "1", "2021-01-01", "", "10")
 	c.assert.Error(err)
 	c.assert.Nil(card)
 }
@@ -159,18 +148,18 @@ func (c *CardTestSuite) TestGetCardByAccount_NOT_FOUND() {
 func (c *CardTestSuite) TestCreateCardVirtual_OK() {
 	c.CancelCard("21632071000187")
 
-	body := mockCreateCard("21632071000187", "202142", bankly.VirtualCardType)
+	createCardModel := createCardModel("21632071000187", "202142", bankly.VirtualCardType)
 
-	card, err := c.card.CreateCard(c.ctx, body)
+	card, err := c.card.CreateCard(c.ctx, &createCardModel)
 
 	c.assert.NoError(err)
 	c.assert.NotNil(card)
 }
 
 func (c *CardTestSuite) TestCreateCardVirtual_INVALID_PARAMETER_EMPTY() {
-	body := mockCreateCard("1234567", "202142", bankly.VirtualCardType)
+	createCardModel := createCardModel("1234567", "202142", bankly.VirtualCardType)
 
-	card, err := c.card.CreateCard(c.ctx, body)
+	card, err := c.card.CreateCard(c.ctx, &createCardModel)
 
 	c.assert.Error(err)
 	c.assert.Nil(card)
@@ -179,37 +168,45 @@ func (c *CardTestSuite) TestCreateCardVirtual_INVALID_PARAMETER_EMPTY() {
 func (c *CardTestSuite) TestCreateCardPhysical_OK() {
 	c.CancelCard("93707422046")
 
-	body := mockCreateCard("93707422046", "236268", bankly.PhysicalCardType)
+	createCardModel := createCardModel("93707422046", "236268", bankly.PhysicalCardType)
 
-	card, err := c.card.CreateCard(c.ctx, body)
+	card, err := c.card.CreateCard(c.ctx, &createCardModel)
 
 	c.assert.NoError(err)
 	c.assert.NotNil(card)
 }
 
 /*
+// TestActivateCardByProxy_OK ...
 func (c *CardTestSuite) TestActivateCardByProxy_OK() {
-	c.CancelCard("04272617000117")
+	bankAccount := "202134"
+	identifier := "04272617000117"
 
-	body := mockCreateCard("04272617000117", "202134", bankly.PhysicalCardType)
+	// cancel cards
+	c.CancelCard(identifier)
 
-	card, err := c.card.CreateCard(c.ctx, body)
+	createCardModel := createCardModel(identifier, bankAccount, bankly.PhysicalCardType)
+
+	// TODO mockar o response do bankly de cartão criado com sucesso
+	card, err := c.card.CreateCard(c.ctx, &createCardModel)
+
 	c.assert.NoError(err)
 	c.assert.NotNil(card)
 
-	cardActivateDTO := bankly.CardActivateDTO{
-		Password:     "1234",
-		ActivateCode: card.ActivateCode,
-	}
-	// TODO - Rever sleep devido a criação de cartão nao ser sincrono.
 	time.Sleep(time.Second * 10)
-	cardActivated, err := c.card.ActivateCardByProxy(c.ctx, card.Proxy, cardActivateDTO)
 
-	c.assert.NoError(err)
-	c.assert.NotNil(cardActivated)
+	cardActivateModel := bankly.CardActivateDTO{
+		ActivateCode : card.ActivateCode,
+		Password : createCardModel.CardData.Password,
+	}
+
+	// activate card by proxy
+	activateErr := c.card.ActivateCardByProxy(c.ctx, &card.Proxy, &cardActivateModel)
+
+	c.assert.NoError(activateErr)
 }
 
-func (c *CardTestSuite) TestAlterPasswordByProxy_OK() {
+func (c *CardTestSuite) TestUpdatePasswordByProxy_OK() {
 	card, err := c.card.GetCardsByIdentifier(c.ctx, "93707422046")
 
 	c.assert.NoError(err)
@@ -220,49 +217,52 @@ func (c *CardTestSuite) TestAlterPasswordByProxy_OK() {
 	}
 	// TODO - Rever sleep devido a criação de cartão nao ser sincrono.
 	time.Sleep(time.Second * 10)
-	cardActivated, err := c.card.AlterPasswordByProxy(c.ctx, card[0].Proxy, cardAlterPasswordDTO)
+	cardActivated, err := c.card.UpdatePasswordByProxy(c.ctx, card[0].Proxy, cardAlterPasswordDTO)
 
 	c.assert.NoError(err)
 	c.assert.NotNil(cardActivated)
 }
 */
 func (c *CardTestSuite) TestCreateCardPhysical_INVALID_PARAMETER_EMPTY() {
-	body := mockCreateCard("123456", "202142", bankly.PhysicalCardType)
+	createCardModel := createCardModel("123456", "202142", bankly.PhysicalCardType)
 
-	card, err := c.card.CreateCard(c.ctx, body)
+	card, err := c.card.CreateCard(c.ctx, &createCardModel)
 
 	c.assert.Error(err)
 	c.assert.Nil(card)
 }
 
 func (c *CardTestSuite) TestGetPCIByProxy_OK() {
+	proxy := "2229041000006610201"
 	cardPCIDTO := bankly.CardPCIDTO{
 		Password: "1234",
 	}
 
-	card, err := c.card.GetPCIByProxy(c.ctx, "2229041000006610201", cardPCIDTO)
+	card, err := c.card.GetPCIByProxy(c.ctx, &proxy, &cardPCIDTO)
 
 	c.assert.NoError(err)
 	c.assert.NotNil(card)
 }
 
 func (c *CardTestSuite) TestGetPCIByProxy_PASSWORD_INVALID_NOT_OK() {
+	proxy := "2229041000006610201"
 	cardPCIDTO := bankly.CardPCIDTO{
 		Password: "1233",
 	}
 
-	card, err := c.card.GetPCIByProxy(c.ctx, "2229041000006610201", cardPCIDTO)
+	card, err := c.card.GetPCIByProxy(c.ctx, &proxy, &cardPCIDTO)
 
 	c.assert.Error(err)
 	c.assert.Nil(card)
 }
 
 func (c *CardTestSuite) TestGetPCIByProxy_PROXY_INVALID_NOT_OK() {
+	proxy := "2229041000006610200"
 	cardPCIDTO := bankly.CardPCIDTO{
 		Password: "1234",
 	}
 
-	card, err := c.card.GetPCIByProxy(c.ctx, "2229041000006610200", cardPCIDTO)
+	card, err := c.card.GetPCIByProxy(c.ctx, &proxy, &cardPCIDTO)
 
 	c.assert.Error(err)
 	c.assert.Nil(card)
@@ -281,5 +281,20 @@ func (c *CardTestSuite) CancelCard(identifier string) {
 		if elm.Status != "CanceledByCustomer" {
 			c.mockAlterCardCanceled(elm.Proxy)
 		}
+	}
+}
+
+// createCardModel ...
+func createCardModel(identifier, bankAccountNumber string, cardType bankly.CardType) bankly.CardCreateDTO {
+	return bankly.CardCreateDTO {
+		CardData: bankly.CardCreateRequest {
+			DocumentNumber : grok.OnlyDigits(identifier),
+			CardName : grok.ToTitle("NOME DA PESSOA"),
+			Alias : grok.ToTitle("CONTBANK"),
+			BankAgency : "0001",
+			BankAccount : grok.OnlyLettersOrDigits(bankAccountNumber),
+			Password : "1234",
+		},
+		CardType: cardType,
 	}
 }
