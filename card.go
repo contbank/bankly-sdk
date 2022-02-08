@@ -440,18 +440,46 @@ func (c *Card) GetPCIByProxy(ctx context.Context, proxy *string, cardPCIDTO *Car
 		return nil, err
 	}
 
+	defer resp.Body.Close()
+
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
-	var response *CardPCIResponse
+	if resp.StatusCode == http.StatusOK {
+		var response *CardPCIResponse
 
-	err = json.Unmarshal(respBody, &response)
-	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
-		return nil, ErrDefaultCard
+		err = json.Unmarshal(respBody, &response)
+
+		if err != nil {
+			logrus.WithFields(fields).WithError(err).Error("error unmarshal")
+			return nil, err
+		}
+
+		fields["response"] = response
+		logrus.WithFields(fields).Info("response with success")
+
+		return response, nil
 	}
 
-	defer resp.Body.Close()
-	return response, nil
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, ErrEntryNotFound
+	}
+
+	var bodyErr *ErrorResponse
+
+	err = json.Unmarshal(respBody, &bodyErr)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(bodyErr.Errors) > 0 {
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
+	}
+
+	logrus.WithFields(fields).
+		Error("error default card response - FindRegistration")
+
+	return nil, ErrDefaultCard
 }
 
 //CardErrorHandler ...

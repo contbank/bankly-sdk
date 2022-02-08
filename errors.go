@@ -123,6 +123,12 @@ var (
 	ErrCardStatusUpdate = grok.NewError(http.StatusNotModified, "error update status card")
 	// ErrCardPasswordUpdate ...
 	ErrCardPasswordUpdate = grok.NewError(http.StatusNotModified, "error update password card")
+	// ErrInvalidPassword ...
+	ErrInvalidPassword = grok.NewError(http.StatusUnauthorized, "invalid password")
+	// ErrInvalidCardName ...
+	ErrInvalidCardName = grok.NewError(http.StatusBadRequest, "invalid card name")
+	// ErrInvalidIdentifier ...
+	ErrInvalidIdentifier = grok.NewError(http.StatusBadRequest, "invalid identifier")
 )
 
 // BanklyError ...
@@ -253,7 +259,7 @@ var transferErrorList = []TransferError{
 	},
 }
 
-// FindError ..
+// FindError Find errors.
 func FindError(code string, messages ...string) *Error {
 	code = verifyInvalidParameter(code, messages)
 
@@ -280,6 +286,7 @@ func FindErrorByErrorModel(response ErrorModel) *Error {
 	}
 }
 
+// verifyInvalidParameter Find the correspondent error message.
 func verifyInvalidParameter(code string, messages []string) string {
 	if code == "INVALID_PARAMETER" {
 		for _, m := range messages {
@@ -301,10 +308,34 @@ func verifyInvalidParameter(code string, messages []string) string {
 	return code
 }
 
-// Card
-func FindCardError(code string, messages ...string) *Error {
+var errorCardList = []Error{
+	{
+		ErrorKey:  "INVALID_CARD_PASSWORD",
+		GrokError: ErrInvalidPassword,
+	},
+	{
+		ErrorKey:  "INVALID_CARD_NAME_EMPTY",
+		GrokError: ErrInvalidCardName,
+	},
+	{
+		ErrorKey:  "INVALID_DOCUMENT_NUMBER_EMPTY",
+		GrokError: ErrInvalidIdentifier,
+	},
+	{
+		ErrorKey:  "INVALID_PARAMETER_CARD",
+		GrokError: ErrInvalidParameter,
+	},
+}
 
+// FindCardError Find cards errors.
+func FindCardError(code string, messages ...string) *Error {
 	code = verifyInvalidCardParameter(code, messages)
+
+	for _, v := range errorCardList {
+		if v.ErrorKey == code {
+			return &v
+		}
+	}
 
 	return &Error{
 		ErrorKey:  code,
@@ -312,14 +343,17 @@ func FindCardError(code string, messages ...string) *Error {
 	}
 }
 
+// verifyInvalidCardParameter Find the correspondent error message for Cards.
 func verifyInvalidCardParameter(code string, messages []string) string {
-	if code == "INVALID_PARAMETER" {
+	if code == "INVALID_PARAMETER" || code == "011" {
 		for _, m := range messages {
 			switch {
 			case strings.Contains(strings.ToLower(m), "card name"):
 				return "INVALID_CARD_NAME_EMPTY"
 			case strings.Contains(strings.ToLower(m), "document number"):
 				return "INVALID_DOCUMENT_NUMBER_EMPTY"
+			case strings.Contains(strings.ToLower(m), "invalid password"):
+				return "INVALID_CARD_PASSWORD"
 			default:
 				return "INVALID_PARAMETER_CARD"
 			}

@@ -253,6 +253,7 @@ func (c *CardTestSuite) TestGetPCIByProxy_PASSWORD_INVALID_NOT_OK() {
 	card, err := c.card.GetPCIByProxy(c.ctx, &proxy, &cardPCIDTO)
 
 	c.assert.Error(err)
+	c.assert.Contains(err.Error(), "INVALID_CARD_PASSWORD")
 	c.assert.Nil(card)
 }
 

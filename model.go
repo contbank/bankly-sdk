@@ -213,6 +213,12 @@ type ErrorResponse struct {
 	CodeMessageErrorResponse
 }
 
+// CardErrorResponse ...
+type CardErrorResponse struct {
+	ErrorKey string `json:"errorKey,omitempty"`
+	CodeMessageErrorResponse
+}
+
 // CodeMessageErrorResponse ...
 type CodeMessageErrorResponse struct {
 	Code    string `json:"code,omitempty"`
@@ -885,12 +891,12 @@ type FilterTicketsResponse struct {
 	Results []*GetTicketResponse `json:"results"`
 }
 
-// CardPasswordDTO
+// CardPasswordDTO ...
 type CardPCIDTO struct {
 	Password string `json:"password"`
 }
 
-//
+// CardPCIResponse ...
 type CardPCIResponse struct {
 	CardNumber     string `json:"cardNumber"`
 	Cvv            string `json:"cvv"`
