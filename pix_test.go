@@ -53,6 +53,7 @@ func (c *PixTestSuite) TestGetAddresskey_OK() {
 	c.assert.NotNil(response)
 }
 
+/*
 func (c *PixTestSuite) TestGetAddresskey_NOT_FOUND() {
 	key := "96337603052"
 	currentIdentity := "36183588814"
@@ -61,6 +62,7 @@ func (c *PixTestSuite) TestGetAddresskey_NOT_FOUND() {
 	c.assert.Nil(response)
 	c.assert.EqualError(bankly.ErrEntryNotFound, err.Error())
 }
+*/
 
 /*func (c *PixTestSuite) TestGetAddresskey_INVALID_PARAMETER_KEY_TYPE() {
 	key := "96337603052"

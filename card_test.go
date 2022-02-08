@@ -93,26 +93,43 @@ func (c *CardTestSuite) TestGetTransactionByProxy_ENDDATE_NOTFOUND_NOT_OK() {
 	c.assert.Nil(card)
 }
 
-func (c *CardTestSuite) TestGetCardsByProxy_OK() {
+func (c *CardTestSuite) TestGetCardByProxy_OK() {
 	card, err := c.card.GetCardByProxy(c.ctx, "2229041000054459062")
 	c.assert.NoError(err)
 	c.assert.NotNil(card)
+	c.assert.NotEmpty(card.Proxy)
+	c.assert.NotEmpty(card.Status)
+	c.assert.NotEmpty(card.Address)
+	c.assert.NotNil(card.IsActivated)
+	c.assert.NotNil(card.IsLocked)
+	c.assert.NotNil(card.IsCanceled)
+	c.assert.NotNil(card.IsPos)
+	c.assert.NotNil(card.IsBuilding)
 }
 
-func (c *CardTestSuite) TestGetCardsByProxy_NOT_FOUND() {
+func (c *CardTestSuite) TestGetCardByProxy_NOT_FOUND() {
 	card, err := c.card.GetCardByProxy(c.ctx, "00000000000000")
 	c.assert.Error(err)
 	c.assert.Nil(card)
 	c.assert.Equal("Code: 404 - Messages: not found", err.Error())
 }
 
-func (c *CardTestSuite) TestGetCardsByActivateCode_OK() {
+func (c *CardTestSuite) TestGetCardByActivateCode_OK() {
 	card, err := c.card.GetCardByActivateCode(c.ctx, "F6D8B3C1269D")
 	c.assert.NoError(err)
 	c.assert.NotNil(card)
+	c.assert.GreaterOrEqual(1, len(card))
+	c.assert.NotEmpty(card[0].Proxy)
+	c.assert.NotEmpty(card[0].Status)
+	c.assert.NotEmpty(card[0].Address)
+	c.assert.NotNil(card[0].IsActivated)
+	c.assert.NotNil(card[0].IsLocked)
+	c.assert.NotNil(card[0].IsCanceled)
+	c.assert.NotNil(card[0].IsPos)
+	c.assert.NotNil(card[0].IsBuilding)
 }
 
-func (c *CardTestSuite) TestGetCardsByActivateCode_NOT_FOUND() {
+func (c *CardTestSuite) TestGetCardByActivateCode_NOT_FOUND() {
 	card, err := c.card.GetCardByActivateCode(c.ctx, "000000000000")
 	c.assert.Error(err)
 	c.assert.Nil(card)
