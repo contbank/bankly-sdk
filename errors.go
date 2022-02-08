@@ -131,6 +131,9 @@ var (
 	ErrInvalidIdentifier = grok.NewError(http.StatusBadRequest, "invalid identifier")
 	// ErrCardAlreadyActivated ...
 	ErrCardAlreadyActivated = grok.NewError(http.StatusConflict, "card already activated")
+	// ErrOperationNotAllowedCardStatus ...
+	ErrOperationNotAllowedCardStatus = grok.NewError(http.StatusMethodNotAllowed, "operation not allowed for current card status")
+
 )
 
 // BanklyError ...
@@ -316,6 +319,10 @@ var errorCardList = []Error{
 		GrokError: ErrInvalidPassword,
 	},
 	{
+		ErrorKey:  "OPERATION_NOT_ALLOWED_FOR_CURRENT_CARD_STATUS",
+		GrokError: ErrOperationNotAllowedCardStatus,
+	},
+	{
 		ErrorKey:  "CARD_ALREADY_ACTIVATED",
 		GrokError: ErrCardAlreadyActivated,
 	},
@@ -362,6 +369,8 @@ func verifyInvalidCardParameter(code string, messages []string) string {
 				return "INVALID_PARAMETER_CARD"
 			}
 		}
+	} else if code == "009" {
+		return "OPERATION_NOT_ALLOWED_FOR_CURRENT_CARD_STATUS"
 	} else if code == "011" {
 		return "INVALID_CARD_PASSWORD"
 	} else if code == "021" {
