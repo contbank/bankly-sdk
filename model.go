@@ -954,6 +954,10 @@ type CardResponse struct {
 	HistoryStatus    []CardHistoryStatus `json:"historyStatus"`
 	ActivatedAt      *time.Time          `json:"activatedAt"`
 	LastUpdatedAt    time.Time           `json:"lastUpdatedAt"`
+	IsActivated      bool                `json:"isActivated"`
+	IsLocked         bool                `json:"isLocked"`
+	IsCanceled       bool                `json:"isCanceled"`
+	IsBuilding       bool                `json:"isBuilding"`
 	IsFirtual        bool                `json:"isFirtual"`
 	IsPos            bool                `json:"isPos"`
 	SettlementDay    int16               `json:"settlementDay"`
@@ -1201,6 +1205,10 @@ func ParseResponseCard(cardResponseDTO *CardResponseDTO) *CardResponse {
 		HistoryStatus:    cardResponseDTO.HistoryStatus,
 		ActivatedAt:      cardResponseDTO.ActivatedAt,
 		LastUpdatedAt:    cardResponseDTO.LastUpdatedAt,
+		IsActivated: 	  cardResponseDTO.IsActivated,
+		IsLocked: 		  cardResponseDTO.IsLocked,
+		IsCanceled: 	  cardResponseDTO.IsCanceled,
+		IsBuilding: 	  cardResponseDTO.IsBuilding,
 		IsFirtual:        cardResponseDTO.IsFirtual,
 		IsPos:            cardResponseDTO.IsPos,
 		SettlementDay:    cardResponseDTO.PaymentDay,
