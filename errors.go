@@ -133,7 +133,6 @@ var (
 	ErrCardAlreadyActivated = grok.NewError(http.StatusConflict, "card already activated")
 	// ErrOperationNotAllowedCardStatus ...
 	ErrOperationNotAllowedCardStatus = grok.NewError(http.StatusMethodNotAllowed, "operation not allowed for current card status")
-
 )
 
 // BanklyError ...
