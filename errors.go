@@ -129,6 +129,8 @@ var (
 	ErrInvalidCardName = grok.NewError(http.StatusBadRequest, "invalid card name")
 	// ErrInvalidIdentifier ...
 	ErrInvalidIdentifier = grok.NewError(http.StatusBadRequest, "invalid identifier")
+	// ErrCardAlreadyActivated ...
+	ErrCardAlreadyActivated = grok.NewError(http.StatusConflict, "card already activated")
 )
 
 // BanklyError ...
@@ -314,6 +316,10 @@ var errorCardList = []Error{
 		GrokError: ErrInvalidPassword,
 	},
 	{
+		ErrorKey:  "CARD_ALREADY_ACTIVATED",
+		GrokError: ErrCardAlreadyActivated,
+	},
+	{
 		ErrorKey:  "INVALID_CARD_NAME_EMPTY",
 		GrokError: ErrInvalidCardName,
 	},
@@ -345,19 +351,21 @@ func FindCardError(code string, messages ...string) *Error {
 
 // verifyInvalidCardParameter Find the correspondent error message for Cards.
 func verifyInvalidCardParameter(code string, messages []string) string {
-	if code == "INVALID_PARAMETER" || code == "011" {
+	if code == "INVALID_PARAMETER" {
 		for _, m := range messages {
 			switch {
 			case strings.Contains(strings.ToLower(m), "card name"):
 				return "INVALID_CARD_NAME_EMPTY"
 			case strings.Contains(strings.ToLower(m), "document number"):
 				return "INVALID_DOCUMENT_NUMBER_EMPTY"
-			case strings.Contains(strings.ToLower(m), "invalid password"):
-				return "INVALID_CARD_PASSWORD"
 			default:
 				return "INVALID_PARAMETER_CARD"
 			}
 		}
+	} else if code == "011" {
+		return "INVALID_CARD_PASSWORD"
+	} else if code == "021" {
+		return "CARD_ALREADY_ACTIVATED"
 	}
 	return code
 }

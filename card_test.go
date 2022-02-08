@@ -205,7 +205,9 @@ func (c *CardTestSuite) TestActivateCardByProxy_OK() {
 
 	c.assert.NoError(activateErr)
 }
+*/
 
+/*
 func (c *CardTestSuite) TestUpdatePasswordByProxy_OK() {
 	card, err := c.card.GetCardsByIdentifier(c.ctx, "93707422046")
 
@@ -223,6 +225,7 @@ func (c *CardTestSuite) TestUpdatePasswordByProxy_OK() {
 	c.assert.NotNil(cardActivated)
 }
 */
+
 func (c *CardTestSuite) TestCreateCardPhysical_INVALID_PARAMETER_EMPTY() {
 	createCardModel := createCardModel("123456", "202142", bankly.PhysicalCardType)
 
