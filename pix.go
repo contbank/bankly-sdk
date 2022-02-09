@@ -15,6 +15,7 @@ type Pix struct {
 
 //NewPix ...
 func NewPix(newHttpClient BanklyHttpClient) *Pix {
+	newHttpClient.errorHandler = PixErrorHandler
 	return &Pix{newHttpClient}
 }
 

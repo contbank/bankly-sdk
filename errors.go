@@ -340,19 +340,16 @@ var errorCardList = []Error{
 }
 
 // FindCardError Find cards errors.
-func FindCardError(code string, messages ...string) *Error {
+func FindCardError(code string, messages ...string) *grok.Error {
 	code = verifyInvalidCardParameter(code, messages)
 
 	for _, v := range errorCardList {
 		if v.ErrorKey == code {
-			return &v
+			return v.GrokError
 		}
 	}
 
-	return &Error{
-		ErrorKey:  code,
-		GrokError: grok.NewError(http.StatusConflict, messages...),
-	}
+	return grok.NewError(http.StatusConflict, messages...)
 }
 
 // verifyInvalidCardParameter Find the correspondent error message for Cards.
@@ -422,19 +419,16 @@ func verifyInvalidPixParameter(code string, messages []string) string {
 }
 
 // FindPixError
-func FindPixError(code string, messages ...string) *Error {
+func FindPixError(code string, messages ...string) *grok.Error {
 	code = verifyInvalidPixParameter(code, messages)
 
 	for _, v := range errorPixList {
 		if v.ErrorKey == code {
-			return &v
+			return v.GrokError
 		}
 	}
 
-	return &Error{
-		ErrorKey:  code,
-		GrokError: grok.NewError(http.StatusConflict, messages...),
-	}
+	return grok.NewError(http.StatusConflict, messages...)
 }
 
 // ParseErr ..
