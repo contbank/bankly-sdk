@@ -124,6 +124,41 @@ func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest, 
 	return response, nil
 }
 
+func (p *Pix) GetCashOutByAuthenticationCode(ctx context.Context, accountNumber string, authenticationCode string) (*PixCashOutByAuthenticationCodeResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id":          requestID,
+		"authentication_code": authenticationCode,
+	}
+
+	url := "/pix/cash-out/accounts/" + accountNumber + "/authenticationcode/" + authenticationCode
+
+	header := http.Header{}
+	header.Add("x-correlation-id", requestID)
+
+	resp, err := p.httpClient.Get(ctx, url, nil, &header)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
+		return nil, err
+	}
+
+	response := new(PixCashOutByAuthenticationCodeResponse)
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		return nil, ErrDefaultPix
+	}
+
+	return response, nil
+}
+
 //PixErrorHandler ...
 func PixErrorHandler(fields logrus.Fields, resp *http.Response) error {
 	var bodyErr *ErrorResponse
