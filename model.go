@@ -1205,10 +1205,10 @@ func ParseResponseCard(cardResponseDTO *CardResponseDTO) *CardResponse {
 		HistoryStatus:    cardResponseDTO.HistoryStatus,
 		ActivatedAt:      cardResponseDTO.ActivatedAt,
 		LastUpdatedAt:    cardResponseDTO.LastUpdatedAt,
-		IsActivated: 	  cardResponseDTO.IsActivated,
-		IsLocked: 		  cardResponseDTO.IsLocked,
-		IsCanceled: 	  cardResponseDTO.IsCanceled,
-		IsBuilding: 	  cardResponseDTO.IsBuilding,
+		IsActivated:      cardResponseDTO.IsActivated,
+		IsLocked:         cardResponseDTO.IsLocked,
+		IsCanceled:       cardResponseDTO.IsCanceled,
+		IsBuilding:       cardResponseDTO.IsBuilding,
 		IsFirtual:        cardResponseDTO.IsFirtual,
 		IsPos:            cardResponseDTO.IsPos,
 		SettlementDay:    cardResponseDTO.PaymentDay,
@@ -1245,4 +1245,19 @@ type PixQrCodeDecodeResponse struct {
 	Payment        PixQrCodePaymentResponse  `json:"payment"`
 	Location       PixQrCodeLocationResponse `json:"location"`
 	QrCodePurpose  string                    `json:"qrCodePurpose"`
+}
+
+type PixCashOutByAuthenticationCodeResponse struct {
+	CompanyKey         string                      `json:"companyKey"`
+	AuthenticationCode string                      `json:"authenticationCode"`
+	InitializationType string                      `json:"initializationType"`
+	Amount             float64                     `json:"amount"`
+	CorrelationID      string                      `json:"correlationId"`
+	Sender             PixCashOutSenderResponse    `json:"sender"`
+	Recipient          PixCashOutRecipientResponse `json:"recipient"`
+	Channel            string                      `json:"channel"`
+	Status             TransfersStatus             `json:"status"`
+	Type               string                      `json:"type"`
+	CreatedAt          time.Time                   `json:"createdAt"`
+	UpdatedAt          time.Time                   `json:"updatedAt"`
 }
