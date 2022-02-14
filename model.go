@@ -185,6 +185,18 @@ type Address struct {
 	Country        string  `validate:"required" json:"country,omitempty"`
 }
 
+// CardAddress ...
+type CardAddress struct {
+	ZipCode        string  `validate:"required" json:"zipCode,omitempty"`
+	Address        string  `validate:"required" json:"address,omitempty"`
+	Number         string  `validate:"required" json:"number,omitempty"`
+	Complement     *string `json:"complement,omitempty"`
+	Neighborhood   string  `validate:"required" json:"neighborhood,omitempty"`
+	City           string  `validate:"required" json:"city,omitempty"`
+	State          string  `validate:"required" json:"state,omitempty"`
+	Country        string  `validate:"required" json:"country,omitempty"`
+}
+
 type BoletoAddress struct {
 	AddressLine string `validate:"required" json:"addressLine,omitempty"`
 	ZipCode     string `validate:"required" json:"zipCode,omitempty"`
@@ -999,17 +1011,6 @@ type CardBind struct {
 	Created time.Time `json:"created"`
 }
 
-type CardAddress struct {
-	ZipCode      string `json:"zipCode"`
-	Address      string `json:"address"`
-	Number       string `json:"number"`
-	Neighborhood string `json:"neighborhood"`
-	Complement   string `json:"complement"`
-	City         string `json:"city"`
-	State        string `json:"state"`
-	Country      string `json:"country"`
-}
-
 type CardHistoryStatus struct {
 	Modified time.Time `json:"modified"`
 	Value    string    `json:"value"`
@@ -1041,13 +1042,14 @@ type CardUpdatePasswordDTO struct {
 }
 
 type CardCreateRequest struct {
-	DocumentNumber string `json:"documentNumber"`
-	CardName       string `json:"cardName"`
-	Alias          string `json:"alias"`
-	BankAgency     string `json:"bankAgency"`
-	BankAccount    string `json:"bankAccount"`
-	ProgramId      int16  `json:"programId,omitempty"`
-	Password       string `json:"password"`
+	DocumentNumber string      `json:"documentNumber"`
+	CardName       string      `json:"cardName"`
+	Alias          string      `json:"alias"`
+	BankAgency     string      `json:"bankAgency"`
+	BankAccount    string      `json:"bankAccount"`
+	ProgramId      int16       `json:"programId,omitempty"`
+	Password       string      `json:"password"`
+	Address        CardAddress `json:"address"`
 }
 
 type CardCreateResponse struct {
