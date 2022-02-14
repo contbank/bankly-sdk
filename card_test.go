@@ -308,14 +308,30 @@ func (c *CardTestSuite) CancelCard(identifier string) {
 // createCardModel ...
 func createCardModel(identifier, bankAccountNumber string, cardType bankly.CardType) bankly.CardCreateDTO {
 	return bankly.CardCreateDTO {
-		CardData: bankly.CardCreateRequest {
+		CardData: bankly.CardCreateRequest{
 			DocumentNumber : grok.OnlyDigits(identifier),
 			CardName : grok.ToTitle("NOME DA PESSOA"),
 			Alias : grok.ToTitle("CONTBANK"),
 			BankAgency : "0001",
 			BankAccount : grok.OnlyLettersOrDigits(bankAccountNumber),
 			Password : "1234",
+			Address : *createCardAddressModel(),
 		},
 		CardType: cardType,
+	}
+}
+
+// createCardAddressModel ...
+func createCardAddressModel() *bankly.CardAddress {
+	complement := "Apto 1231"
+	return &bankly.CardAddress {
+		ZipCode : "01307012",
+		Address : "Rua Dona Antônia de Queirós",
+		Number : "888",
+		Complement : &complement,
+		Neighborhood : "Consolação",
+		City : "São Paulo",
+		State : "SP",
+		Country : "BR",
 	}
 }

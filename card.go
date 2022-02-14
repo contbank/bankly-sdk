@@ -243,6 +243,7 @@ func (c *Card) CreateCard(ctx context.Context, cardDTO *CardCreateDTO) (*CardCre
 		BankAccount:    grok.OnlyLettersOrDigits(cardDTO.CardData.BankAccount),
 		ProgramId:      cardDTO.CardData.ProgramId,
 		Password:       cardDTO.CardData.Password,
+		Address:        cardDTO.CardData.Address,
 	}
 
 	resp, err := c.httpClient.Post(ctx, url, body, nil)
