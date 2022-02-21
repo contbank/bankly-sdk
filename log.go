@@ -3,6 +3,8 @@ package bankly
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -13,7 +15,8 @@ import (
 
 // LoggingRoundTripper ...
 type LoggingRoundTripper struct {
-	Proxied http.RoundTripper
+	Proxied     http.RoundTripper
+	Restricteds []string
 }
 
 // RoundTrip ...
@@ -26,7 +29,7 @@ func (lrt LoggingRoundTripper) RoundTrip(req *http.Request) (res *http.Response,
 
 	now := time.Now()
 
-	fields["request"] = request(req)
+	fields["request"] = request(req, lrt.Restricteds)
 
 	logrus.WithFields(fields).Infof("sending request to %v", req.URL)
 
@@ -42,7 +45,7 @@ func (lrt LoggingRoundTripper) RoundTrip(req *http.Request) (res *http.Response,
 		return
 	}
 
-	fields["response"] = response(res)
+	fields["response"] = response(res, lrt.Restricteds)
 	fields["latency"] = elapsed.Seconds()
 
 	logrus.
@@ -52,7 +55,41 @@ func (lrt LoggingRoundTripper) RoundTrip(req *http.Request) (res *http.Response,
 	return
 }
 
-func request(request *http.Request) interface{} {
+// restricted ...
+func restricted(v interface{}, restricteds []string) interface{} {
+	if restricteds != nil && len(restricteds) > 0 {
+		str := marshal(v)
+		for _, restricted := range restricteds {
+			result := gjson.Get(str, restricted)
+
+			if result.Index <= 0 {
+				continue
+			}
+
+			str, _ = sjson.Set(str, restricted, "RESTRICTED")
+		}
+		return unmarshal(str)
+	}
+	return v
+}
+
+// marshal ...
+func marshal(v interface{}) string {
+	b, _ := json.Marshal(v)
+	return string(b)
+}
+
+// unmarshal ...
+func unmarshal(str string) interface{} {
+	v := make(map[string]interface{})
+
+	json.Unmarshal([]byte(str), &v)
+
+	return v
+}
+
+// request ...
+func request(request *http.Request, restricteds []string) interface{} {
 	r := make(map[string]interface{})
 
 	if request.Body != nil {
@@ -63,7 +100,7 @@ func request(request *http.Request) interface{} {
 		var body map[string]interface{}
 		json.Unmarshal(bodyData, &body)
 
-		r["body"] = body
+		r["body"] = restricted(body, restricteds)
 		request.Body = ioutil.NopCloser(bytes.NewReader(bodyData))
 	}
 
@@ -79,7 +116,8 @@ func request(request *http.Request) interface{} {
 	return r
 }
 
-func response(response *http.Response) interface{} {
+// response ...
+func response(response *http.Response, restricteds []string) interface{} {
 	r := make(map[string]interface{})
 
 	bodyCopy := new(bytes.Buffer)
@@ -89,7 +127,7 @@ func response(response *http.Response) interface{} {
 	var body map[string]interface{}
 	json.Unmarshal(bodyData, &body)
 
-	r["body"] = body
+	r["body"] = restricted(body, restricteds)
 	r["status"] = response.StatusCode
 
 	response.Body = ioutil.NopCloser(bytes.NewReader(bodyData))
