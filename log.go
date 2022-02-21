@@ -3,6 +3,8 @@ package bankly
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -14,6 +16,14 @@ import (
 // LoggingRoundTripper ...
 type LoggingRoundTripper struct {
 	Proxied http.RoundTripper
+}
+
+// restricteds ...
+var restricteds = []string{
+	"password",
+	"cvv",
+	"cardNumber",
+	"expirationDate",
 }
 
 // RoundTrip ...
@@ -52,6 +62,38 @@ func (lrt LoggingRoundTripper) RoundTrip(req *http.Request) (res *http.Response,
 	return
 }
 
+// restricted ...
+func restricted(v interface{}, restricteds []string) interface{} {
+	str := marshal(v)
+
+	for _, restricted := range restricteds {
+		result := gjson.Get(str, restricted)
+
+		if result.Index <= 0 {
+			continue
+		}
+
+		str, _ = sjson.Set(str, restricted, "RESTRICTED")
+	}
+	return unmarshal(str)
+}
+
+// marshal ...
+func marshal(v interface{}) string {
+	b, _ := json.Marshal(v)
+	return string(b)
+}
+
+// unmarshal ...
+func unmarshal(str string) interface{} {
+	v := make(map[string]interface{})
+
+	json.Unmarshal([]byte(str), &v)
+
+	return v
+}
+
+// request ...
 func request(request *http.Request) interface{} {
 	r := make(map[string]interface{})
 
@@ -63,7 +105,7 @@ func request(request *http.Request) interface{} {
 		var body map[string]interface{}
 		json.Unmarshal(bodyData, &body)
 
-		r["body"] = body
+		r["body"] = restricted(body, restricteds)
 		request.Body = ioutil.NopCloser(bytes.NewReader(bodyData))
 	}
 
@@ -79,6 +121,7 @@ func request(request *http.Request) interface{} {
 	return r
 }
 
+// response ...
 func response(response *http.Response) interface{} {
 	r := make(map[string]interface{})
 
@@ -89,7 +132,7 @@ func response(response *http.Response) interface{} {
 	var body map[string]interface{}
 	json.Unmarshal(bodyData, &body)
 
-	r["body"] = body
+	r["body"] = restricted(body, restricteds)
 	r["status"] = response.StatusCode
 
 	response.Body = ioutil.NopCloser(bytes.NewReader(bodyData))
