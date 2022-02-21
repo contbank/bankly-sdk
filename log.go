@@ -15,15 +15,8 @@ import (
 
 // LoggingRoundTripper ...
 type LoggingRoundTripper struct {
-	Proxied http.RoundTripper
-}
-
-// restricteds ...
-var restricteds = []string{
-	"password",
-	"cvv",
-	"cardNumber",
-	"expirationDate",
+	Proxied     http.RoundTripper
+	Restricteds []string
 }
 
 // RoundTrip ...
@@ -36,7 +29,7 @@ func (lrt LoggingRoundTripper) RoundTrip(req *http.Request) (res *http.Response,
 
 	now := time.Now()
 
-	fields["request"] = request(req)
+	fields["request"] = request(req, lrt.Restricteds)
 
 	logrus.WithFields(fields).Infof("sending request to %v", req.URL)
 
@@ -52,7 +45,7 @@ func (lrt LoggingRoundTripper) RoundTrip(req *http.Request) (res *http.Response,
 		return
 	}
 
-	fields["response"] = response(res)
+	fields["response"] = response(res, lrt.Restricteds)
 	fields["latency"] = elapsed.Seconds()
 
 	logrus.
@@ -64,18 +57,20 @@ func (lrt LoggingRoundTripper) RoundTrip(req *http.Request) (res *http.Response,
 
 // restricted ...
 func restricted(v interface{}, restricteds []string) interface{} {
-	str := marshal(v)
+	if restricteds != nil && len(restricteds) > 0 {
+		str := marshal(v)
+		for _, restricted := range restricteds {
+			result := gjson.Get(str, restricted)
 
-	for _, restricted := range restricteds {
-		result := gjson.Get(str, restricted)
+			if result.Index <= 0 {
+				continue
+			}
 
-		if result.Index <= 0 {
-			continue
+			str, _ = sjson.Set(str, restricted, "RESTRICTED")
 		}
-
-		str, _ = sjson.Set(str, restricted, "RESTRICTED")
+		return unmarshal(str)
 	}
-	return unmarshal(str)
+	return v
 }
 
 // marshal ...
@@ -94,7 +89,7 @@ func unmarshal(str string) interface{} {
 }
 
 // request ...
-func request(request *http.Request) interface{} {
+func request(request *http.Request, restricteds []string) interface{} {
 	r := make(map[string]interface{})
 
 	if request.Body != nil {
@@ -122,7 +117,7 @@ func request(request *http.Request) interface{} {
 }
 
 // response ...
-func response(response *http.Response) interface{} {
+func response(response *http.Response, restricteds []string) interface{} {
 	r := make(map[string]interface{})
 
 	bodyCopy := new(bytes.Buffer)
