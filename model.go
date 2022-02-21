@@ -307,6 +307,19 @@ type RecipientRequest struct {
 	Name                 string               `validate:"required" json:"name"`
 }
 
+// IncomeReportRequest ...
+type IncomeReportRequest struct {
+	Account string `validate:"required" form:"account"`
+	Year    string `validate:"required" form:"year"`
+}
+
+// IncomeReportResponse ...
+type IncomeReportResponse struct {
+	FileName    string `form:"fileName"`
+	ContentType string `form:"contentType"`
+	IncomeFile  string `form:"incomeFile"`
+}
+
 // TransfersAccountType ...
 type TransfersAccountType string
 
