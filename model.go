@@ -315,9 +315,9 @@ type IncomeReportRequest struct {
 
 // IncomeReportResponse ...
 type IncomeReportResponse struct {
-	FileName    string `form:"fileName"`
-	ContentType string `form:"contentType"`
-	IncomeFile  string `form:"incomeFile"`
+	FileName    string `json:"fileName"`
+	ContentType string `json:"contentType"`
+	IncomeFile  string `json:"incomeFile"`
 }
 
 // TransfersAccountType ...

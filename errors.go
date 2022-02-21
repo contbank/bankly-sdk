@@ -135,6 +135,10 @@ var (
 	ErrCardAlreadyActivated = grok.NewError(http.StatusConflict, "card already activated")
 	// ErrOperationNotAllowedCardStatus ...
 	ErrOperationNotAllowedCardStatus = grok.NewError(http.StatusMethodNotAllowed, "operation not allowed for current card status")
+	// ErrInvalidIncomeReportCalendar ...
+	ErrInvalidIncomeReportCalendar = grok.NewError(http.StatusBadRequest, "invalid income report calendar")
+	// ErrInvalidIncomeReportParameter ...
+	ErrInvalidIncomeReportParameter = grok.NewError(http.StatusBadRequest, "invalid income report parameter")
 )
 
 // BanklyError ...
@@ -308,6 +312,46 @@ func verifyInvalidParameter(code string, messages []string) string {
 				return "INVALID_PARAMETER_SPECIAL_CHARACTERS"
 			} else if strings.Contains(strings.ToLower(m), "length of") {
 				return "INVALID_PARAMETER_LENGTH"
+			}
+		}
+	}
+	return code
+}
+
+// errorIncomeReportList ...
+var errorIncomeReportList = []Error{
+	{
+		ErrorKey:  "INVALID_CALENDAR_FOR_INCOME_REPORT",
+		GrokError: ErrInvalidIncomeReportCalendar,
+	},
+	{
+		ErrorKey:  "INVALID_PARAMETER_INCOME_REPORT",
+		GrokError: ErrInvalidIncomeReportParameter,
+	},
+}
+
+// FindIncomeReportError Find income report errors.
+func FindIncomeReportError(code string, messages ...string) *grok.Error {
+	code = verifyInvalidIncomeReportParameter(code, messages)
+
+	for _, v := range errorCardList {
+		if v.ErrorKey == code {
+			return v.GrokError
+		}
+	}
+
+	return grok.NewError(http.StatusConflict, messages...)
+}
+
+// verifyInvalidIncomeReportParameter Find the correspondent error message for income reports.
+func verifyInvalidIncomeReportParameter(code string, messages []string) string {
+	if code == "CALENDAR_NOT_ALLOWED" {
+		for _, m := range messages {
+			switch {
+			case strings.Contains(strings.ToLower(m), "calendar informed is not allowed"):
+				return "INVALID_CALENDAR_FOR_INCOME_REPORT"
+			default:
+				return "INVALID_PARAMETER_INCOME_REPORT"
 			}
 		}
 	}
