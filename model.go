@@ -187,14 +187,14 @@ type Address struct {
 
 // CardAddress ...
 type CardAddress struct {
-	ZipCode        string  `validate:"required" json:"zipCode,omitempty"`
-	Address        string  `validate:"required" json:"address,omitempty"`
-	Number         string  `validate:"required" json:"number,omitempty"`
-	Complement     *string `json:"complement,omitempty"`
-	Neighborhood   string  `validate:"required" json:"neighborhood,omitempty"`
-	City           string  `validate:"required" json:"city,omitempty"`
-	State          string  `validate:"required" json:"state,omitempty"`
-	Country        string  `validate:"required" json:"country,omitempty"`
+	ZipCode      string  `validate:"required" json:"zipCode,omitempty"`
+	Address      string  `validate:"required" json:"address,omitempty"`
+	Number       string  `validate:"required" json:"number,omitempty"`
+	Complement   *string `json:"complement,omitempty"`
+	Neighborhood string  `validate:"required" json:"neighborhood,omitempty"`
+	City         string  `validate:"required" json:"city,omitempty"`
+	State        string  `validate:"required" json:"state,omitempty"`
+	Country      string  `validate:"required" json:"country,omitempty"`
 }
 
 type BoletoAddress struct {
@@ -926,6 +926,49 @@ type CardPCIResponse struct {
 	CardNumber     string `json:"cardNumber"`
 	Cvv            string `json:"cvv"`
 	ExpirationDate string `json:"expirationDate"`
+}
+
+type CardTrackingResponse struct {
+	CreatedDate           time.Time             `json:"createdDate,omitempty"`
+	Name                  string                `json:"name,omitempty"`
+	Alias                 string                `json:"alias,omitempty"`
+	EstimatedDeliveryDate time.Time             `json:"estimatedDeliveryDate,omitempty"`
+	Function              string                `json:"function,omitempty"`
+	ExternalTracking      CardExternalTracking  `json:"externalTracking,omitempty"`
+	Address               []CardTrackingAddress `json:"address,omitempty"`
+	Status                []CardTrackingStatus  `json:"status,omitempty"`
+	Finalized             []Finalized           `json:"finalized,omitempty"`
+}
+
+type CardExternalTracking struct {
+	Code    string `json:"code,omitempty"`
+	Partner string `json:"partner,omitempty"`
+}
+
+type CardTrackingStatus struct {
+	CreatedDate time.Time `json:"createdDate,omitempty"`
+	Type        string    `json:"type,omitempty"`
+	Reason      string    `json:"reason,omitempty"`
+}
+
+type CardTrackingAddress struct {
+	ZipCode      string `json:"zipCode,omitempty"`
+	Address      string `json:"address,omitempty"`
+	Number       string `json:"number,omitempty"`
+	Neighborhood string `json:"neighborhood,omitempty"`
+	Complement   string `json:"complement,omitempty"`
+	City         string `json:"city,omitempty"`
+	State        string `json:"state,omitempty"`
+	Country      string `json:"country,omitempty"`
+	IsActive     bool   `json:"isActive,omitempty"`
+}
+
+type Finalized []struct {
+	CreatedDate      time.Time `json:"createdDate,omitempty"`
+	RecipientName    string    `json:"recipientName,omitempty"`
+	RecipientKinship string    `json:"recipientKinship,omitempty"`
+	DocumentNumber   string    `json:"documentNumber,omitempty"`
+	Attempts         int       `json:"attempts,omitempty"`
 }
 
 // ParseDocumentAnalysisResponse ....

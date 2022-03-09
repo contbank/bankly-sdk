@@ -2,10 +2,11 @@ package bankly_test
 
 import (
 	"context"
-	"github.com/contbank/grok"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/contbank/grok"
 
 	bankly "github.com/contbank/bankly-sdk"
 	"github.com/stretchr/testify/assert"
@@ -40,8 +41,8 @@ func (s *CardTestSuite) SetupTest() {
 	s.ctx = context.Background()
 
 	session, err := bankly.NewSession(bankly.Config{
-		ClientID : bankly.String(*bankly.GetEnvBanklyClientID()),
-		ClientSecret : bankly.String(*bankly.GetEnvBanklyClientSecret()),
+		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
+		ClientSecret: bankly.String(*bankly.GetEnvBanklyClientSecret()),
 	})
 	s.assert.NoError(err)
 
@@ -305,17 +306,33 @@ func (c *CardTestSuite) CancelCard(identifier string) {
 	}
 }
 
+func (c *CardTestSuite) TestGetTrackingByProxy_OK() {
+	proxy := "2229041000088256610"
+	tracking, err := c.card.GetTrackingByProxy(c.ctx, &proxy)
+
+	c.assert.NoError(err)
+	c.assert.NotEmpty(tracking)
+}
+
+func (c *CardTestSuite) TestGetTrackingByProxy_NOT_OK() {
+	proxy := "22290410000882566101"
+	tracking, err := c.card.GetTrackingByProxy(c.ctx, &proxy)
+
+	c.assert.Error(err)
+	c.assert.Nil(tracking)
+}
+
 // createCardModel ...
 func createCardModel(identifier, bankAccountNumber string, cardType bankly.CardType) bankly.CardCreateDTO {
-	return bankly.CardCreateDTO {
+	return bankly.CardCreateDTO{
 		CardData: bankly.CardCreateRequest{
-			DocumentNumber : grok.OnlyDigits(identifier),
-			CardName : grok.ToTitle("NOME DA PESSOA"),
-			Alias : grok.ToTitle("CONTBANK"),
-			BankAgency : "0001",
-			BankAccount : grok.OnlyLettersOrDigits(bankAccountNumber),
-			Password : "1234",
-			Address : *createCardAddressModel(),
+			DocumentNumber: grok.OnlyDigits(identifier),
+			CardName:       grok.ToTitle("NOME DA PESSOA"),
+			Alias:          grok.ToTitle("CONTBANK"),
+			BankAgency:     "0001",
+			BankAccount:    grok.OnlyLettersOrDigits(bankAccountNumber),
+			Password:       "1234",
+			Address:        *createCardAddressModel(),
 		},
 		CardType: cardType,
 	}
@@ -324,14 +341,14 @@ func createCardModel(identifier, bankAccountNumber string, cardType bankly.CardT
 // createCardAddressModel ...
 func createCardAddressModel() *bankly.CardAddress {
 	complement := "Apto 1231"
-	return &bankly.CardAddress {
-		ZipCode : "01307012",
-		Address : "Rua Dona Antônia de Queirós",
-		Number : "888",
-		Complement : &complement,
-		Neighborhood : "Consolação",
-		City : "São Paulo",
-		State : "SP",
-		Country : "BR",
+	return &bankly.CardAddress{
+		ZipCode:      "01307012",
+		Address:      "Rua Dona Antônia de Queirós",
+		Number:       "888",
+		Complement:   &complement,
+		Neighborhood: "Consolação",
+		City:         "São Paulo",
+		State:        "SP",
+		Country:      "BR",
 	}
 }
