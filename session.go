@@ -26,6 +26,7 @@ type Session struct {
 	ClientSecret  string
 	APIVersion    string
 	Cache         cache.Cache
+	Scope         string
 }
 
 //ServiceDeskConfig ...
