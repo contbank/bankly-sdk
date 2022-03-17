@@ -20,6 +20,10 @@ var errorCardList = []Error{
 		GrokError: ErrCardAlreadyActivated,
 	},
 	{
+		ErrorKey:  "CARD_SERVICE_UNAVAILABLE",
+		GrokError: ErrCardServiceUnavailable,
+	},
+	{
 		ErrorKey:  "INVALID_CARD_NAME_EMPTY",
 		GrokError: ErrInvalidCardName,
 	},
@@ -65,6 +69,8 @@ func verifyInvalidCardParameter(code string, messages []string) string {
 		return "INVALID_CARD_PASSWORD"
 	} else if code == "021" {
 		return "CARD_ALREADY_ACTIVATED"
+	} else if code == "300" {
+		return "CARD_SERVICE_UNAVAILABLE"
 	}
 	return code
 }

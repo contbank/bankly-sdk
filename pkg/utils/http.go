@@ -155,6 +155,8 @@ func handleResponse(resp *http.Response, fields logrus.Fields, handler ErrorHand
 		return resp, nil
 	case resp.StatusCode == http.StatusNotFound:
 		return nil, errors.ErrEntryNotFound
+	case resp.StatusCode == http.StatusForbidden:
+		return nil, errors.ErrCardServiceForbidden
 	}
 
 	if handler != nil {

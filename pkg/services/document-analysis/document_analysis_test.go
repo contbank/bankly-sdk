@@ -56,7 +56,7 @@ func (s *DocumentAnalysisTestSuite) TestSendDocumentAnalysis() {
 	docSide := models.DocumentSideFront
 	documentNumber := grok.GeneratorCPF()
 
-	imageFile, errFile := os.Open("test_images/contbank.png")
+	imageFile, errFile := os.Open("../../test_files/contbank.png")
 	s.assert.NoError(errFile)
 
 	request := models.DocumentAnalysisRequest{
@@ -240,7 +240,7 @@ func (s *DocumentAnalysisTestSuite) TestFindDocumentAnalysisError_INVALID_TOKEN(
 func (s *DocumentAnalysisTestSuite) createDocumentAnalysis(documentNumber string,
 	docType models.DocumentType, docSide models.DocumentSide) *models.DocumentAnalysisResponse {
 
-	imageFile, errFile := os.Open("test_images/contbank.png")
+	imageFile, errFile := os.Open("../../test_files/contbank.png")
 	s.assert.NoError(errFile)
 
 	request := models.DocumentAnalysisRequest{

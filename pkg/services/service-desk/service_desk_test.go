@@ -61,7 +61,7 @@ func (s *FreshDeskTestSuite) TestCreateTicket() {
 		CNPJ:        "48374325000160",
 		RazaoSocial: "NOME EMPRESA TEST",
 		Cellphone:   11911112222,
-		Attachments: []string{"go.sum"},
+		Attachments: []string{"../../test_files/contbank.png"},
 	}
 
 	res, err := s.service.CreateTicket(ctx, req)
