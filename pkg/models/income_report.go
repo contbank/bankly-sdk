@@ -1,4 +1,4 @@
-package models
+package bankly
 
 // IncomeReportRequest ...
 type IncomeReportRequest struct {

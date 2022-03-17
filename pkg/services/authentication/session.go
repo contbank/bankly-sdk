@@ -1,7 +1,7 @@
-package authentication
+package bankly
 
 import (
-	"github.com/contbank/bankly-sdk/pkg/errors"
+	errors "github.com/contbank/bankly-sdk/pkg/errors"
 	"os"
 	"time"
 

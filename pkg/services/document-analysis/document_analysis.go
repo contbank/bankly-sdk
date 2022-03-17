@@ -1,14 +1,14 @@
-package document_analysis
+package bankly
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/contbank/bankly-sdk/pkg/errors"
-	"github.com/contbank/bankly-sdk/pkg/models"
-	authentication2 "github.com/contbank/bankly-sdk/pkg/services/authentication"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	errors "github.com/contbank/bankly-sdk/pkg/errors"
+	models "github.com/contbank/bankly-sdk/pkg/models"
+	"github.com/contbank/bankly-sdk/pkg/services/authentication"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -25,17 +25,17 @@ import (
 
 // DocumentAnalysis ...
 type DocumentAnalysis struct {
-	session    authentication2.Session
+	session    bankly.Session
 	httpClient *http.Client
-	authentication *authentication2.Authentication
+	authentication *bankly.Authentication
 }
 
 // NewDocumentAnalysis ...
-func NewDocumentAnalysis(httpClient *http.Client, session authentication2.Session) *DocumentAnalysis {
+func NewDocumentAnalysis(httpClient *http.Client, session bankly.Session) *DocumentAnalysis {
 	return &DocumentAnalysis{
 		session:        session,
 		httpClient:     httpClient,
-		authentication: authentication2.NewAuthentication(httpClient, session),
+		authentication: bankly.NewAuthentication(httpClient, session),
 	}
 }
 
@@ -177,6 +177,8 @@ func (c *DocumentAnalysis) FindDocumentAnalysis(ctx context.Context, documentNum
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, errors.ErrEntryNotFound
+	} else if resp.StatusCode == http.StatusForbidden {
+		return nil, errors.ErrServiceForbidden
 	}
 
 	var bodyErr *errors.ErrorResponse

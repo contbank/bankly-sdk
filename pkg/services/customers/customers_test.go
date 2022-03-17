@@ -1,12 +1,12 @@
-package customers_test
+package bankly_test
 
 import (
 	"context"
-	"github.com/contbank/bankly-sdk/pkg/errors"
-	"github.com/contbank/bankly-sdk/pkg/models"
+	errors "github.com/contbank/bankly-sdk/pkg/errors"
+	models "github.com/contbank/bankly-sdk/pkg/models"
 	"github.com/contbank/bankly-sdk/pkg/services/authentication"
-	customers2 "github.com/contbank/bankly-sdk/pkg/services/customers"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	customers "github.com/contbank/bankly-sdk/pkg/services/customers"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -21,8 +21,8 @@ import (
 type CustomersTestSuite struct {
 	suite.Suite
 	assert    *assert.Assertions
-	session   *authentication.Session
-	customers *customers2.Customers
+	session   *bankly.Session
+	customers *customers.Customers
 }
 
 func TestCustomersTestSuite(t *testing.T) {
@@ -32,7 +32,7 @@ func TestCustomersTestSuite(t *testing.T) {
 func (s *CustomersTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 
-	session, err := authentication.NewSession(authentication.Config{
+	session, err := bankly.NewSession(bankly.Config{
 		ClientID :     utils.String(*utils.GetEnvBanklyClientID()),
 		ClientSecret : utils.String(*utils.GetEnvBanklyClientSecret()),
 	})
@@ -45,7 +45,7 @@ func (s *CustomersTestSuite) SetupTest() {
 	}
 
 	s.session = session
-	s.customers = customers2.NewCustomers(httpClient, *s.session)
+	s.customers = customers.NewCustomers(httpClient, *s.session)
 }
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"

@@ -1,12 +1,12 @@
-package balance
+package bankly
 
 import (
 	"context"
 	"encoding/json"
-	"github.com/contbank/bankly-sdk/pkg/errors"
-	"github.com/contbank/bankly-sdk/pkg/models"
-	authentication2 "github.com/contbank/bankly-sdk/pkg/services/authentication"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	errors "github.com/contbank/bankly-sdk/pkg/errors"
+	models "github.com/contbank/bankly-sdk/pkg/models"
+	"github.com/contbank/bankly-sdk/pkg/services/authentication"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -17,17 +17,17 @@ import (
 
 //Balance ...
 type Balance struct {
-	session        authentication2.Session
-	authentication *authentication2.Authentication
+	session        bankly.Session
+	authentication *bankly.Authentication
 	httpClient     *http.Client
 }
 
 //NewBalance ...
-func NewBalance(httpClient *http.Client, session authentication2.Session) *Balance {
+func NewBalance(httpClient *http.Client, session bankly.Session) *Balance {
 	return &Balance{
 		session:        session,
 		httpClient:     httpClient,
-		authentication: authentication2.NewAuthentication(httpClient, session),
+		authentication: bankly.NewAuthentication(httpClient, session),
 	}
 }
 

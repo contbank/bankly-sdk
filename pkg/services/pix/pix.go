@@ -1,11 +1,11 @@
-package pix
+package bankly
 
 import (
 	"context"
 	"encoding/json"
-	"github.com/contbank/bankly-sdk/pkg/errors"
-	"github.com/contbank/bankly-sdk/pkg/models"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	errors "github.com/contbank/bankly-sdk/pkg/errors"
+	models "github.com/contbank/bankly-sdk/pkg/models"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"io/ioutil"
 	"net/http"
 

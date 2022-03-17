@@ -1,4 +1,4 @@
-package transfers_test
+package bankly_test
 
 type AccountToTest struct {
 	BankCode string

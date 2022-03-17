@@ -1,11 +1,11 @@
-package bank_test
+package bankly_test
 
 import (
 	"context"
-	"github.com/contbank/bankly-sdk/pkg/models"
+	models "github.com/contbank/bankly-sdk/pkg/models"
 	"github.com/contbank/bankly-sdk/pkg/services/authentication"
-	"github.com/contbank/bankly-sdk/pkg/services/bank"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	bank "github.com/contbank/bankly-sdk/pkg/services/bank"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"net/http"
 	"testing"
 	"time"
@@ -18,7 +18,7 @@ type BankTestSuite struct {
 	suite.Suite
 	assert  *assert.Assertions
 	ctx     context.Context
-	session *authentication.Session
+	session *bankly.Session
 	bank    *bank.Bank
 }
 
@@ -30,7 +30,7 @@ func (s *BankTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 	s.ctx = context.Background()
 
-	session, err := authentication.NewSession(authentication.Config{
+	session, err := bankly.NewSession(bankly.Config{
 		ClientID :     utils.String(*utils.GetEnvBanklyClientID()),
 		ClientSecret : utils.String(*utils.GetEnvBanklyClientSecret()),
 	})
@@ -62,25 +62,28 @@ func (s *BankTestSuite) TestGetByID() {
 	s.assert.NotNil(bank)
 }
 */
-////this test is only returning the last id provided in the list
-// func (s *BankTestSuite) TestListFilterIDs() {
-// 	filter := &bankly.FilterBankListRequest{}
-// 	banks, err := s.bank.List(filter)
 
-// 	s.assert.NoError(err)
-// 	s.assert.NotEmpty(banks)
+/*
+//this test is only returning the last id provided in the list
+func (s *BankTestSuite) TestListFilterIDs() {
+	filter := &bankly.FilterBankListRequest{}
+	banks, err := s.bank.List(filter)
 
-// 	ids := make([]string, 2)
+	s.assert.NoError(err)
+	s.assert.NotEmpty(banks)
 
-// 	for i, b := range banks[:2] {
-// 		ids[i] = b.Code
-// 	}
+	ids := make([]string, 2)
 
-// 	filterID := &bankly.FilterBankListRequest{
-// 		IDs: ids,
-// 	}
-// 	filterBanks, err := s.bank.List(filterID)
+	for i, b := range banks[:2] {
+		ids[i] = b.Code
+	}
 
-// 	s.assert.NoError(err)
-// 	s.assert.Len(filterBanks, len(ids))
-// }
+	filterID := &bankly.FilterBankListRequest{
+		IDs: ids,
+	}
+	filterBanks, err := s.bank.List(filterID)
+
+	s.assert.NoError(err)
+	s.assert.Len(filterBanks, len(ids))
+}
+*/

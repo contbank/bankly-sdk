@@ -1,13 +1,13 @@
-package business
+package bankly
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/contbank/bankly-sdk/pkg/errors"
-	"github.com/contbank/bankly-sdk/pkg/models"
-	authentication2 "github.com/contbank/bankly-sdk/pkg/services/authentication"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	errors "github.com/contbank/bankly-sdk/pkg/errors"
+	models "github.com/contbank/bankly-sdk/pkg/models"
+	"github.com/contbank/bankly-sdk/pkg/services/authentication"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -20,17 +20,17 @@ import (
 
 //Business ...
 type Business struct {
-	session    authentication2.Session
+	session    bankly.Session
 	httpClient *http.Client
-	authentication *authentication2.Authentication
+	authentication *bankly.Authentication
 }
 
 //NewBusiness ...
-func NewBusiness(httpClient *http.Client, session authentication2.Session) *Business {
+func NewBusiness(httpClient *http.Client, session bankly.Session) *Business {
 	return &Business{
 		session:        session,
 		httpClient:     httpClient,
-		authentication: authentication2.NewAuthentication(httpClient, session),
+		authentication: bankly.NewAuthentication(httpClient, session),
 	}
 }
 
@@ -103,6 +103,8 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest models.Bu
 			WithFields(fields).
 			Error("internal server error - CreateBusiness")
 		return errors.ErrDefaultBusinessAccounts
+	} else if resp.StatusCode == http.StatusForbidden {
+		return errors.ErrServiceForbidden
 	}
 
 	var bodyErr *errors.ErrorResponse

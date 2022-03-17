@@ -1,11 +1,11 @@
-package authentication
+package bankly
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/contbank/bankly-sdk/pkg/errors"
-	"github.com/contbank/bankly-sdk/pkg/models"
+	errors "github.com/contbank/bankly-sdk/pkg/errors"
+	models "github.com/contbank/bankly-sdk/pkg/models"
 	"io/ioutil"
 	"net/http"
 	"net/url"

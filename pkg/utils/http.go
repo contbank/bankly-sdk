@@ -1,10 +1,10 @@
-package utils
+package bankly
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/contbank/bankly-sdk/pkg/errors"
+	errors "github.com/contbank/bankly-sdk/pkg/errors"
 	"github.com/contbank/bankly-sdk/pkg/services/authentication"
 
 	"io/ioutil"
@@ -25,16 +25,16 @@ const (
 )
 
 type BanklyHttpClient struct {
-	Session    	   authentication.Session
+	Session    	   bankly.Session
 	HttpClient     *http.Client
-	Authentication *authentication.Authentication
+	Authentication *bankly.Authentication
 	ErrorHandler   ErrorHandler
 }
 
 // NewBanklyHttpClient ...
-func NewBanklyHttpClient(session authentication.Session,
+func NewBanklyHttpClient(session bankly.Session,
 	httpClient *http.Client,
-	authentication *authentication.Authentication) *BanklyHttpClient {
+	authentication *bankly.Authentication) *BanklyHttpClient {
 	return &BanklyHttpClient{
 		Session:        session,
 		HttpClient:     httpClient,
@@ -156,7 +156,9 @@ func handleResponse(resp *http.Response, fields logrus.Fields, handler ErrorHand
 	case resp.StatusCode == http.StatusNotFound:
 		return nil, errors.ErrEntryNotFound
 	case resp.StatusCode == http.StatusForbidden:
-		return nil, errors.ErrCardServiceForbidden
+		return nil, errors.ErrServiceForbidden
+	case resp.StatusCode == http.StatusGatewayTimeout:
+		return nil, errors.ErrGatewayTimeout
 	}
 
 	if handler != nil {

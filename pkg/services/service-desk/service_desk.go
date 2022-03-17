@@ -1,4 +1,4 @@
-package service_desk
+package bankly
 
 import (
 	"bytes"
@@ -6,8 +6,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/contbank/bankly-sdk/pkg/errors"
-	"github.com/contbank/bankly-sdk/pkg/models"
+	errors "github.com/contbank/bankly-sdk/pkg/errors"
+	models "github.com/contbank/bankly-sdk/pkg/models"
 	"io"
 	"mime/multipart"
 	"net/http"

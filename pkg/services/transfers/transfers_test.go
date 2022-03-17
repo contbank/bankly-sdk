@@ -1,12 +1,12 @@
-package transfers_test
+package bankly_test
 
 import (
 	"context"
-	"github.com/contbank/bankly-sdk/pkg/models"
+	models "github.com/contbank/bankly-sdk/pkg/models"
 	"github.com/contbank/bankly-sdk/pkg/services/authentication"
-	"github.com/contbank/bankly-sdk/pkg/services/balance"
-	"github.com/contbank/bankly-sdk/pkg/services/transfers"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	balance "github.com/contbank/bankly-sdk/pkg/services/balance"
+	transfers "github.com/contbank/bankly-sdk/pkg/services/transfers"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"math"
 	"net/http"
 	"testing"
@@ -21,7 +21,7 @@ type TransfersTestSuite struct {
 	suite.Suite
 	ctx       context.Context
 	assert    *assert.Assertions
-	session   *authentication.Session
+	session   *bankly.Session
 	transfers *transfers.Transfers
 	balance   *balance.Balance
 }
@@ -34,7 +34,7 @@ func (s *TransfersTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 	s.ctx = context.Background()
 
-	session, err := authentication.NewSession(authentication.Config{
+	session, err := bankly.NewSession(bankly.Config{
 		ClientID :     utils.String(*utils.GetEnvBanklyClientID()),
 		ClientSecret : utils.String(*utils.GetEnvBanklyClientSecret()),
 	})
@@ -64,6 +64,9 @@ func (s *TransfersTestSuite) AfterTest() {
 }
 
 func (s *TransfersTestSuite) TestCreateInternalTransfer0() {
+	// TODO Mockar teste
+	s.T().Skip("O Bankly está retirando o valor do sender, mas não está creditando no recipient, gerando erro no teste. Mockar.")
+
 	s.createInternalTransferTestLogic(internalTransferAmount[0], *accountA(), *accountB())
 }
 

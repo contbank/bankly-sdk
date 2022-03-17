@@ -1,11 +1,11 @@
-package bank_statements_test
+package bankly_test
 
 import (
 	"context"
-	"github.com/contbank/bankly-sdk/pkg/models"
+	models "github.com/contbank/bankly-sdk/pkg/models"
 	"github.com/contbank/bankly-sdk/pkg/services/authentication"
-	"github.com/contbank/bankly-sdk/pkg/services/bank-statements"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	bankStatements "github.com/contbank/bankly-sdk/pkg/services/bank-statements"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"net/http"
 	"testing"
 	"time"
@@ -18,8 +18,8 @@ type BankStatementTestSuite struct {
 	suite.Suite
 	assert  *assert.Assertions
 	ctx     context.Context
-	session *authentication.Session
-	bank    *bank_statements.BankStatement
+	session *bankly.Session
+	bank    *bankStatements.BankStatement
 }
 
 func TestBankStatementTestSuite(t *testing.T) {
@@ -30,7 +30,7 @@ func (s *BankStatementTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 	s.ctx = context.Background()
 
-	session, err := authentication.NewSession(authentication.Config{
+	session, err := bankly.NewSession(bankly.Config{
 		ClientID :     utils.String(*utils.GetEnvBanklyClientID()),
 		ClientSecret : utils.String(*utils.GetEnvBanklyClientSecret()),
 	})
@@ -42,7 +42,7 @@ func (s *BankStatementTestSuite) SetupTest() {
 	}
 
 	s.session = session
-	s.bank = bank_statements.NewBankStatement(httpClient, *s.session)
+	s.bank = bankStatements.NewBankStatement(httpClient, *s.session)
 }
 
 func (s *BankStatementTestSuite) TestFilterBankStatements() {

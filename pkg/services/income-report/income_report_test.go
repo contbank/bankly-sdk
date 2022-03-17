@@ -1,11 +1,11 @@
-package income_report_test
+package bankly_test
 
 import (
 	"context"
-	"github.com/contbank/bankly-sdk/pkg/models"
+	models "github.com/contbank/bankly-sdk/pkg/models"
 	"github.com/contbank/bankly-sdk/pkg/services/authentication"
-	"github.com/contbank/bankly-sdk/pkg/services/income-report"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	incomeReport "github.com/contbank/bankly-sdk/pkg/services/income-report"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"net/http"
 	"testing"
 	"time"
@@ -18,8 +18,8 @@ type IncomeReportTestSuite struct {
 	suite.Suite
 	assert  		 *assert.Assertions
 	ctx     		 context.Context
-	session 		 *authentication.Session
-	bankIncomeReport *income_report.IncomeReport
+	session 		 *bankly.Session
+	bankIncomeReport *incomeReport.IncomeReport
 }
 
 func TestIncomeReportTestSuite(t *testing.T) {
@@ -30,7 +30,7 @@ func (s *IncomeReportTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 	s.ctx = context.Background()
 
-	session, err := authentication.NewSession(authentication.Config{
+	session, err := bankly.NewSession(bankly.Config{
 		ClientID :     utils.String(*utils.GetEnvBanklyClientID()),
 		ClientSecret : utils.String(*utils.GetEnvBanklyClientSecret()),
 	})
@@ -46,10 +46,10 @@ func (s *IncomeReportTestSuite) SetupTest() {
 	newHttpClient := utils.BanklyHttpClient{
 		Session:        *session,
 		HttpClient:     httpClient,
-		Authentication: authentication.NewAuthentication(httpClient, *session),
+		Authentication: bankly.NewAuthentication(httpClient, *session),
 	}
 
-	s.bankIncomeReport = income_report.NewIncomeReport(newHttpClient)
+	s.bankIncomeReport = incomeReport.NewIncomeReport(newHttpClient)
 }
 
 // TestIncomeReport_SUCCESS ...

@@ -1,9 +1,9 @@
-package payment_test
+package bankly_test
 
 import (
 	"github.com/contbank/bankly-sdk/pkg/services/authentication"
-	"github.com/contbank/bankly-sdk/pkg/services/payment"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	payment "github.com/contbank/bankly-sdk/pkg/services/payment"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"net/http"
 	"testing"
 	"time"
@@ -15,7 +15,7 @@ import (
 type PaymentTestSuite struct {
 	suite.Suite
 	assert  *assert.Assertions
-	session *authentication.Session
+	session *bankly.Session
 	payment *payment.Payment
 }
 
@@ -26,7 +26,7 @@ func TestPaymentTestSuite(t *testing.T) {
 func (s *PaymentTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 
-	session, err := authentication.NewSession(authentication.Config{
+	session, err := bankly.NewSession(bankly.Config{
 		ClientID :     utils.String(*utils.GetEnvBanklyClientID()),
 		ClientSecret : utils.String(*utils.GetEnvBanklyClientSecret()),
 	})

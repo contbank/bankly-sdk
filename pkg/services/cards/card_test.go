@@ -1,11 +1,11 @@
-package cards_test
+package bankly_test
 
 import (
 	"context"
-	"github.com/contbank/bankly-sdk/pkg/models"
+	models "github.com/contbank/bankly-sdk/pkg/models"
 	"github.com/contbank/bankly-sdk/pkg/services/authentication"
-	"github.com/contbank/bankly-sdk/pkg/services/cards"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	cards "github.com/contbank/bankly-sdk/pkg/services/cards"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"net/http"
 	"testing"
 	"time"
@@ -43,7 +43,7 @@ func (s *CardTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 	s.ctx = context.Background()
 
-	session, err := authentication.NewSession(authentication.Config{
+	session, err := bankly.NewSession(bankly.Config{
 		ClientID:     utils.String(*utils.GetEnvBanklyClientID()),
 		ClientSecret: utils.String(*utils.GetEnvBanklyClientSecret()),
 	})
@@ -56,7 +56,7 @@ func (s *CardTestSuite) SetupTest() {
 	newHttpClient := utils.BanklyHttpClient{
 		Session:        *session,
 		HttpClient:     httpClient,
-		Authentication: authentication.NewAuthentication(httpClient, *session),
+		Authentication: bankly.NewAuthentication(httpClient, *session),
 	}
 
 	s.card = cards.NewCard(newHttpClient)

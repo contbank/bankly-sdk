@@ -1,9 +1,9 @@
-package authentication_test
+package bankly_test
 
 import (
 	"context"
 	"github.com/contbank/bankly-sdk/pkg/services/authentication"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"net/http"
 	"testing"
 	"time"
@@ -16,8 +16,8 @@ type AuthenticationTestSuite struct {
 	suite.Suite
 	assert         *assert.Assertions
 	ctx            context.Context
-	session        *authentication.Session
-	authentication *authentication.Authentication
+	session        *bankly.Session
+	authentication *bankly.Authentication
 }
 
 func TestAuthenticationTestSuite(t *testing.T) {
@@ -28,7 +28,7 @@ func (s *AuthenticationTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 	s.ctx = context.Background()
 
-	session, err := authentication.NewSession(authentication.Config{
+	session, err := bankly.NewSession(bankly.Config{
 		ClientID:     utils.String(*utils.GetEnvBanklyClientID()),
 		ClientSecret: utils.String(*utils.GetEnvBanklyClientSecret()),
 	})
@@ -40,7 +40,7 @@ func (s *AuthenticationTestSuite) SetupTest() {
 	}
 
 	s.session = session
-	s.authentication = authentication.NewAuthentication(httpClient, *s.session)
+	s.authentication = bankly.NewAuthentication(httpClient, *s.session)
 }
 
 func (s *AuthenticationTestSuite) TestToken() {

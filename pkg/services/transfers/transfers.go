@@ -1,12 +1,12 @@
-package transfers
+package bankly
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/contbank/bankly-sdk/pkg/errors"
-	"github.com/contbank/bankly-sdk/pkg/models"
-	authentication2 "github.com/contbank/bankly-sdk/pkg/services/authentication"
+	errors "github.com/contbank/bankly-sdk/pkg/errors"
+	models "github.com/contbank/bankly-sdk/pkg/models"
+	"github.com/contbank/bankly-sdk/pkg/services/authentication"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -19,17 +19,17 @@ import (
 
 //Transfers ...
 type Transfers struct {
-	session    authentication2.Session
+	session    bankly.Session
 	httpClient *http.Client
-	authentication *authentication2.Authentication
+	authentication *bankly.Authentication
 }
 
 //NewTransfers ...
-func NewTransfers(httpClient *http.Client, session authentication2.Session) *Transfers {
+func NewTransfers(httpClient *http.Client, session bankly.Session) *Transfers {
 	return &Transfers{
 		session:        session,
 		httpClient:     httpClient,
-		authentication: authentication2.NewAuthentication(httpClient, session),
+		authentication: bankly.NewAuthentication(httpClient, session),
 	}
 }
 

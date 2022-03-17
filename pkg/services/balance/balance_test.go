@@ -1,10 +1,10 @@
-package balance_test
+package bankly_test
 
 import (
 	"context"
 	"github.com/contbank/bankly-sdk/pkg/services/authentication"
-	"github.com/contbank/bankly-sdk/pkg/services/balance"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	balance "github.com/contbank/bankly-sdk/pkg/services/balance"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"net/http"
 	"testing"
 	"time"
@@ -17,7 +17,7 @@ type BalanceTestSuite struct {
 	suite.Suite
 	ctx     context.Context
 	assert  *assert.Assertions
-	session *authentication.Session
+	session *bankly.Session
 	balance *balance.Balance
 }
 
@@ -29,7 +29,7 @@ func (s *BalanceTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 	s.ctx = context.Background()
 
-	session, err := authentication.NewSession(authentication.Config{
+	session, err := bankly.NewSession(bankly.Config{
 		ClientID :     utils.String(*utils.GetEnvBanklyClientID()),
 		ClientSecret : utils.String(*utils.GetEnvBanklyClientSecret()),
 	})

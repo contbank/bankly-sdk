@@ -1,7 +1,7 @@
-package service_desk
+package bankly
 
 import (
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"github.com/contbank/grok"
 	"os"
 )

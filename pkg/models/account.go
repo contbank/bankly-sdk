@@ -1,4 +1,4 @@
-package models
+package bankly
 
 import "time"
 

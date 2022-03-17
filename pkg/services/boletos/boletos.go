@@ -1,13 +1,13 @@
-package boletos
+package bankly
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/contbank/bankly-sdk/pkg/errors"
-	"github.com/contbank/bankly-sdk/pkg/models"
-	authentication2 "github.com/contbank/bankly-sdk/pkg/services/authentication"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	errors "github.com/contbank/bankly-sdk/pkg/errors"
+	models "github.com/contbank/bankly-sdk/pkg/models"
+	"github.com/contbank/bankly-sdk/pkg/services/authentication"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -21,17 +21,17 @@ import (
 
 // Boletos ...
 type Boletos struct {
-	session    authentication2.Session
+	session    bankly.Session
 	httpClient *http.Client
-	authentication *authentication2.Authentication
+	authentication *bankly.Authentication
 }
 
 // NewBoletos ...
-func NewBoletos(httpClient *http.Client, session authentication2.Session) *Boletos {
+func NewBoletos(httpClient *http.Client, session bankly.Session) *Boletos {
 	return &Boletos{
 		session:        session,
 		httpClient:     httpClient,
-		authentication: authentication2.NewAuthentication(httpClient, session),
+		authentication: bankly.NewAuthentication(httpClient, session),
 	}
 }
 

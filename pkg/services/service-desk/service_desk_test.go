@@ -1,12 +1,12 @@
-package service_desk_test
+package bankly_test
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/contbank/bankly-sdk/pkg/models"
-	"github.com/contbank/bankly-sdk/pkg/services/service-desk"
-	"github.com/contbank/bankly-sdk/pkg/utils"
+	models "github.com/contbank/bankly-sdk/pkg/models"
+	serviceDesk "github.com/contbank/bankly-sdk/pkg/services/service-desk"
+	utils "github.com/contbank/bankly-sdk/pkg/utils"
 	"math/rand"
 	"net/http"
 	"testing"
@@ -21,7 +21,7 @@ type FreshDeskTestSuite struct {
 	suite.Suite
 	assert   *assert.Assertions
 	httpMock *grok.HTTPClientMock
-	service  *service_desk.ServiceDesk
+	service  *serviceDesk.ServiceDesk
 }
 
 func TestFreshDeskTestSuite(t *testing.T) {
@@ -31,7 +31,7 @@ func TestFreshDeskTestSuite(t *testing.T) {
 func (s *FreshDeskTestSuite) SetupSuite() {
 	s.assert = assert.New(s.T())
 
-	session, err := service_desk.NewServiceDeskSession(service_desk.ServiceDeskConfig{
+	session, err := serviceDesk.NewServiceDeskSession(serviceDesk.ServiceDeskConfig{
 		APIEndpoint: utils.String(""),
 		APIKey:      utils.String(""),
 	})
@@ -39,7 +39,7 @@ func (s *FreshDeskTestSuite) SetupSuite() {
 	s.assert.NoError(err)
 
 	s.httpMock = grok.NewHTTPClientMock()
-	s.service = service_desk.NewServiceDesk(s.httpMock.Client(), session)
+	s.service = serviceDesk.NewServiceDesk(s.httpMock.Client(), session)
 }
 
 func (s *FreshDeskTestSuite) TestCreateTicket() {
@@ -48,16 +48,16 @@ func (s *FreshDeskTestSuite) TestCreateTicket() {
 	s.setupCreateTicket(randomNumber())
 
 	req := &models.CreateTicketRequest{
-		GroupID:     service_desk.DefaultGroupID,
-		ProductID:   service_desk.DefaultProductID,
-		Type:        service_desk.DefaultTicketType,
-		Priority:    service_desk.DefaultPriority,
-		Status:      service_desk.OpenStatus,
+		GroupID:     serviceDesk.DefaultGroupID,
+		ProductID:   serviceDesk.DefaultProductID,
+		Type:        serviceDesk.DefaultTicketType,
+		Priority:    serviceDesk.DefaultPriority,
+		Status:      serviceDesk.OpenStatus,
 		Subject:     "API TEST",
 		Email:       "email@contbank.com",
-		CompanyKey:  service_desk.CompanyKey,
-		Request:     service_desk.DefaultTicketRequest,
-		Request2:    service_desk.SAAccountType,
+		CompanyKey:  serviceDesk.CompanyKey,
+		Request:     serviceDesk.DefaultTicketRequest,
+		Request2:    serviceDesk.SAAccountType,
 		CNPJ:        "48374325000160",
 		RazaoSocial: "NOME EMPRESA TEST",
 		Cellphone:   11911112222,
