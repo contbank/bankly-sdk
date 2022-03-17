@@ -29,8 +29,9 @@ func (s *BankStatementTestSuite) SetupTest() {
 	s.ctx = context.Background()
 
 	session, err := bankly.NewSession(bankly.Config{
-		ClientID : bankly.String(*bankly.GetEnvBanklyClientID()),
-		ClientSecret : bankly.String(*bankly.GetEnvBanklyClientSecret()),
+		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
+		ClientSecret: bankly.String(*bankly.GetEnvBanklyClientSecret()),
+		Scopes:       bankly.String("events.read"),
 	})
 
 	s.assert.NoError(err)

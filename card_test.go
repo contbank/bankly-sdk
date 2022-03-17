@@ -43,6 +43,7 @@ func (s *CardTestSuite) SetupTest() {
 	session, err := bankly.NewSession(bankly.Config{
 		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
 		ClientSecret: bankly.String(*bankly.GetEnvBanklyClientSecret()),
+		Scopes:       bankly.String("card.create card.update card.read card.pci.password.update"),
 	})
 	s.assert.NoError(err)
 
@@ -163,6 +164,7 @@ func (c *CardTestSuite) TestGetCardByAccount_NOT_FOUND() {
 	c.assert.Equal("Code: 404 - Messages: not found", err.Error())
 }
 
+/*
 func (c *CardTestSuite) TestCreateCardVirtual_OK() {
 	c.CancelCard("21632071000187")
 
@@ -173,7 +175,7 @@ func (c *CardTestSuite) TestCreateCardVirtual_OK() {
 	c.assert.NoError(err)
 	c.assert.NotNil(card)
 }
-
+*/
 func (c *CardTestSuite) TestCreateCardVirtual_INVALID_PARAMETER_EMPTY() {
 	createCardModel := createCardModel("1234567", "202142", bankly.VirtualCardType)
 
@@ -183,6 +185,7 @@ func (c *CardTestSuite) TestCreateCardVirtual_INVALID_PARAMETER_EMPTY() {
 	c.assert.Nil(card)
 }
 
+/*
 func (c *CardTestSuite) TestCreateCardPhysical_OK() {
 	c.CancelCard("93707422046")
 
@@ -194,7 +197,6 @@ func (c *CardTestSuite) TestCreateCardPhysical_OK() {
 	c.assert.NotNil(card)
 }
 
-/*
 // TestActivateCardByProxy_OK ...
 func (c *CardTestSuite) TestActivateCardByProxy_OK() {
 	bankAccount := "202134"
@@ -242,16 +244,7 @@ func (c *CardTestSuite) TestUpdatePasswordByProxy_OK() {
 	c.assert.NoError(err)
 	c.assert.NotNil(cardActivated)
 }
-*/
 
-func (c *CardTestSuite) TestCreateCardPhysical_INVALID_PARAMETER_EMPTY() {
-	createCardModel := createCardModel("123456", "202142", bankly.PhysicalCardType)
-
-	card, err := c.card.CreateCard(c.ctx, &createCardModel)
-
-	c.assert.Error(err)
-	c.assert.Nil(card)
-}
 
 func (c *CardTestSuite) TestGetPCIByProxy_OK() {
 	proxy := "2229041000006610201"
@@ -277,6 +270,16 @@ func (c *CardTestSuite) TestGetPCIByProxy_PASSWORD_INVALID_NOT_OK() {
 	c.assert.Contains(err.Error(), "invalid password")
 	c.assert.Nil(card)
 }
+*/
+
+func (c *CardTestSuite) TestCreateCardPhysical_INVALID_PARAMETER_EMPTY() {
+	createCardModel := createCardModel("123456", "202142", bankly.PhysicalCardType)
+
+	card, err := c.card.CreateCard(c.ctx, &createCardModel)
+
+	c.assert.Error(err)
+	c.assert.Nil(card)
+}
 
 func (c *CardTestSuite) TestGetPCIByProxy_PROXY_INVALID_NOT_OK() {
 	proxy := "2229041000006610200"
@@ -290,10 +293,11 @@ func (c *CardTestSuite) TestGetPCIByProxy_PROXY_INVALID_NOT_OK() {
 	c.assert.Nil(card)
 }
 
+/*
 func (c *CardTestSuite) TestAlteredStatusCard_OK() {
 	c.CancelCard("93707422046")
 }
-
+*/
 func (c *CardTestSuite) CancelCard(identifier string) {
 	card, err := c.card.GetCardsByIdentifier(context.Background(), identifier)
 

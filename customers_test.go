@@ -29,8 +29,9 @@ func (s *CustomersTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 
 	session, err := bankly.NewSession(bankly.Config{
-		ClientID : bankly.String(*bankly.GetEnvBanklyClientID()),
-		ClientSecret : bankly.String(*bankly.GetEnvBanklyClientSecret()),
+		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
+		ClientSecret: bankly.String(*bankly.GetEnvBanklyClientSecret()),
+		Scopes:       bankly.String("customer.write customer.read customer.cancel account.read account.create account.close"),
 	})
 
 	s.assert.NoError(err)

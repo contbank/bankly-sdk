@@ -40,7 +40,10 @@ func (a *Authentication) login(ctx context.Context) (*AuthenticationResponse, er
 		"grant_type":    {"client_credentials"},
 		"client_id":     {a.session.ClientID},
 		"client_secret": {a.session.ClientSecret},
-		"scope":         {a.session.Scope},
+	}
+
+	if len(a.session.Scopes) > 0 {
+		formData.Add("scope", a.session.Scopes)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, strings.NewReader(formData.Encode()))
