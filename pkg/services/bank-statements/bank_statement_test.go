@@ -66,6 +66,30 @@ func (s *BankStatementTestSuite) TestFilterBankStatements() {
 	s.assert.NotEmpty(r)
 }
 
+func (s *BankStatementTestSuite) TestFilterBankStatements_ActiveStatus() {
+	// TODO corrigir este teste. Pode ser que não tenha esta conta.
+	s.T().Skip("Criar a conta e depois dar um filter.")
+
+	endTime := time.Now().Add(-24 * time.Hour)
+	req := &models.FilterBankStatementRequest{
+		Branch:         "0001",
+		Account:        "184039",
+		Page:           1,
+		PageSize:       1,
+		IncludeDetails: true,
+		EndDateTime:    &endTime,
+		CardProxy:      []string{"123", "456"},
+	}
+
+	status := models.Active
+	req.Status = &status
+
+	r, err := s.bank.FilterBankStatements(s.ctx, req)
+
+	s.assert.NoError(err)
+	s.assert.NotEmpty(r)
+}
+
 func (s *BankStatementTestSuite) TestFilterBankStatements_InvalidPageSizeError() {
 	endTime := time.Now().Add(-24 * time.Hour)
 	req := &models.FilterBankStatementRequest{
