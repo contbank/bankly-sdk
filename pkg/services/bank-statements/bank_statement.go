@@ -20,8 +20,8 @@ import (
 
 //BankStatement ...
 type BankStatement struct {
-	session    bankly.Session
-	httpClient *http.Client
+	session        bankly.Session
+	httpClient     *http.Client
 	authentication *bankly.Authentication
 }
 
@@ -39,8 +39,8 @@ func (c *BankStatement) FilterBankStatements(ctx context.Context,
 	model *models.FilterBankStatementRequest) ([]*models.Statement, error) {
 
 	fields := logrus.Fields{
-		"request_id" : utils.GetRequestID(ctx),
-		"object" : model,
+		"request_id": utils.GetRequestID(ctx),
+		"object":     model,
 	}
 
 	// validator

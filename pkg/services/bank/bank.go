@@ -18,8 +18,8 @@ import (
 
 // Bank ...
 type Bank struct {
-	session    bankly.Session
-	httpClient *http.Client
+	session        bankly.Session
+	httpClient     *http.Client
 	authentication *bankly.Authentication
 }
 
@@ -36,7 +36,7 @@ func NewBank(httpClient *http.Client, session bankly.Session) *Bank {
 func (c *Bank) GetByID(ctx context.Context, id string) (*models.BankDataResponse, error) {
 
 	fields := logrus.Fields{
-		"bank_id" : id,
+		"bank_id":    id,
 		"request_id": utils.GetRequestID(ctx),
 	}
 

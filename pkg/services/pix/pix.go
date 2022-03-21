@@ -132,7 +132,7 @@ func (p *Pix) GetCashOutByAuthenticationCode(ctx context.Context, accountNumber 
 	authenticationCode string) (*models.PixCashOutByAuthenticationCodeResponse, error) {
 
 	fields := logrus.Fields{
-		"request_id" : utils.GetRequestID(ctx),
+		"request_id":          utils.GetRequestID(ctx),
 		"authentication_code": authenticationCode,
 	}
 

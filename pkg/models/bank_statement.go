@@ -29,7 +29,7 @@ type Statement struct {
 	Name           string                 `json:"name,omitempty"`
 	Timestamp      time.Time              `json:"timestamp,omitempty"`
 	Data           map[string]interface{} `json:"data,omitempty"`
-	Status		   EventStatus			  `json:"status,omitempty"`
+	Status         EventStatus            `json:"status,omitempty"`
 }
 
 // FilterBankStatementRequest ...

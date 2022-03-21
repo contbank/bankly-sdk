@@ -16,9 +16,9 @@ import (
 
 type IncomeReportTestSuite struct {
 	suite.Suite
-	assert  		 *assert.Assertions
-	ctx     		 context.Context
-	session 		 *bankly.Session
+	assert           *assert.Assertions
+	ctx              context.Context
+	session          *bankly.Session
 	bankIncomeReport *incomeReport.IncomeReport
 }
 

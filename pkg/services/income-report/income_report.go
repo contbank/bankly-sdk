@@ -30,7 +30,7 @@ func (c *IncomeReport) GetIncomeReport(ctx context.Context,
 
 	fields := logrus.Fields{
 		"request_id": utils.GetRequestID(ctx),
-		"object" : model,
+		"object":     model,
 	}
 
 	// model validator

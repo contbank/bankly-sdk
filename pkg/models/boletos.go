@@ -83,14 +83,14 @@ type BoletoDetailedResponse struct {
 	Document           string           `json:"documentNumber,omitempty"`
 	DueDate            time.Time        `json:"dueDate,omitempty"`
 	EmissionFee        bool             `json:"emissionFee,omitempty"`
-	OurNumber       string           `json:"ourNumber,omitempty"`
-	Type            BoletoType       `json:"type,omitempty"`
-	Amount          *BoletoAmount    `json:"amount,omitempty"`
-	Account         *Account         `json:"account,omitempty"`
-	Payer           *Payer           `json:"payer,omitempty"`
-	RecipientFinal  *Payer           `json:"recipientFinal,omitempty"`
-	RecipientOrigin *Payer           `json:"recipientOrigin,omitempty"`
-	Payments        []*BoletoPayment `json:"payments,omitempty"`
+	OurNumber          string           `json:"ourNumber,omitempty"`
+	Type               BoletoType       `json:"type,omitempty"`
+	Amount             *BoletoAmount    `json:"amount,omitempty"`
+	Account            *Account         `json:"account,omitempty"`
+	Payer              *Payer           `json:"payer,omitempty"`
+	RecipientFinal     *Payer           `json:"recipientFinal,omitempty"`
+	RecipientOrigin    *Payer           `json:"recipientOrigin,omitempty"`
+	Payments           []*BoletoPayment `json:"payments,omitempty"`
 
 	// API is returning error for this field
 	// EmissionDate time.Time `json:"emissionDate,omitempty"`

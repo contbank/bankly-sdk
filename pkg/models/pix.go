@@ -142,12 +142,12 @@ type PixCashOutByAuthenticationCodeResponse struct {
 	AuthenticationCode string                      `json:"authenticationCode"`
 	InitializationType string                      `json:"initializationType"`
 	Amount             float64                     `json:"amount"`
-	CorrelationID string                      `json:"correlationId"`
-	Sender        PixCashOutSenderResponse    `json:"sender"`
-	Recipient     PixCashOutRecipientResponse `json:"recipient"`
-	Channel string          `json:"channel"`
-	Status  TransfersStatus `json:"status"`
-	Type    string          `json:"type"`
+	CorrelationID      string                      `json:"correlationId"`
+	Sender             PixCashOutSenderResponse    `json:"sender"`
+	Recipient          PixCashOutRecipientResponse `json:"recipient"`
+	Channel            string                      `json:"channel"`
+	Status             TransfersStatus             `json:"status"`
+	Type               string                      `json:"type"`
 	CreatedAt          time.Time                   `json:"createdAt"`
 	UpdatedAt          time.Time                   `json:"updatedAt"`
 }

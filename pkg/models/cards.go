@@ -131,8 +131,8 @@ type CardCreateRequest struct {
 	BankAgency     string      `json:"bankAgency"`
 	BankAccount    string      `json:"bankAccount"`
 	ProgramId      int16       `json:"programId,omitempty"`
-	Password string      `json:"password"`
-	Address  CardAddress `json:"address"`
+	Password       string      `json:"password"`
+	Address        CardAddress `json:"address"`
 }
 
 type CardCreateResponse struct {
@@ -185,11 +185,11 @@ type CardTrackingResponse struct {
 	Name                  string                `json:"name,omitempty"`
 	Alias                 string                `json:"alias,omitempty"`
 	EstimatedDeliveryDate time.Time             `json:"estimatedDeliveryDate,omitempty"`
-	Function         string                `json:"function,omitempty"`
-	ExternalTracking CardExternalTracking  `json:"externalTracking,omitempty"`
-	Address          []CardTrackingAddress `json:"address,omitempty"`
-	Status           []CardTrackingStatus  `json:"status,omitempty"`
-	Finalized        []Finalized           `json:"finalized,omitempty"`
+	Function              string                `json:"function,omitempty"`
+	ExternalTracking      CardExternalTracking  `json:"externalTracking,omitempty"`
+	Address               []CardTrackingAddress `json:"address,omitempty"`
+	Status                []CardTrackingStatus  `json:"status,omitempty"`
+	Finalized             []Finalized           `json:"finalized,omitempty"`
 }
 
 // CardExternalTracking ...

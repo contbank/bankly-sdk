@@ -104,14 +104,14 @@ type TransferByCodeResponse struct {
 	CompanyKey         string             `json:"companyKey"`
 	AuthenticationCode string             `json:"authenticationCode"`
 	Amount             float64            `json:"amount"`
-	CorrelationId 	   string             `json:"correlationId"`
-	Sender        	   *SenderResponse    `json:"sender"`
-	Recipient     	   *RecipientResponse `json:"recipient"`
-	Channel       	   string             `json:"channel"`
+	CorrelationId      string             `json:"correlationId"`
+	Sender             *SenderResponse    `json:"sender"`
+	Recipient          *RecipientResponse `json:"recipient"`
+	Channel            string             `json:"channel"`
 	Operation          string             `json:"operation"`
-	Identifier    	   string             `json:"identifier"`
-	Status        	   TransfersStatus    `json:"status"`
-	CreatedAt     	   time.Time          `json:"createdAt"`
+	Identifier         string             `json:"identifier"`
+	Status             TransfersStatus    `json:"status"`
+	CreatedAt          time.Time          `json:"createdAt"`
 	UpdatedAt          time.Time          `json:"updatedAt"`
 }
 
@@ -119,9 +119,9 @@ type TransferByCodeResponse struct {
 type AccountResponse struct {
 	Balance *BalanceRespone `json:"balance,omitempty"`
 	Status  string          `json:"status,omitempty"`
-	Branch  string 					`json:"branch,omitempty"`
-	Number  string    `json:"number,omitempty"`
-	Bank    *BankData `json:"bank,omitempty"`
+	Branch  string          `json:"branch,omitempty"`
+	Number  string          `json:"number,omitempty"`
+	Bank    *BankData       `json:"bank,omitempty"`
 }
 
 // SenderResponse ...

@@ -19,8 +19,8 @@ import (
 
 //Customers ...
 type Customers struct {
-	session    bankly.Session
-	httpClient *http.Client
+	session        bankly.Session
+	httpClient     *http.Client
 	authentication *bankly.Authentication
 }
 

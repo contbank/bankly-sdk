@@ -19,8 +19,8 @@ import (
 
 //Transfers ...
 type Transfers struct {
-	session    bankly.Session
-	httpClient *http.Client
+	session        bankly.Session
+	httpClient     *http.Client
 	authentication *bankly.Authentication
 }
 

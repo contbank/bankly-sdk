@@ -41,8 +41,8 @@ type BusinessRequest struct {
 
 // BusinessUpdateRequest ...
 type BusinessUpdateRequest struct {
-	BusinessName        string `validate:"required" json:"businessName,omitempty"`
-	TradingName         string `json:"tradingName,omitempty"`
+	BusinessName        string               `validate:"required" json:"businessName,omitempty"`
+	TradingName         string               `json:"tradingName,omitempty"`
 	BusinessEmail       string               `json:"businessEmail,omitempty"`
 	BusinessType        BusinessType         `validate:"required" json:"businessType"`
 	BusinessSize        BusinessSize         `validate:"required" json:"businessSize"`
@@ -52,16 +52,16 @@ type BusinessUpdateRequest struct {
 
 // BusinessResponse ...
 type BusinessResponse struct {
-	ResultLevel  ResultLevel  `json:"resultLevel,omitempty"`
-	Document     string       `json:"documentNumber,omitempty"`
+	ResultLevel   ResultLevel  `json:"resultLevel,omitempty"`
+	Document      string       `json:"documentNumber,omitempty"`
 	BusinessName  string       `json:"businessName,omitempty"`
 	TradingName   string       `json:"tradingName,omitempty"`
 	BusinessEmail string       `json:"businessEmail,omitempty"`
 	Status        string       `json:"status,omitempty"`
-	Reasons      []string     `json:"reasons,omitempty"`
-	BusinessType BusinessType `json:"businessType"`
-	BusinessSize BusinessSize `json:"businessSize"`
-	CreatedAt    time.Time    `json:"createdAt"`
+	Reasons       []string     `json:"reasons,omitempty"`
+	BusinessType  BusinessType `json:"businessType"`
+	BusinessSize  BusinessSize `json:"businessSize"`
+	CreatedAt     time.Time    `json:"createdAt"`
 	UpdatedAt     time.Time    `json:"updatedAt"`
 }
 

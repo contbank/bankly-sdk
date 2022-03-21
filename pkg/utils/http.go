@@ -25,7 +25,7 @@ const (
 )
 
 type BanklyHttpClient struct {
-	Session    	   bankly.Session
+	Session        bankly.Session
 	HttpClient     *http.Client
 	Authentication *bankly.Authentication
 	ErrorHandler   ErrorHandler

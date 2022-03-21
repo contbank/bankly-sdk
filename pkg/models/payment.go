@@ -86,9 +86,9 @@ type PaymentResponse struct {
 	RecipientName      string     `json:"recipientName,omitempty"`
 	Amount             float64    `json:"amount,omitempty"`
 	OriginalAmount     float64    `json:"originalAmount,omitempty"`
-	Assignor           string    `json:"assignor,omitempty"`
-	Charges            *Charges  `json:"charges,omitempty"`
-	SettleDate         time.Time `json:"settleDate,omitempty"`
+	Assignor           string     `json:"assignor,omitempty"`
+	Charges            *Charges   `json:"charges,omitempty"`
+	SettleDate         time.Time  `json:"settleDate,omitempty"`
 	PaymentDate        time.Time  `json:"paymentDate,omitempty"`
 	ConfirmedAt        time.Time  `json:"confirmedAt,omitempty"`
 	DueDate            *time.Time `json:"dueDate,omitempty"`

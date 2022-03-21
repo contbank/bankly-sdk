@@ -151,8 +151,8 @@ type Emotions struct {
 }
 
 type DocumentDetails struct {
-	Status                 			DetailsStatus `json:"status,omitempty"`
-	IdentifiedDocumentType 			string        `json:"identifiedDocumentType,omitempty"`
+	Status                          DetailsStatus `json:"status,omitempty"`
+	IdentifiedDocumentType          string        `json:"identifiedDocumentType,omitempty"`
 	IdNumber                        string        `json:"idNumber,omitempty"`
 	CpfNumber                       string        `json:"cpfNumber,omitempty"`
 	BirthDate                       string        `json:"birthDate,omitempty"`
