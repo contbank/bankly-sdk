@@ -31,8 +31,9 @@ func (s *IncomeReportTestSuite) SetupTest() {
 	s.ctx = context.Background()
 
 	session, err := bankly.NewSession(bankly.Config{
-		ClientID :     utils.String(*utils.GetEnvBanklyClientID()),
-		ClientSecret : utils.String(*utils.GetEnvBanklyClientSecret()),
+		ClientID:     bankly.String(*utils.GetEnvBanklyClientID()),
+		ClientSecret: bankly.String(*utils.GetEnvBanklyClientSecret()),
+		Scopes:       bankly.String("income.report.read"),
 	})
 
 	s.assert.NoError(err)
@@ -57,7 +58,7 @@ func (s *IncomeReportTestSuite) TestIncomeReport_SUCCESS() {
 	report, err := s.bankIncomeReport.GetIncomeReport(s.ctx,
 		&models.IncomeReportRequest{
 			Account: "184152",
-			Year: "2021",
+			Year:    "2021",
 		})
 
 	s.assert.NoError(err)
@@ -71,7 +72,7 @@ func (s *IncomeReportTestSuite) TestIncomeReport_INVALID_ACCOUNT_NUMBER() {
 	report, err := s.bankIncomeReport.GetIncomeReport(s.ctx,
 		&models.IncomeReportRequest{
 			Account: "100000",
-			Year: "2021",
+			Year:    "2021",
 		})
 
 	s.assert.Error(err)

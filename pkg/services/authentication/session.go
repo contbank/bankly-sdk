@@ -16,6 +16,7 @@ type Config struct {
 	ClientID      *string `validate:"required"`
 	ClientSecret  *string `validate:"required"`
 	APIVersion    *string
+	Scopes        *string
 	Cache         *cache.Cache
 }
 
@@ -27,7 +28,7 @@ type Session struct {
 	ClientSecret  string
 	APIVersion    string
 	Cache         cache.Cache
-	Scope         string
+	Scopes        string
 }
 
 // NewSession ...
@@ -66,6 +67,10 @@ func NewSession(config Config) (*Session, error) {
 		config.Cache = cache.New(10*time.Minute, 1*time.Second)
 	}
 
+	if config.Scopes == nil {
+		config.Scopes = String("")
+	}
+
 	var session = &Session{
 		LoginEndpoint: *config.LoginEndpoint,
 		APIEndpoint:   *config.APIEndpoint,
@@ -73,6 +78,7 @@ func NewSession(config Config) (*Session, error) {
 		ClientSecret:  *config.ClientSecret,
 		APIVersion:    *config.APIVersion,
 		Cache:         *config.Cache,
+		Scopes:        *config.Scopes,
 	}
 
 	return session, nil

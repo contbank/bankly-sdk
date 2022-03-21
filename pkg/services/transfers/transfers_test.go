@@ -35,8 +35,9 @@ func (s *TransfersTestSuite) SetupTest() {
 	s.ctx = context.Background()
 
 	session, err := bankly.NewSession(bankly.Config{
-		ClientID :     utils.String(*utils.GetEnvBanklyClientID()),
-		ClientSecret : utils.String(*utils.GetEnvBanklyClientSecret()),
+		ClientID:     bankly.String(*utils.GetEnvBanklyClientID()),
+		ClientSecret: bankly.String(*utils.GetEnvBanklyClientSecret()),
+		Scopes:       bankly.String("ted.cashout.create ted.cashout.read account.read"),
 	})
 
 	s.assert.NoError(err)

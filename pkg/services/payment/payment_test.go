@@ -27,8 +27,9 @@ func (s *PaymentTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 
 	session, err := bankly.NewSession(bankly.Config{
-		ClientID :     utils.String(*utils.GetEnvBanklyClientID()),
-		ClientSecret : utils.String(*utils.GetEnvBanklyClientSecret()),
+		ClientID:     bankly.String(*utils.GetEnvBanklyClientID()),
+		ClientSecret: bankly.String(*utils.GetEnvBanklyClientSecret()),
+		Scopes:       bankly.String("account.read payment.validate payment.confirm payment.read"),
 	})
 
 	s.assert.NoError(err)

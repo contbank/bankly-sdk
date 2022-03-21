@@ -36,8 +36,9 @@ func (s *DocumentAnalysisTestSuite) SetupTest() {
 	s.ctx = context.Background()
 
 	session, err := bankly.NewSession(bankly.Config{
-		ClientID :     utils.String(*utils.GetEnvBanklyClientID()),
-		ClientSecret : utils.String(*utils.GetEnvBanklyClientSecret()),
+		ClientID:     bankly.String(*utils.GetEnvBanklyClientID()),
+		ClientSecret: bankly.String(*utils.GetEnvBanklyClientSecret()),
+		Scopes:       bankly.String("kyc.document.write kyc.document.read"),
 	})
 
 	s.assert.NoError(err)
