@@ -46,7 +46,11 @@ func (s *PixTestSuite) SetupTest() {
 	s.pix = bankly.NewPix(newHttpClient)
 }
 
+// TestGetAddresskey_OK ...
 func (c *PixTestSuite) TestGetAddresskey_OK() {
+	// TODO Mockar teste
+	c.T().Skip("Bankly está retornando erro 504 gateway timeout. Mockar este teste.")
+
 	key := "16246241620"
 	currentIdentity := "36183588814"
 	response, err := c.pix.GetAddresskey(context.Background(), key, currentIdentity)
@@ -54,9 +58,12 @@ func (c *PixTestSuite) TestGetAddresskey_OK() {
 	c.assert.NotNil(response)
 }
 
+// TestQrCodeDecode_OK ...
 func (c *PixTestSuite) TestQrCodeDecode_OK() {
-	currentIdentity := "36183588814"
+	// TODO Mockar teste
+	c.T().Skip("Bankly está retornando erro 504 gateway timeout. Mockar este teste.")
 
+	currentIdentity := "36183588814"
 	response, err := c.pix.QrCodeDecode(context.Background(), &bankly.PixQrCodeDecodeRequest{
 		EncodedValue: "MDAwMjAxMjYzMzAwMTRici5nb3YuYmNiLnBpeDAxMTEzNjE4MzU4ODgxNDUyMDQwMDAwNTMwMzk4NjU0MDUxMC4wMDU4MDJCUjU5MTlHdWlsaGVybWUgR29uY2FsdmVzNjAwOVNhbyBQYXVsbzYxMDgwMzUwMzAzMDYyMTQwNTEwMjMxMzEyMzEyMzYzMDQyRjU1",
 	}, currentIdentity)
