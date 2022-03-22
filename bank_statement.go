@@ -3,6 +3,7 @@ package bankly
 import (
 	"context"
 	"encoding/json"
+	"github.com/thoas/go-funk"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -119,6 +120,18 @@ func (c *BankStatement) FilterBankStatements(ctx context.Context, model *FilterB
 				WithFields(fields).
 				Error("error decoding json response")
 			return nil, ErrDefaultBankStatements
+		}
+
+		// event status filter
+		if model.Status != nil {
+			filtered := []*Statement{}
+			funk.ForEach(response, func(stt *Statement) {
+				if model.Status != nil && stt.Status == *model.Status {
+					filtered = append(filtered, stt)
+				}
+			})
+			response = filtered
+			logrus.WithFields(fields).Info("bank statements status filtered")
 		}
 
 		return response, nil

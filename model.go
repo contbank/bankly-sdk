@@ -637,6 +637,15 @@ type RecipientResponse struct {
 	Account  *AccountResponse `json:"account,omitempty"`
 }
 
+type EventStatus string
+
+const (
+	// Active sucesso. evento realizado.
+	Active EventStatus = "ACTIVE"
+	// Canceled erro. evento não realizado por algum motivo.
+	Canceled EventStatus = "CANCELED"
+)
+
 // Statement ...
 type Statement struct {
 	AggregateID    string                 `json:"aggregateId,omitempty"`
@@ -649,6 +658,7 @@ type Statement struct {
 	Name           string                 `json:"name,omitempty"`
 	Timestamp      time.Time              `json:"timestamp,omitempty"`
 	Data           map[string]interface{} `json:"data,omitempty"`
+	Status         EventStatus            `json:"status,omitempty"`
 }
 
 // FilterBankStatementRequest ...
@@ -661,6 +671,7 @@ type FilterBankStatementRequest struct {
 	EndDateTime    *time.Time
 	Page           int64 `validate:"required"`
 	PageSize       int64 `validate:"required"`
+	Status         *EventStatus
 }
 
 // DocumentAnalysisRequest ...
