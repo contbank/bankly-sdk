@@ -12,11 +12,12 @@ import (
 type Config struct {
 	LoginEndpoint *string
 	APIEndpoint   *string
-	ClientID      *string `validate:"required"`
-	ClientSecret  *string `validate:"required"`
+	ClientID      *string
+	ClientSecret  *string
 	APIVersion    *string
 	Scopes        *string
 	Cache         *cache.Cache
+	Mtls          bool
 }
 
 //Session ...
@@ -28,6 +29,7 @@ type Session struct {
 	APIVersion    string
 	Cache         cache.Cache
 	Scopes        string
+	Mtls          bool
 }
 
 //ServiceDeskConfig ...
@@ -70,10 +72,6 @@ func NewSession(config Config) (*Session, error) {
 		config.ClientID = String(os.Getenv("BANKLY_CLIENT_SECRET"))
 	}
 
-	if *config.ClientID == "" || *config.ClientSecret == "" {
-		return nil, ErrClientIDClientSecret
-	}
-
 	if config.Cache == nil {
 		config.Cache = cache.New(10*time.Minute, 1*time.Second)
 	}
@@ -90,6 +88,7 @@ func NewSession(config Config) (*Session, error) {
 		APIVersion:    *config.APIVersion,
 		Cache:         *config.Cache,
 		Scopes:        *config.Scopes,
+		Mtls:          config.Mtls,
 	}
 
 	return session, nil
@@ -114,6 +113,45 @@ func NewServiceDeskSession(config ServiceDeskConfig) (*ServiceDeskSession, error
 	var session = &ServiceDeskSession{
 		APIEndpoint: *config.APIEndpoint,
 		APIKey:      *config.APIKey,
+	}
+
+	return session, nil
+}
+
+//NewSessionMTLS ...
+func NewSessionMTLS(config Config) (*Session, error) {
+	err := grok.Validator.Struct(config)
+
+	if err != nil {
+		return nil, grok.FromValidationErros(err)
+	}
+
+	if config.APIEndpoint == nil {
+		config.APIEndpoint = String("https://api-mtls.sandbox.bankly.com.br")
+	}
+
+	if config.LoginEndpoint == nil {
+		config.LoginEndpoint = String("https://auth-mtls.sandbox.bankly.com.br")
+	}
+
+	if config.APIVersion == nil {
+		config.APIVersion = String("1.0")
+	}
+
+	if config.Cache == nil {
+		config.Cache = cache.New(10*time.Minute, 1*time.Second)
+	}
+
+	if config.Scopes == nil {
+		config.Scopes = String("")
+	}
+
+	var session = &Session{
+		LoginEndpoint: *config.LoginEndpoint,
+		APIEndpoint:   *config.APIEndpoint,
+		APIVersion:    *config.APIVersion,
+		Cache:         *config.Cache,
+		Scopes:        *config.Scopes,
 	}
 
 	return session, nil

@@ -8,8 +8,12 @@ import (
 )
 
 const (
-	// LoginPath ..
+	// LoginPath ...
 	LoginPath = "connect/token"
+	// LoginMtlsPath ...
+	LoginMtlsPath = "oauth2/token"
+	// ClientPath ...
+	ClientPath = "oauth2/register"
 	// CustomersPath ..
 	CustomersPath = "customers"
 	// AccountsPath ...
@@ -1329,4 +1333,36 @@ type PixCashOutByAuthenticationCodeResponse struct {
 	Type               string                      `json:"type"`
 	CreatedAt          time.Time                   `json:"createdAt"`
 	UpdatedAt          time.Time                   `json:"updatedAt"`
+}
+
+type ClientRegisterRequest struct {
+	TLSClientAuthSubjectDn string `json:"tls_client_auth_subject_dn"`
+	CompanyKey             string `json:"company_key"`
+}
+
+type ClientRegisterBanklyRequest struct {
+	GrantTypes              []string `json:"grant_types"`
+	TLSClientAuthSubjectDn  string   `json:"tls_client_auth_subject_dn"`
+	TokenEndpointAuthMethod string   `json:"token_endpoint_auth_method"`
+	ResponseTypes           []string `json:"response_types"`
+	CompanyKey              string   `json:"company_key"`
+	Scope                   string   `json:"scope"`
+}
+
+type ClientRegisterResponse struct {
+	GrantTypes                       []string `json:"grant_types"`
+	SubjectType                      string   `json:"subject_type"`
+	TLSClientAuthSubjectDn           string   `json:"tls_client_auth_subject_dn"`
+	RegistrationClientURI            string   `json:"registration_client_uri"`
+	CompanyKey                       string   `json:"company_key"`
+	RegistrationAccessTokenExpiresIn int64    `json:"registration_access_token_expires_in"`
+	RegistrationAccessToken          string   `json:"registration_access_token"`
+	ClientID                         string   `json:"client_id"`
+	TokenEndpointAuthMethod          string   `json:"token_endpoint_auth_method"`
+	RequireProofKey                  bool     `json:"require_proof_key"`
+	Scope                            string   `json:"scope"`
+	TokenEndpointAuthMethods         []string `json:"token_endpoint_auth_methods"`
+	ClientIDIssuedAt                 int64    `json:"client_id_issued_at"`
+	AccessTokenTTL                   int64    `json:"access_token_ttl"`
+	ResponseTypes                    []string `json:"response_types"`
 }

@@ -33,13 +33,20 @@ func (a *Authentication) login(ctx context.Context) (*AuthenticationResponse, er
 		return nil, err
 	}
 
-	u.Path = path.Join(u.Path, LoginPath)
+	if a.session.Mtls {
+		u.Path = path.Join(u.Path, LoginMtlsPath)
+	} else {
+		u.Path = path.Join(u.Path, LoginPath)
+	}
 	endpoint := u.String()
 
 	formData := url.Values{
-		"grant_type":    {"client_credentials"},
-		"client_id":     {a.session.ClientID},
-		"client_secret": {a.session.ClientSecret},
+		"grant_type": {"client_credentials"},
+		"client_id":  {a.session.ClientID},
+	}
+
+	if !a.session.Mtls {
+		formData.Add("client_secret", a.session.ClientSecret)
 	}
 
 	if len(a.session.Scopes) > 0 {
@@ -104,7 +111,7 @@ func (a Authentication) Token(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	a.session.Cache.Set("token", fmt.Sprintf("%s %s", response.TokenType, response.AccessToken), time.Second*time.Duration(int64(response.ExpiresIn-10)))
+	a.session.Cache.Set("token", fmt.Sprintf("%s %s", "Bearer", response.AccessToken), time.Second*time.Duration(int64(response.ExpiresIn-10)))
 
-	return fmt.Sprintf("%s %s", response.TokenType, response.AccessToken), nil
+	return fmt.Sprintf("%s %s", "Bearer", response.AccessToken), nil
 }
