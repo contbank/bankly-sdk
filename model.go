@@ -1366,3 +1366,12 @@ type ClientRegisterResponse struct {
 	AccessTokenTTL                   int64    `json:"access_token_ttl"`
 	ResponseTypes                    []string `json:"response_types"`
 }
+
+type Certificate struct {
+	Certificate      string `json:"certificate"`
+	CertificateChain string `json:"certificateChain"`
+	SubjectDn        string `json:"subjectDn"`
+	PrivateKey       string `json:"privateKey"`
+	Passphrase       string `json:"passphrase"`
+	UUID             string `json:"uuid"`
+}
