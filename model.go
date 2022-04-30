@@ -1335,11 +1335,6 @@ type PixCashOutByAuthenticationCodeResponse struct {
 	UpdatedAt          time.Time                   `json:"updatedAt"`
 }
 
-type ClientRegisterRequest struct {
-	TLSClientAuthSubjectDn string `json:"tls_client_auth_subject_dn"`
-	CompanyKey             string `json:"company_key"`
-}
-
 type ClientRegisterBanklyRequest struct {
 	GrantTypes              []string `json:"grant_types"`
 	TLSClientAuthSubjectDn  string   `json:"tls_client_auth_subject_dn"`

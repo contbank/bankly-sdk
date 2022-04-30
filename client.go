@@ -12,20 +12,20 @@ import (
 
 //Client ...
 type Client struct {
-	session    Session
+	config     Config
 	httpClient *http.Client
 }
 
 //NewClient ...
-func NewClient(httpClient *http.Client, session Session) *Client {
+func NewClient(config Config, httpClient *http.Client) *Client {
 	return &Client{
-		session:    session,
 		httpClient: httpClient,
+		config:     config,
 	}
 }
 
-func (a *Client) Register(ctx context.Context, request *ClientRegisterRequest) (*Session, error) {
-	u, err := url.Parse(a.session.LoginEndpoint)
+func (a *Client) Register(ctx context.Context) (*ClientRegisterResponse, error) {
+	u, err := url.Parse(*a.config.LoginEndpoint)
 
 	if err != nil {
 		return nil, err
@@ -42,9 +42,9 @@ func (a *Client) Register(ctx context.Context, request *ClientRegisterRequest) (
 			"access_token",
 		},
 		TokenEndpointAuthMethod: "tls_client_auth",
-		TLSClientAuthSubjectDn:  request.TLSClientAuthSubjectDn,
-		CompanyKey:              request.CompanyKey,
-		Scope:                   a.session.Scopes,
+		TLSClientAuthSubjectDn:  a.config.Certificate.SubjectDn,
+		CompanyKey:              *a.config.CompanyKey,
+		Scope:                   *a.config.Scopes,
 	}
 
 	reqbyte, err := json.Marshal(banklyRequest)
@@ -77,9 +77,7 @@ func (a *Client) Register(ctx context.Context, request *ClientRegisterRequest) (
 			return nil, err
 		}
 
-		a.session.ClientID = response.ClientID
-
-		return &a.session, nil
+		return response, nil
 	}
 
 	return nil, ErrDefaultLogin

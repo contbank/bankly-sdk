@@ -1,6 +1,10 @@
 package bankly
 
 import (
+	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"net/http"
 	"os"
 	"time"
 
@@ -18,6 +22,8 @@ type Config struct {
 	Scopes        *string
 	Cache         *cache.Cache
 	Mtls          bool
+	CompanyKey    *string
+	Certificate   *Certificate
 }
 
 //Session ...
@@ -46,12 +52,6 @@ type ServiceDeskSession struct {
 
 //NewSession ...
 func NewSession(config Config) (*Session, error) {
-	err := grok.Validator.Struct(config)
-
-	if err != nil {
-		return nil, grok.FromValidationErros(err)
-	}
-
 	if config.APIEndpoint == nil {
 		config.APIEndpoint = String("https://api.sandbox.bankly.com.br")
 	}
@@ -78,6 +78,16 @@ func NewSession(config Config) (*Session, error) {
 
 	if config.Scopes == nil {
 		config.Scopes = String("")
+	}
+
+	if config.Mtls {
+		client := NewClient(config, CreateMtlsHTTPClient(*config.Certificate))
+		resp, err := client.Register(context.Background())
+
+		if err != nil {
+			panic(err)
+		}
+		config.ClientID = &resp.ClientID
 	}
 
 	var session = &Session{
@@ -118,41 +128,27 @@ func NewServiceDeskSession(config ServiceDeskConfig) (*ServiceDeskSession, error
 	return session, nil
 }
 
-//NewSessionMTLS ...
-func NewSessionMTLS(config Config) (*Session, error) {
-	err := grok.Validator.Struct(config)
+// CreateMtlsHTTPClient ...
+func CreateMtlsHTTPClient(cert Certificate) *http.Client {
+	hTTPClient := &http.Client{}
+	hTTPClient.Timeout = 30 * time.Second
+
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM([]byte(cert.CertificateChain))
+
+	certificate, err := grok.LoadCertificate([]byte(cert.Certificate), []byte(cert.PrivateKey), cert.Passphrase)
 
 	if err != nil {
-		return nil, grok.FromValidationErros(err)
+		panic(err)
 	}
 
-	if config.APIEndpoint == nil {
-		config.APIEndpoint = String("https://api-mtls.sandbox.bankly.com.br")
+	hTTPClient.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			RootCAs:            caCertPool,
+			Certificates:       []tls.Certificate{*certificate},
+			InsecureSkipVerify: true,
+		},
 	}
 
-	if config.LoginEndpoint == nil {
-		config.LoginEndpoint = String("https://auth-mtls.sandbox.bankly.com.br")
-	}
-
-	if config.APIVersion == nil {
-		config.APIVersion = String("1.0")
-	}
-
-	if config.Cache == nil {
-		config.Cache = cache.New(10*time.Minute, 1*time.Second)
-	}
-
-	if config.Scopes == nil {
-		config.Scopes = String("")
-	}
-
-	var session = &Session{
-		LoginEndpoint: *config.LoginEndpoint,
-		APIEndpoint:   *config.APIEndpoint,
-		APIVersion:    *config.APIVersion,
-		Cache:         *config.Cache,
-		Scopes:        *config.Scopes,
-	}
-
-	return session, nil
+	return hTTPClient
 }
