@@ -23,7 +23,7 @@ type LoggingRoundTripper struct {
 func (lrt LoggingRoundTripper) RoundTrip(req *http.Request) (res *http.Response, err error) {
 
 	fields := logrus.Fields{
-		"request_id": req.Context().Value("Request-Id"),
+		"request_id":        req.Context().Value("Request-Id"),
 		"worker_request_id": req.Context().Value("Worker-Request-Id"),
 	}
 

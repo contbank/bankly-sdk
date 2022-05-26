@@ -36,6 +36,21 @@ const (
 	CardDocumentPath = "cards/document"
 )
 
+type PixType string
+
+const (
+	// PixCNPJ ...
+	PixCNPJ PixType = "CNPJ"
+	// PixCPF ...
+	PixCPF PixType = "CPF"
+	// PixEMAIL ...
+	PixEMAIL PixType = "EMAIL"
+	// PixPHONE ...
+	PixPHONE PixType = "PHONE"
+	//  PixEVP ...
+	PixEVP PixType = "EVP"
+)
+
 const (
 	// InternalBankCode ...
 	InternalBankCode string = "332"
@@ -1175,8 +1190,8 @@ type PixAddressKeyResponse struct {
 }
 
 type PixTypeValue struct {
-	Type  string `json:"type"`
-	Value string `json:"value"`
+	Type  PixType `json:"type"`
+	Value string  `json:"value"`
 }
 
 type PixHolder struct {
@@ -1334,6 +1349,54 @@ type PixCashOutByAuthenticationCodeResponse struct {
 	CreatedAt          time.Time                   `json:"createdAt"`
 	UpdatedAt          time.Time                   `json:"updatedAt"`
 }
+
+// Pix Request
+type PixAddressKeyCreateRequest struct {
+	AddressingKey PixTypeValue `json:"addressingKey"`
+	Account       Account      `json:"account"`
+}
+
+// PostPixResponse
+type PixAddressKeyCreateResponse struct {
+	AddressingKey PixTypeValue `json:"addressingKey"`
+	Account       struct {
+		Branch string `json:"branch"`
+		Number string `json:"number"`
+		Type   string `json:"type"`
+		Holder struct {
+			Type           string `json:"type"`
+			DocumentNumber string `json:"documentNumber"`
+			Name           string `json:"name"`
+		} `json:"holder"`
+		Bank struct {
+			Ispb  string `json:"ispb"`
+			Compe string `json:"compe"`
+			Name  string `json:"name"`
+		} `json:"bank"`
+	} `json:"account"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"createdAt"`
+	OwnedAt   time.Time `json:"ownedAt"`
+}
+
+type DeleteAddressKeyResponse struct {
+	EndToEndID    string `json:"endToEndId"`
+	AddressingKey struct {
+		Type string `json:"type"`
+	} `json:"addressingKey"`
+	Holder struct {
+		Type       string `json:"type"`
+		Name       string `json:"name"`
+		SocialName string `json:"socialName"`
+		Document   string `json:"document"`
+	} `json:"holder"`
+
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"createdAt"`
+	OwnedAt   time.Time `json:"ownedAt"`
+}
+
+type AddressingKeyValue string
 
 type ClientRegisterBanklyRequest struct {
 	GrantTypes              []string `json:"grant_types"`
