@@ -20,4 +20,4 @@ build-package:
 	go mod vendor
 
 tag-version: set_version
-	git tag $(VERSION) && git push origin $(VERSION)
+	git tag -d v$(VERSION) && git tag v$(VERSION) && git push --tags

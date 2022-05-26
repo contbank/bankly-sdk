@@ -1,6 +1,10 @@
 package bankly
 
 import (
+	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"net/http"
 	"os"
 	"time"
 
@@ -12,10 +16,14 @@ import (
 type Config struct {
 	LoginEndpoint *string
 	APIEndpoint   *string
-	ClientID      *string `validate:"required"`
-	ClientSecret  *string `validate:"required"`
+	ClientID      *string
+	ClientSecret  *string
 	APIVersion    *string
+	Scopes        *string
 	Cache         *cache.Cache
+	Mtls          bool
+	CompanyKey    *string
+	Certificate   *Certificate
 }
 
 //Session ...
@@ -26,6 +34,8 @@ type Session struct {
 	ClientSecret  string
 	APIVersion    string
 	Cache         cache.Cache
+	Scopes        string
+	Mtls          bool
 }
 
 //ServiceDeskConfig ...
@@ -42,12 +52,6 @@ type ServiceDeskSession struct {
 
 //NewSession ...
 func NewSession(config Config) (*Session, error) {
-	err := grok.Validator.Struct(config)
-
-	if err != nil {
-		return nil, grok.FromValidationErros(err)
-	}
-
 	if config.APIEndpoint == nil {
 		config.APIEndpoint = String("https://api.sandbox.bankly.com.br")
 	}
@@ -68,12 +72,22 @@ func NewSession(config Config) (*Session, error) {
 		config.ClientID = String(os.Getenv("BANKLY_CLIENT_SECRET"))
 	}
 
-	if *config.ClientID == "" || *config.ClientSecret == "" {
-		return nil, ErrClientIDClientSecret
-	}
-
 	if config.Cache == nil {
 		config.Cache = cache.New(10*time.Minute, 1*time.Second)
+	}
+
+	if config.Scopes == nil {
+		config.Scopes = String("")
+	}
+
+	if config.Mtls {
+		client := NewClient(config, CreateMtlsHTTPClient(*config.Certificate))
+		resp, err := client.Register(context.Background())
+
+		if err != nil {
+			panic(err)
+		}
+		config.ClientID = &resp.ClientID
 	}
 
 	var session = &Session{
@@ -83,6 +97,8 @@ func NewSession(config Config) (*Session, error) {
 		ClientSecret:  *config.ClientSecret,
 		APIVersion:    *config.APIVersion,
 		Cache:         *config.Cache,
+		Scopes:        *config.Scopes,
+		Mtls:          config.Mtls,
 	}
 
 	return session, nil
@@ -110,4 +126,29 @@ func NewServiceDeskSession(config ServiceDeskConfig) (*ServiceDeskSession, error
 	}
 
 	return session, nil
+}
+
+// CreateMtlsHTTPClient ...
+func CreateMtlsHTTPClient(cert Certificate) *http.Client {
+	hTTPClient := &http.Client{}
+	hTTPClient.Timeout = 30 * time.Second
+
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM([]byte(cert.CertificateChain))
+
+	certificate, err := grok.LoadCertificate([]byte(cert.Certificate), []byte(cert.PrivateKey), cert.Passphrase)
+
+	if err != nil {
+		panic(err)
+	}
+
+	hTTPClient.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			RootCAs:            caCertPool,
+			Certificates:       []tls.Certificate{*certificate},
+			InsecureSkipVerify: true,
+		},
+	}
+
+	return hTTPClient
 }
