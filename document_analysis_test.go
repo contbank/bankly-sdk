@@ -34,8 +34,8 @@ func (s *DocumentAnalysisTestSuite) SetupTest() {
 	s.ctx = context.Background()
 
 	session, err := bankly.NewSession(bankly.Config{
-		ClientID : bankly.String(*bankly.GetEnvBanklyClientID()),
-		ClientSecret : bankly.String(*bankly.GetEnvBanklyClientSecret()),
+		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
+		ClientSecret: bankly.String(*bankly.GetEnvBanklyClientSecret()),
 	})
 
 	s.assert.NoError(err)

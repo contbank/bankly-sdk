@@ -16,9 +16,10 @@ import (
 type ErrorHandler func(fields logrus.Fields, resp *http.Response) error
 
 const (
-	GET   = "GET"
-	POST  = "POST"
-	PATCH = "PATCH"
+	GET    = "GET"
+	POST   = "POST"
+	PATCH  = "PATCH"
+	DELETE = "DELETE"
 )
 
 type BanklyHttpClient struct {
@@ -50,6 +51,39 @@ func (client *BanklyHttpClient) Post(ctx context.Context, url string, body inter
 	endpoint, _ := client.getEndpointAPI(fields, url)
 
 	req, err := http.NewRequestWithContext(ctx, POST, endpoint, bytes.NewReader(data))
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error new request")
+		return nil, err
+	}
+
+	token, err := client.Authentication.Token(ctx)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error authentication")
+		return nil, err
+	}
+
+	req = setRequestHeader(req, token, client.Session.APIVersion, header)
+
+	resp, err := client.HttpClient.Do(req)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error http client")
+		return nil, err
+	}
+
+	return handleResponse(resp, fields, client.errorHandler)
+}
+
+func (client *BanklyHttpClient) Delete(ctx context.Context, url string, body interface{}, header *http.Header) (*http.Response, error) {
+	fields := initLog(ctx)
+	data, err := json.Marshal(body)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error marshal body request")
+		return nil, err
+	}
+
+	endpoint, _ := client.getEndpointAPI(fields, url)
+
+	req, err := http.NewRequestWithContext(ctx, DELETE, endpoint, bytes.NewReader(data))
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error("error new request")
 		return nil, err
@@ -145,6 +179,8 @@ func handleResponse(resp *http.Response, fields logrus.Fields, handler ErrorHand
 	case resp.StatusCode == http.StatusAccepted:
 		return resp, nil
 	case resp.StatusCode == http.StatusNoContent:
+		return resp, nil
+	case resp.StatusCode == http.StatusCreated:
 		return resp, nil
 	case resp.StatusCode == http.StatusNotFound:
 		return nil, ErrEntryNotFound

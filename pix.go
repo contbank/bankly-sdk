@@ -3,6 +3,7 @@ package bankly
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -19,8 +20,8 @@ func NewPix(newHttpClient BanklyHttpClient) *Pix {
 	return &Pix{newHttpClient}
 }
 
-//GetAddresskey ...
-func (p *Pix) GetAddresskey(ctx context.Context, key string, currentIdentity string) (*PixAddressKeyResponse, error) {
+//GetAddressKey ...
+func (p *Pix) GetAddressKey(ctx context.Context, key string, currentIdentity string) (*PixAddressKeyResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id": requestID,
@@ -157,6 +158,82 @@ func (p *Pix) GetCashOutByAuthenticationCode(ctx context.Context, accountNumber 
 	}
 
 	return response, nil
+}
+
+func (p *Pix) CreateAddressKey(ctx context.Context, pix PixAddressKeyCreateRequest) (*PixAddressKeyCreateResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+
+	if requestID == "" {
+		ctx = GenerateNewRequestID(ctx)
+	} else {
+		ctx = context.WithValue(ctx, "Request-Id", ctx.Value("Request-Id").(string))
+	}
+
+	requestID = GetRequestID(ctx)
+
+	fields := logrus.Fields{
+		"request_id": requestID,
+		"object":     pix,
+	}
+	url := "/pix/entries"
+
+	header := http.Header{}
+	header.Add("x-correlation-id", requestID)
+
+	resp, err := p.httpClient.Post(ctx, url, pix, &header)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
+		return nil, err
+	}
+
+	response := new(PixAddressKeyCreateResponse)
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		return nil, ErrDefaultPix
+	}
+
+	return response, nil
+}
+
+func (p *Pix) DeleteAddressKey(ctx context.Context, identifier, addressingKey string) (*http.Response, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+
+	if requestID == "" {
+		ctx = GenerateNewRequestID(ctx)
+	} else {
+		ctx = context.WithValue(ctx, "Request-Id", ctx.Value("Request-Id").(string))
+	}
+
+	requestID = GetRequestID(ctx)
+
+	fields := logrus.Fields{
+		"request_id":    requestID,
+		"addressingKey": addressingKey,
+	}
+
+	header := http.Header{}
+	header.Add("x-correlation-id", requestID)
+	header.Add("x-bkly-pix-user-id", identifier)
+
+	url := fmt.Sprintf("/pix/entries/%s", addressingKey)
+
+	resp, err := p.httpClient.Delete(ctx, url, addressingKey, &header)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	return resp, nil
 }
 
 //PixErrorHandler ...
