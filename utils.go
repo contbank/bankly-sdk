@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 	"unicode"
+
+	"github.com/google/uuid"
 )
 
 func random(n float64) float64 {
@@ -151,6 +153,13 @@ func RandStringBytes(n int) string {
 func GetRequestID(ctx context.Context) string {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	return requestID
+}
+
+// GenerateNewRequestID
+func GenerateNewRequestID(ctx context.Context) context.Context {
+	requestID := uuid.New().String()
+	ctx = context.WithValue(ctx, "Request-Id", requestID)
+	return ctx
 }
 
 // GetEnvBanklyClientID ...
