@@ -203,7 +203,7 @@ func (p *Pix) CreateAddressKey(ctx context.Context, pix PixAddressKeyCreateReque
 	return response, nil
 }
 
-func (p *Pix) DeleteAddressKey(ctx context.Context, addressingKey string) (*http.Response, error) {
+func (p *Pix) DeleteAddressKey(ctx context.Context, identifier, addressingKey string) (*http.Response, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 
 	if requestID == "" {
@@ -221,7 +221,7 @@ func (p *Pix) DeleteAddressKey(ctx context.Context, addressingKey string) (*http
 
 	header := http.Header{}
 	header.Add("x-correlation-id", requestID)
-	header.Add("x-bkly-pix-user-id", addressingKey)
+	header.Add("x-bkly-pix-user-id", identifier)
 
 	url := fmt.Sprintf("/pix/entries/%s", addressingKey)
 
