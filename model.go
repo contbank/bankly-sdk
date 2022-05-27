@@ -1379,6 +1379,37 @@ type PixAddressKeyCreateResponse struct {
 	OwnedAt   time.Time `json:"ownedAt"`
 }
 
+// TransactionalHashResponse
+type TransactionalHash struct {
+	Hash string `json:"hash"`
+	Code string `json:"code"`
+}
+
+// TransactionalHashValidate
+type TransactionalHashValidateResponse struct {
+	Hash                string `json:"hash"`
+	ExpirationInSeconds int    `json:"expirationInSeconds"`
+}
+
+// TransactionalHashRequest
+type TransactionalHashRequest struct {
+	Context   string                `json:"context"`
+	Operation string                `json:"operation"`
+	Data      TransactionalHashData `json:"data"`
+}
+
+// TransactionalHashData
+type TransactionalHashData struct {
+	AddressingKey TransactionalHashAddressingKey `json:"addressingKey"`
+}
+
+// TransactionalHashAddressingKey
+type TransactionalHashAddressingKey struct {
+	Type  PixType `json:"type"`
+	Value string  `json:"value"`
+}
+
+// DeleteAddressKeyResponse
 type DeleteAddressKeyResponse struct {
 	EndToEndID    string `json:"endToEndId"`
 	AddressingKey struct {
@@ -1433,3 +1464,4 @@ type Certificate struct {
 	Passphrase       string `json:"passphrase"`
 	UUID             string `json:"uuid"`
 }
+
