@@ -1433,3 +1433,4 @@ type Certificate struct {
 	Passphrase       string `json:"passphrase"`
 	UUID             string `json:"uuid"`
 }
+

@@ -74,7 +74,8 @@ func (c *PixTestSuite) TestQrCodeDecode_OK() {
 
 func (c *PixTestSuite) TestCreatePixByCPF_OK() {
 	addressingKeyValue := "41345365373"
-	c.pix.DeleteAddressKey(context.Background(), addressingKeyValue)
+
+	c.pix.DeleteAddressKey(context.Background(), addressingKeyValue, addressingKeyValue)
 
 	pix := builderCreateAddressKeyRequest(bankly.PixCPF, addressingKeyValue, "201928")
 	response, err := c.pix.CreateAddressKey(context.Background(), pix)
@@ -86,7 +87,8 @@ func (c *PixTestSuite) TestCreatePixByCPF_OK() {
 func (c *PixTestSuite) TestCreatePixByCNPJ_OK() {
 	addressKey := "58285483000106"
 
-	c.pix.DeleteAddressKey(context.Background(), addressKey)
+	c.pix.DeleteAddressKey(context.Background(), addressKey, addressKey)
+
 	pix := builderCreateAddressKeyRequest(bankly.PixCNPJ, addressKey, "201952")
 
 	response, err := c.pix.CreateAddressKey(context.Background(), pix)
@@ -106,10 +108,11 @@ func (c *PixTestSuite) TestCreatePixByEVP_OK() {
 
 func (c *PixTestSuite) TestDeletePixByAddressKey_OK() {
 	addressingKeyValue := "41345365373"
+	indentifier := "41345365373"
 	addressKeyRequest := builderCreateAddressKeyRequest(bankly.PixCPF, addressingKeyValue, "201928")
 	c.pix.CreateAddressKey(context.Background(), addressKeyRequest)
 
-	deleteResponse, err := c.pix.DeleteAddressKey(context.Background(), addressingKeyValue)
+	deleteResponse, err := c.pix.DeleteAddressKey(context.Background(), addressingKeyValue, indentifier)
 
 	c.assert.NoError(err)
 	c.assert.NotNil(deleteResponse)
