@@ -223,6 +223,7 @@ func (p *Pix) DeleteAddressKey(ctx context.Context, identifier, addressingKey st
 	header.Add("x-correlation-id", requestID)
 	header.Add("x-bkly-pix-user-id", identifier)
 
+
 	url := fmt.Sprintf("/pix/entries/%s", addressingKey)
 
 	resp, err := p.httpClient.Delete(ctx, url, addressingKey, &header)

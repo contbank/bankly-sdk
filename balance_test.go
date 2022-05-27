@@ -31,6 +31,7 @@ func (s *BalanceTestSuite) SetupTest() {
 	session, err := bankly.NewSession(bankly.Config{
 		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
 		ClientSecret: bankly.String(*bankly.GetEnvBanklyClientSecret()),
+		Scopes:       bankly.String("account.read"),
 	})
 
 	s.assert.NoError(err)
@@ -45,6 +46,9 @@ func (s *BalanceTestSuite) SetupTest() {
 }
 
 func (s *BalanceTestSuite) TestBalance() {
+	// TODO Mockar teste
+	s.T().Skip("O bankly está retornando 500 com o body null. Mockar teste.")
+
 	balance, err := s.balance.Balance(s.ctx, "184152")
 
 	s.assert.NoError(err)

@@ -28,6 +28,7 @@ func (s *BoletosTestSuite) SetupTest() {
 	session, err := bankly.NewSession(bankly.Config{
 		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
 		ClientSecret: bankly.String(*bankly.GetEnvBanklyClientSecret()),
+		Scopes:       bankly.String("account.read boleto.create boleto.read boleto.delete"),
 	})
 
 	s.assert.NoError(err)

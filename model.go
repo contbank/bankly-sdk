@@ -8,8 +8,12 @@ import (
 )
 
 const (
-	// LoginPath ..
+	// LoginPath ...
 	LoginPath = "connect/token"
+	// LoginMtlsPath ...
+	LoginMtlsPath = "oauth2/token"
+	// ClientPath ...
+	ClientPath = "oauth2/register"
 	// CustomersPath ..
 	CustomersPath = "customers"
 	// AccountsPath ...
@@ -652,6 +656,15 @@ type RecipientResponse struct {
 	Account  *AccountResponse `json:"account,omitempty"`
 }
 
+type EventStatus string
+
+const (
+	// Active sucesso. evento realizado.
+	Active EventStatus = "ACTIVE"
+	// Canceled erro. evento não realizado por algum motivo.
+	Canceled EventStatus = "CANCELED"
+)
+
 // Statement ...
 type Statement struct {
 	AggregateID    string                 `json:"aggregateId,omitempty"`
@@ -664,6 +677,7 @@ type Statement struct {
 	Name           string                 `json:"name,omitempty"`
 	Timestamp      time.Time              `json:"timestamp,omitempty"`
 	Data           map[string]interface{} `json:"data,omitempty"`
+	Status         EventStatus            `json:"status,omitempty"`
 }
 
 // FilterBankStatementRequest ...
@@ -676,6 +690,7 @@ type FilterBankStatementRequest struct {
 	EndDateTime    *time.Time
 	Page           int64 `validate:"required"`
 	PageSize       int64 `validate:"required"`
+	Status         *EventStatus
 }
 
 // DocumentAnalysisRequest ...
@@ -1382,3 +1397,40 @@ type DeleteAddressKeyResponse struct {
 }
 
 type AddressingKeyValue string
+
+type ClientRegisterBanklyRequest struct {
+	GrantTypes              []string `json:"grant_types"`
+	TLSClientAuthSubjectDn  string   `json:"tls_client_auth_subject_dn"`
+	TokenEndpointAuthMethod string   `json:"token_endpoint_auth_method"`
+	ResponseTypes           []string `json:"response_types"`
+	CompanyKey              string   `json:"company_key"`
+	Scope                   string   `json:"scope"`
+}
+
+type ClientRegisterResponse struct {
+	GrantTypes                       []string `json:"grant_types"`
+	SubjectType                      string   `json:"subject_type"`
+	TLSClientAuthSubjectDn           string   `json:"tls_client_auth_subject_dn"`
+	RegistrationClientURI            string   `json:"registration_client_uri"`
+	CompanyKey                       string   `json:"company_key"`
+	RegistrationAccessTokenExpiresIn int64    `json:"registration_access_token_expires_in"`
+	RegistrationAccessToken          string   `json:"registration_access_token"`
+	ClientID                         string   `json:"client_id"`
+	TokenEndpointAuthMethod          string   `json:"token_endpoint_auth_method"`
+	RequireProofKey                  bool     `json:"require_proof_key"`
+	Scope                            string   `json:"scope"`
+	TokenEndpointAuthMethods         []string `json:"token_endpoint_auth_methods"`
+	ClientIDIssuedAt                 int64    `json:"client_id_issued_at"`
+	AccessTokenTTL                   int64    `json:"access_token_ttl"`
+	ResponseTypes                    []string `json:"response_types"`
+}
+
+type Certificate struct {
+	Certificate      string `json:"certificate"`
+	CertificateChain string `json:"certificateChain"`
+	SubjectDn        string `json:"subjectDn"`
+	PrivateKey       string `json:"privateKey"`
+	Passphrase       string `json:"passphrase"`
+	UUID             string `json:"uuid"`
+}
+

@@ -29,6 +29,7 @@ func (s *PixTestSuite) SetupTest() {
 	session, err := bankly.NewSession(bankly.Config{
 		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
 		ClientSecret: bankly.String(*bankly.GetEnvBanklyClientSecret()),
+		Scopes:       bankly.String("pix.account.read pix.entries.create pix.entries.delete pix.entries.read pix.qrcode.create pix.qrcode.read pix.cashout.create pix.cashout.read"),
 	})
 	s.assert.NoError(err)
 
@@ -45,7 +46,11 @@ func (s *PixTestSuite) SetupTest() {
 	s.pix = bankly.NewPix(newHttpClient)
 }
 
+// TestGetAddresskey_OK ...
 func (c *PixTestSuite) TestGetAddresskey_OK() {
+	// TODO Mockar teste
+	c.T().Skip("Bankly está retornando erro 504 gateway timeout. Mockar este teste.")
+
 	key := "16246241620"
 	currentIdentity := "36183588814"
 	response, err := c.pix.GetAddressKey(context.Background(), key, currentIdentity)
@@ -53,9 +58,12 @@ func (c *PixTestSuite) TestGetAddresskey_OK() {
 	c.assert.NotNil(response)
 }
 
+// TestQrCodeDecode_OK ...
 func (c *PixTestSuite) TestQrCodeDecode_OK() {
-	currentIdentity := "36183588814"
+	// TODO Mockar teste
+	c.T().Skip("Bankly está retornando erro 504 gateway timeout. Mockar este teste.")
 
+	currentIdentity := "36183588814"
 	response, err := c.pix.QrCodeDecode(context.Background(), &bankly.PixQrCodeDecodeRequest{
 		EncodedValue: "MDAwMjAxMjYzMzAwMTRici5nb3YuYmNiLnBpeDAxMTEzNjE4MzU4ODgxNDUyMDQwMDAwNTMwMzk4NjU0MDUxMC4wMDU4MDJCUjU5MTlHdWlsaGVybWUgR29uY2FsdmVzNjAwOVNhbyBQYXVsbzYxMDgwMzUwMzAzMDYyMTQwNTEwMjMxMzEyMzEyMzYzMDQyRjU1",
 	}, currentIdentity)
@@ -66,6 +74,7 @@ func (c *PixTestSuite) TestQrCodeDecode_OK() {
 
 func (c *PixTestSuite) TestCreatePixByCPF_OK() {
 	addressingKeyValue := "41345365373"
+
 	c.pix.DeleteAddressKey(context.Background(), addressingKeyValue, addressingKeyValue)
 
 	pix := builderCreateAddressKeyRequest(bankly.PixCPF, addressingKeyValue, "201928")
@@ -79,6 +88,7 @@ func (c *PixTestSuite) TestCreatePixByCNPJ_OK() {
 	addressKey := "58285483000106"
 
 	c.pix.DeleteAddressKey(context.Background(), addressKey, addressKey)
+
 	pix := builderCreateAddressKeyRequest(bankly.PixCNPJ, addressKey, "201952")
 
 	response, err := c.pix.CreateAddressKey(context.Background(), pix)
