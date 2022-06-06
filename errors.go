@@ -137,6 +137,14 @@ var (
 	ErrInvalidIncomeReportCalendar = grok.NewError(http.StatusBadRequest, "invalid income report calendar")
 	// ErrInvalidIncomeReportParameter ...
 	ErrInvalidIncomeReportParameter = grok.NewError(http.StatusBadRequest, "invalid income report parameter")
+	// ErrDefaultCancelCustomersAccounts ...
+	ErrDefaultCancelCustomersAccounts = grok.NewError(http.StatusConflict, "error cancel customers accounts")
+	// ErrAccountNonZeroBalance ...
+	ErrAccountNonZeroBalance = grok.NewError(http.StatusConflict, "error account non zero balance")
+	// ErrAccountAlreadyBeenCanceled ...
+	ErrAccountAlreadyBeenCanceled = grok.NewError(http.StatusUnprocessableEntity, "error account already been canceled")
+	// ErrAccountNotFound ...
+	ErrAccountNotFound = grok.NewError(http.StatusNotFound, "error account not found")
 )
 
 // BanklyError ...
@@ -224,6 +232,14 @@ var errorList = []Error{
 	{
 		ErrorKey:  "INVALID_EMAIL_LENGTH",
 		GrokError: ErrInvalidEmailLength,
+	},
+	{
+		ErrorKey:  "HOLDER_HAS_SOME_ACCOUNTS_WITH_NON_ZERO_BALANCE",
+		GrokError: ErrAccountNonZeroBalance,
+	},
+	{
+		ErrorKey:  "HOLDER_HAS_ALREADY_BEEN_CANCELED",
+		GrokError: ErrAccountAlreadyBeenCanceled,
 	},
 }
 

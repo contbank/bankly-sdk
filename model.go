@@ -425,6 +425,21 @@ type CustomerUpdateRequest struct {
 	Email        string    `validate:"required" json:"email,omitempty"`
 }
 
+// CancelAccountReason ...
+type CancelAccountReason string
+
+const (
+	// HolderRequest ...
+	CancelAccountHolderRequest CancelAccountReason = "HOLDER_REQUEST"
+	// CommercialDisagreement ...
+	CancelAccountCommercialDisagreement CancelAccountReason = "COMMERCIAL_DISAGREEMENT"
+)
+
+// CancelAccountRequest ...
+type CancelAccountRequest struct {
+	Reason CancelAccountReason `validate:"required" json:"reason"`
+}
+
 // BusinessType ...
 type BusinessType string
 
