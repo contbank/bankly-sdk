@@ -506,6 +506,81 @@ func (c *Business) FindBusinessAccounts(ctx context.Context, identifier string) 
 	return nil, ErrDefaultBusinessAccounts
 }
 
+//CancelBusinessAccount ...
+func (c *Business) CancelBusinessAccount(ctx context.Context, identifier string,
+	cancelAccountRequest CancelAccountRequest) error {
+
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id": requestID,
+		"identifier": identifier,
+	}
+
+	// api endpoint
+	u, err := url.Parse(c.session.APIEndpoint)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error api endpoint - cancel account")
+		return err
+	}
+	u.Path = path.Join(u.Path, BusinessPath)
+	u.Path = path.Join(u.Path, grok.OnlyDigits(identifier))
+	u.Path = path.Join(u.Path, "cancel")
+	endpoint := u.String()
+
+	reqbyte, err := json.Marshal(cancelAccountRequest)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "PATCH", endpoint, bytes.NewReader(reqbyte))
+	if err != nil {
+		return err
+	}
+
+	token, err := c.authentication.Token(ctx)
+	if err != nil {
+		return err
+	}
+
+	req = setRequestHeader(req, token, c.session.APIVersion, nil)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode == http.StatusAccepted {
+		return nil
+	} else if resp.StatusCode == http.StatusNoContent {
+		return nil
+	} else if resp.StatusCode == http.StatusMethodNotAllowed {
+		return ErrMethodNotAllowed
+	} else if resp.StatusCode == http.StatusNotFound {
+		return ErrAccountNotFound
+	}
+
+	var bodyErr *ErrorResponse
+
+	err = json.Unmarshal(respBody, &bodyErr)
+	if err != nil {
+		return err
+	}
+
+	if len(bodyErr.Errors) > 0 {
+		errModel := bodyErr.Errors[0]
+		return FindError(errModel.Code, errModel.Messages...)
+	}
+
+	logrus.WithFields(fields).
+		WithError(ErrDefaultCancelCustomersAccounts).Error("error default cancel customers accounts")
+
+	return ErrDefaultCancelCustomersAccounts
+}
+
 // getBusinessAPIEndpoint
 func (c *Business) getBusinessAPIEndpoint(requestID string, identifier string,
 	isAccountPath bool, resultLevel *ResultLevel) (*string, error) {
