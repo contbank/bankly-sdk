@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/contbank/grok"
 	"io/ioutil"
 	"net/http"
 
@@ -14,13 +15,51 @@ type Pix struct {
 	httpClient BanklyHttpClient
 }
 
-//NewPix ...
+// NewPix ...
 func NewPix(newHttpClient BanklyHttpClient) *Pix {
 	newHttpClient.errorHandler = PixErrorHandler
 	return &Pix{newHttpClient}
 }
 
-//GetAddressKey ...
+// GetAddressKeysByAccount ...
+func (p *Pix) GetAddressKeysByAccount(ctx context.Context, accountNumber string, currentIdentity string) (*[]*PixTypeValue, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+	fields := logrus.Fields{
+		"request_id" : requestID,
+		"account" : accountNumber,
+		"current_identity" : currentIdentity,
+	}
+
+	url := "accounts/" + grok.OnlyDigits(accountNumber) + "/addressing-keys"
+
+	header := http.Header{}
+	header.Add("x-bkly-pix-user-id", grok.OnlyDigits(currentIdentity))
+	header.Add("x-correlation-id", requestID)
+
+	resp, err := p.httpClient.Get(ctx, url, nil, &header)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
+		return nil, err
+	}
+
+	response := new([]*PixTypeValue)
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		return nil, ErrDefaultPix
+	}
+
+	return response, nil
+}
+
+// GetAddressKey ...
 func (p *Pix) GetAddressKey(ctx context.Context, key string, currentIdentity string) (*PixAddressKeyResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
@@ -56,7 +95,7 @@ func (p *Pix) GetAddressKey(ctx context.Context, key string, currentIdentity str
 	return response, nil
 }
 
-//CashOut ...
+// CashOut ...
 func (p *Pix) CashOut(ctx context.Context, pix *PixCashOutRequest) (*PixCashOutResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
@@ -89,8 +128,9 @@ func (p *Pix) CashOut(ctx context.Context, pix *PixCashOutRequest) (*PixCashOutR
 	return response, nil
 }
 
-//QrCodeDecode ...
-func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest, currentIdentity string) (*PixQrCodeDecodeResponse, error) {
+// QrCodeDecode ...
+func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest,
+	currentIdentity string) (*PixQrCodeDecodeResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id": requestID,
@@ -125,7 +165,9 @@ func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest, 
 	return response, nil
 }
 
-func (p *Pix) GetCashOutByAuthenticationCode(ctx context.Context, accountNumber string, authenticationCode string) (*PixCashOutByAuthenticationCodeResponse, error) {
+// GetCashOutByAuthenticationCode ...
+func (p *Pix) GetCashOutByAuthenticationCode(ctx context.Context, accountNumber string,
+	authenticationCode string) (*PixCashOutByAuthenticationCodeResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id":          requestID,
@@ -160,6 +202,7 @@ func (p *Pix) GetCashOutByAuthenticationCode(ctx context.Context, accountNumber 
 	return response, nil
 }
 
+// CreateAddressKey ...
 func (p *Pix) CreateAddressKey(ctx context.Context, pix PixAddressKeyCreateRequest) (*PixAddressKeyCreateResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 
@@ -203,6 +246,7 @@ func (p *Pix) CreateAddressKey(ctx context.Context, pix PixAddressKeyCreateReque
 	return response, nil
 }
 
+// DeleteAddressKey ...
 func (p *Pix) DeleteAddressKey(ctx context.Context, identifier, addressingKey string) (*http.Response, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 
