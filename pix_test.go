@@ -135,21 +135,21 @@ func (c *PixTestSuite) TestDeletePixByAddressKey_OK() {
 	addressKeyRequest := builderCreateAddressKeyRequest(bankly.PixCPF, addressingKeyValue, "201928")
 	c.pix.CreateAddressKey(context.Background(), addressKeyRequest)
 
-	deleteResponse, err := c.pix.DeleteAddressKey(context.Background(), addressingKeyValue, indentifier)
+	err := c.pix.DeleteAddressKey(context.Background(), addressingKeyValue, indentifier)
 
 	c.assert.NoError(err)
-	c.assert.NotNil(deleteResponse)
 }
 
-func builderCreateAddressKeyRequest(typePix bankly.PixType, valuePix, accountNumber string) bankly.PixAddressKeyCreateRequest {
-	return bankly.PixAddressKeyCreateRequest{
+func builderCreateAddressKeyRequest(typePix bankly.PixType, valuePix, accountNumber string) *bankly.PixAddressKeyCreateRequest {
+	return &bankly.PixAddressKeyCreateRequest{
 		AddressingKey: bankly.PixTypeValue{
 			Type:  typePix,
 			Value: valuePix,
 		},
 		Account: bankly.Account{
-			Number: accountNumber,
-			Branch: "0001",
+			Number:      accountNumber,
+			Branch:      "0001",
+			AccountType: bankly.CheckingAccount,
 		},
 	}
 }

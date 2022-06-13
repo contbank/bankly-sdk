@@ -225,8 +225,9 @@ type BoletoAddress struct {
 
 // Account ...
 type Account struct {
-	Number string `validate:"required" json:"number,omitempty"`
-	Branch string `validate:"required" json:"branch,omitempty"`
+	Number      string               `validate:"required" json:"number,omitempty"`
+	Branch      string               `validate:"required" json:"branch,omitempty"`
+	AccountType TransfersAccountType `json:"type,omitempty"`
 }
 
 // Payer ...
@@ -1382,6 +1383,7 @@ type PixAddressKeyCreateResponse struct {
 			Type           string `json:"type"`
 			DocumentNumber string `json:"documentNumber"`
 			Name           string `json:"name"`
+			SocialName     string `json:"socialName"`
 		} `json:"holder"`
 		Bank struct {
 			Ispb  string `json:"ispb"`
@@ -1479,4 +1481,3 @@ type Certificate struct {
 	Passphrase       string `json:"passphrase"`
 	UUID             string `json:"uuid"`
 }
-

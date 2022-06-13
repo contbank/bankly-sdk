@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/contbank/grok"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/contbank/grok"
 
 	"github.com/sirupsen/logrus"
 )
@@ -22,12 +23,12 @@ func NewPix(newHttpClient BanklyHttpClient) *Pix {
 }
 
 // GetAddressKeysByAccount ...
-func (p *Pix) GetAddressKeysByAccount(ctx context.Context, accountNumber string, currentIdentity string) (*[]*PixTypeValue, error) {
+func (p *Pix) GetAddressKeysByAccount(ctx context.Context, accountNumber string, currentIdentity string) ([]*PixTypeValue, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
-		"account" : accountNumber,
-		"current_identity" : currentIdentity,
+		"request_id":       requestID,
+		"account":          accountNumber,
+		"current_identity": currentIdentity,
 	}
 
 	url := "accounts/" + grok.OnlyDigits(accountNumber) + "/addressing-keys"
@@ -49,7 +50,7 @@ func (p *Pix) GetAddressKeysByAccount(ctx context.Context, accountNumber string,
 		return nil, err
 	}
 
-	response := new([]*PixTypeValue)
+	response := []*PixTypeValue{}
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
@@ -203,7 +204,7 @@ func (p *Pix) GetCashOutByAuthenticationCode(ctx context.Context, accountNumber 
 }
 
 // CreateAddressKey ...
-func (p *Pix) CreateAddressKey(ctx context.Context, pix PixAddressKeyCreateRequest) (*PixAddressKeyCreateResponse, error) {
+func (p *Pix) CreateAddressKey(ctx context.Context, pix *PixAddressKeyCreateRequest) (*PixAddressKeyCreateResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 
 	if requestID == "" {
@@ -216,8 +217,8 @@ func (p *Pix) CreateAddressKey(ctx context.Context, pix PixAddressKeyCreateReque
 
 	fields := logrus.Fields{
 		"request_id": requestID,
-		"object":     pix,
 	}
+
 	url := "/pix/entries"
 
 	header := http.Header{}
@@ -247,7 +248,7 @@ func (p *Pix) CreateAddressKey(ctx context.Context, pix PixAddressKeyCreateReque
 }
 
 // DeleteAddressKey ...
-func (p *Pix) DeleteAddressKey(ctx context.Context, identifier, addressingKey string) (*http.Response, error) {
+func (p *Pix) DeleteAddressKey(ctx context.Context, identifier, addressingKey string) error {
 	requestID, _ := ctx.Value("Request-Id").(string)
 
 	if requestID == "" {
@@ -272,12 +273,12 @@ func (p *Pix) DeleteAddressKey(ctx context.Context, identifier, addressingKey st
 	resp, err := p.httpClient.Delete(ctx, url, addressingKey, &header)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
-		return nil, err
+		return err
 	}
 
 	defer resp.Body.Close()
 
-	return resp, nil
+	return nil
 }
 
 //PixErrorHandler ...
