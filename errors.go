@@ -10,141 +10,141 @@ import (
 
 var (
 	// ErrEntryNotFound ...
-	ErrEntryNotFound = grok.NewError(http.StatusNotFound, "not found")
+	ErrEntryNotFound = grok.NewError(http.StatusNotFound, "NOT_FOUND", "not found")
 	// ErrDuplicateCompany ...
-	ErrDuplicateCompany = grok.NewError(http.StatusConflict, "duplicate company")
+	ErrDuplicateCompany = grok.NewError(http.StatusConflict, "DUPLICATE_COMPANY", "duplicate company")
 	// ErrInvalidToken ...
-	ErrInvalidToken = grok.NewError(http.StatusConflict, "invalid token")
+	ErrInvalidToken = grok.NewError(http.StatusConflict, "INVALID_TOKEN", "invalid token")
 	// ErrInvalidBusinessSize ...
-	ErrInvalidBusinessSize = grok.NewError(http.StatusBadRequest, "invalid business size")
+	ErrInvalidBusinessSize = grok.NewError(http.StatusBadRequest, "INVALID_BUSINESS_SIZE", "invalid business size")
 	// ErrEmailAlreadyInUse ...
-	ErrEmailAlreadyInUse = grok.NewError(http.StatusBadRequest, "email already in use")
+	ErrEmailAlreadyInUse = grok.NewError(http.StatusBadRequest, "EXISTS_EMAIL", "email already in use")
 	// ErrPhoneAlreadyInUse ...
-	ErrPhoneAlreadyInUse = grok.NewError(http.StatusBadRequest, "phone already in use")
+	ErrPhoneAlreadyInUse = grok.NewError(http.StatusBadRequest, "EXISTS_PHONE", "phone already in use")
 	// ErrCustomerRegistrationCannotBeReplaced ...
-	ErrCustomerRegistrationCannotBeReplaced = grok.NewError(http.StatusConflict, "customer registration cannot be replaced")
+	ErrCustomerRegistrationCannotBeReplaced = grok.NewError(http.StatusConflict, "CUSTOMER_CANNOT_BE_REPLACED", "customer registration cannot be replaced")
 	// ErrAccountHolderNotExists ...
-	ErrAccountHolderNotExists = grok.NewError(http.StatusBadRequest, "account holder not exists")
+	ErrAccountHolderNotExists = grok.NewError(http.StatusBadRequest, "NOT_EXISTS_HOLDER", "account holder not exists")
 	// ErrHolderAlreadyHaveAAccount ...
-	ErrHolderAlreadyHaveAAccount = grok.NewError(http.StatusConflict, "holder already have a account")
+	ErrHolderAlreadyHaveAAccount = grok.NewError(http.StatusConflict, "EXISTS_HOLDER", "holder already have a account")
 	// ErrInvalidCorrelationID ...
-	ErrInvalidCorrelationID = grok.NewError(http.StatusBadRequest, "invalid correlation id")
+	ErrInvalidCorrelationID = grok.NewError(http.StatusBadRequest, "INVALID_CORRELATION_ID", "invalid correlation id")
 	// ErrInvalidAmount ...
-	ErrInvalidAmount = grok.NewError(http.StatusBadRequest, "invalid amount")
+	ErrInvalidAmount = grok.NewError(http.StatusBadRequest, "INVALID_AMOUNT", "invalid amount")
 	// ErrInsufficientBalance ...
-	ErrInsufficientBalance = grok.NewError(http.StatusBadRequest, "insufficient balance")
+	ErrInsufficientBalance = grok.NewError(http.StatusBadRequest, "INSUFFICIENT_BALANCE", "insufficient balance")
 	// ErrInvalidAuthenticationCodeOrAccount ...
-	ErrInvalidAuthenticationCodeOrAccount = grok.NewError(http.StatusBadRequest, "invalid authentication code or account number")
+	ErrInvalidAuthenticationCodeOrAccount = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER", "invalid authentication code or account number")
 	// ErrInvalidAccountNumber ...
-	ErrInvalidAccountNumber = grok.NewError(http.StatusBadRequest, "invalid account number")
+	ErrInvalidAccountNumber = grok.NewError(http.StatusBadRequest, "INVALID_ACCOUNT_NUMBER", "invalid account number")
 	// ErrOutOfServicePeriod ...
-	ErrOutOfServicePeriod = grok.NewError(http.StatusBadRequest, "out of service period")
+	ErrOutOfServicePeriod = grok.NewError(http.StatusBadRequest, "OUT_SERVICE_PERIOD", "out of service period")
 	// ErrCashoutLimitNotEnough ...
-	ErrCashoutLimitNotEnough = grok.NewError(http.StatusBadRequest, "cashout limit not enough")
+	ErrCashoutLimitNotEnough = grok.NewError(http.StatusBadRequest, "CASHOUT_LIMIT_NOT_ENOUGH", "cashout limit not enough")
 	// ErrInvalidParameter ...
-	ErrInvalidParameter = grok.NewError(http.StatusBadRequest, "invalid parameter")
+	ErrInvalidParameter = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER", "invalid parameter")
 	// ErrInvalidParameterLength ...
-	ErrInvalidParameterLength = grok.NewError(http.StatusBadRequest, "invalid parameter length")
+	ErrInvalidParameterLength = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER", "invalid parameter length")
 	// ErrInvalidAddressNumberLength ...
-	ErrInvalidAddressNumberLength = grok.NewError(http.StatusBadRequest, "invalid address number length")
+	ErrInvalidAddressNumberLength = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER", "invalid address number length")
 	// ErrInvalidRegisterNameLength ...
-	ErrInvalidRegisterNameLength = grok.NewError(http.StatusBadRequest, "invalid register name length")
+	ErrInvalidRegisterNameLength = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER", "invalid register name length")
 	// ErrInvalidParameterSpecialCharacters ...
-	ErrInvalidParameterSpecialCharacters = grok.NewError(http.StatusBadRequest, "invalid parameter with special characters")
+	ErrInvalidParameterSpecialCharacters = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER", "invalid parameter with special characters")
 	// ErrInvalidSocialNameLength ...
-	ErrInvalidSocialNameLength = grok.NewError(http.StatusBadRequest, "invalid social name length")
+	ErrInvalidSocialNameLength = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER", "invalid social name length")
 	// ErrInvalidEmailLength ...
-	ErrInvalidEmailLength = grok.NewError(http.StatusBadRequest, "invalid email length")
+	ErrInvalidEmailLength = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER", "invalid email length")
 	// ErrInvalidAPIEndpoint ...
-	ErrInvalidAPIEndpoint = grok.NewError(http.StatusBadRequest, "invalid api endpoint")
+	ErrInvalidAPIEndpoint = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER", "invalid api endpoint")
 	// ErrMethodNotAllowed ...
-	ErrMethodNotAllowed = grok.NewError(http.StatusMethodNotAllowed, "method not allowed")
+	ErrMethodNotAllowed = grok.NewError(http.StatusMethodNotAllowed, "INVALID_PARAMETER", "method not allowed")
 	// ErrSendDocumentAnalysis ...
-	ErrSendDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "send document analysis error")
+	ErrSendDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "INVALID_PARAMETER", "send document analysis error")
 	// ErrGetDocumentAnalysis ...
-	ErrGetDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "get document analysis error")
+	ErrGetDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "INVALID_PARAMETER", "get document analysis error")
 	// ErrScouterQuantity ...
-	ErrScouterQuantity = grok.NewError(http.StatusUnprocessableEntity, "max boleto amount per day reached")
+	ErrScouterQuantity = grok.NewError(http.StatusUnprocessableEntity, "INVALID_PARAMETER", "max boleto amount per day reached")
 	// ErrBoletoInvalidStatus ...
-	ErrBoletoInvalidStatus = grok.NewError(http.StatusUnprocessableEntity, "boleto was in an invalid status")
+	ErrBoletoInvalidStatus = grok.NewError(http.StatusUnprocessableEntity, "INVALID_PARAMETER", "boleto was in an invalid status")
 	// ErrBarcodeNotFound ...
-	ErrBarcodeNotFound = grok.NewError(http.StatusNotFound, "bar code not found")
+	ErrBarcodeNotFound = grok.NewError(http.StatusNotFound, "INVALID_PARAMETER", "bar code not found")
 	// ErrPaymentInvalidStatus ...
-	ErrPaymentInvalidStatus = grok.NewError(http.StatusUnprocessableEntity, "payment was in an invalid status")
+	ErrPaymentInvalidStatus = grok.NewError(http.StatusUnprocessableEntity, "INVALID_PARAMETER", "payment was in an invalid status")
 	// ErrDefaultTransfers ...
-	ErrDefaultTransfers = grok.NewError(http.StatusConflict, "error transfers")
+	ErrDefaultTransfers = grok.NewError(http.StatusConflict, "INVALID_PARAMETER", "error transfers")
 	// ErrDefaultFindTransfers ...
-	ErrDefaultFindTransfers = grok.NewError(http.StatusConflict, "error find transfers")
+	ErrDefaultFindTransfers = grok.NewError(http.StatusConflict, "INVALID_PARAMETER", "error find transfers")
 	// ErrDefaultPayment ...
-	ErrDefaultPayment = grok.NewError(http.StatusInternalServerError, "error payment")
+	ErrDefaultPayment = grok.NewError(http.StatusInternalServerError, "INVALID_PARAMETER", "error payment")
 	// ErrDefaultBusinessAccounts ...
-	ErrDefaultBusinessAccounts = grok.NewError(http.StatusInternalServerError, "error business accounts")
+	ErrDefaultBusinessAccounts = grok.NewError(http.StatusInternalServerError, "INVALID_PARAMETER", "error business accounts")
 	// ErrDefaultCustomersAccounts ...
-	ErrDefaultCustomersAccounts = grok.NewError(http.StatusInternalServerError, "error customers accounts")
+	ErrDefaultCustomersAccounts = grok.NewError(http.StatusInternalServerError, "INVALID_PARAMETER", "error customers accounts")
 	// ErrDefaultBalance ...
-	ErrDefaultBalance = grok.NewError(http.StatusInternalServerError, "error balance")
+	ErrDefaultBalance = grok.NewError(http.StatusInternalServerError, "INVALID_PARAMETER", "error balance")
 	// ErrDefaultLogin ...
-	ErrDefaultLogin = grok.NewError(http.StatusInternalServerError, "error login")
+	ErrDefaultLogin = grok.NewError(http.StatusInternalServerError, "INVALID_PARAMETER", "error login")
 	// ErrDefaultBank ...
-	ErrDefaultBank = grok.NewError(http.StatusInternalServerError, "error bank")
+	ErrDefaultBank = grok.NewError(http.StatusInternalServerError, "INVALID_PARAMETER", "error bank")
 	// ErrDefaultBankStatements ...
-	ErrDefaultBankStatements = grok.NewError(http.StatusInternalServerError, "error bank statements")
+	ErrDefaultBankStatements = grok.NewError(http.StatusInternalServerError, "INVALID_PARAMETER", "error bank statements")
 	// ErrDefaultIncomeReport ...
-	ErrDefaultIncomeReport = grok.NewError(http.StatusInternalServerError, "error income report")
+	ErrDefaultIncomeReport = grok.NewError(http.StatusInternalServerError, "INVALID_PARAMETER", "error income report")
 	//ErrDefaultBoletos ...
-	ErrDefaultBoletos = grok.NewError(http.StatusInternalServerError, "error bank boletos")
+	ErrDefaultBoletos = grok.NewError(http.StatusInternalServerError, "INVALID_PARAMETER", "error bank boletos")
 	// ErrDefaultFreshDesk ...
-	ErrDefaultFreshDesk = grok.NewError(http.StatusInternalServerError, "error in fresh desk api")
+	ErrDefaultFreshDesk = grok.NewError(http.StatusInternalServerError, "INVALID_PARAMETER", "error in fresh desk api")
 	// ErrFreshDeskTicketNotFound ...
-	ErrFreshDeskTicketNotFound = grok.NewError(http.StatusNotFound, "error in fresh desk ticket not found")
+	ErrFreshDeskTicketNotFound = grok.NewError(http.StatusNotFound, "INVALID_PARAMETER", "error in fresh desk ticket not found")
 	// ErrInvalidRecipientBranch ...
-	ErrInvalidRecipientBranch = grok.NewError(http.StatusConflict, "invalid recipient branch number")
+	ErrInvalidRecipientBranch = grok.NewError(http.StatusConflict, "INVALID_PARAMETER", "invalid recipient branch number")
 	// ErrInvalidRecipientAccount ...
-	ErrInvalidRecipientAccount = grok.NewError(http.StatusConflict, "invalid recipient account number")
+	ErrInvalidRecipientAccount = grok.NewError(http.StatusConflict, "INVALID_PARAMETER", "invalid recipient account number")
 	// ErrDefaultCard ...
-	ErrDefaultCard = grok.NewError(http.StatusInternalServerError, "error card")
+	ErrDefaultCard = grok.NewError(http.StatusInternalServerError, "INVALID_PARAMETER", "error card")
 	// ErrDefaultPix ...
-	ErrDefaultPix = grok.NewError(http.StatusInternalServerError, "error pix")
+	ErrDefaultPix = grok.NewError(http.StatusInternalServerError, "INVALID_PARAMETER", "error pix")
 	// ErrKeyNotFound ...
-	ErrKeyNotFound = grok.NewError(http.StatusNotFound, "key not found")
+	ErrKeyNotFound = grok.NewError(http.StatusNotFound, "INVALID_PARAMETER", "key not found")
 	// ErrInvalidQrCodePayload ...
-	ErrInvalidQrCodePayload = grok.NewError(http.StatusConflict, "invalid qrcode payload")
+	ErrInvalidQrCodePayload = grok.NewError(http.StatusConflict, "INVALID_PARAMETER", "invalid qrcode payload")
 	// ErrInvalidKeyType ...
-	ErrInvalidKeyType = grok.NewError(http.StatusUnprocessableEntity, "invalid key type")
+	ErrInvalidKeyType = grok.NewError(http.StatusUnprocessableEntity, "INVALID_PARAMETER", "invalid key type")
 	// ErrInvalidParameterPix ...
-	ErrInvalidParameterPix = grok.NewError(http.StatusUnprocessableEntity, "invalid parameter")
+	ErrInvalidParameterPix = grok.NewError(http.StatusUnprocessableEntity, "INVALID_PARAMETER", "invalid parameter")
 	// ErrInsufficientBalancePix ...
-	ErrInsufficientBalancePix = grok.NewError(http.StatusConflict, "invalid parameter")
+	ErrInsufficientBalancePix = grok.NewError(http.StatusConflict, "INVALID_PARAMETER", "invalid parameter")
 	// ErrInvalidAccountType ...
-	ErrInvalidAccountType = grok.NewError(http.StatusUnprocessableEntity, "invalid parameter")
+	ErrInvalidAccountType = grok.NewError(http.StatusUnprocessableEntity, "INVALID_PARAMETER", "invalid parameter")
 	// ErrCardActivate ...
-	ErrCardActivate = grok.NewError(http.StatusNotModified, "error card activate")
+	ErrCardActivate = grok.NewError(http.StatusNotModified, "INVALID_PARAMETER", "error card activate")
 	// ErrCardStatusUpdate ...
-	ErrCardStatusUpdate = grok.NewError(http.StatusNotModified, "error update status card")
+	ErrCardStatusUpdate = grok.NewError(http.StatusNotModified, "INVALID_PARAMETER", "error update status card")
 	// ErrCardPasswordUpdate ...
-	ErrCardPasswordUpdate = grok.NewError(http.StatusNotModified, "error update password card")
+	ErrCardPasswordUpdate = grok.NewError(http.StatusNotModified, "INVALID_PARAMETER", "error update password card")
 	// ErrInvalidPassword ...
-	ErrInvalidPassword = grok.NewError(http.StatusUnauthorized, "invalid password")
+	ErrInvalidPassword = grok.NewError(http.StatusUnauthorized, "INVALID_PARAMETER", "invalid password")
 	// ErrInvalidCardName ...
-	ErrInvalidCardName = grok.NewError(http.StatusBadRequest, "invalid card name")
+	ErrInvalidCardName = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER", "invalid card name")
 	// ErrInvalidIdentifier ...
-	ErrInvalidIdentifier = grok.NewError(http.StatusBadRequest, "invalid identifier")
+	ErrInvalidIdentifier = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER", "invalid identifier")
 	// ErrCardAlreadyActivated ...
-	ErrCardAlreadyActivated = grok.NewError(http.StatusConflict, "card already activated")
+	ErrCardAlreadyActivated = grok.NewError(http.StatusConflict, "INVALID_PARAMETER", "card already activated")
 	// ErrOperationNotAllowedCardStatus ...
-	ErrOperationNotAllowedCardStatus = grok.NewError(http.StatusMethodNotAllowed, "operation not allowed for current card status")
+	ErrOperationNotAllowedCardStatus = grok.NewError(http.StatusMethodNotAllowed, "INVALID_PARAMETER", "operation not allowed for current card status")
 	// ErrInvalidIncomeReportCalendar ...
-	ErrInvalidIncomeReportCalendar = grok.NewError(http.StatusBadRequest, "invalid income report calendar")
+	ErrInvalidIncomeReportCalendar = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER", "invalid income report calendar")
 	// ErrInvalidIncomeReportParameter ...
-	ErrInvalidIncomeReportParameter = grok.NewError(http.StatusBadRequest, "invalid income report parameter")
+	ErrInvalidIncomeReportParameter = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER", "invalid income report parameter")
 	// ErrDefaultCancelCustomersAccounts ...
-	ErrDefaultCancelCustomersAccounts = grok.NewError(http.StatusConflict, "error cancel customers accounts")
+	ErrDefaultCancelCustomersAccounts = grok.NewError(http.StatusConflict, "INVALID_PARAMETER", "error cancel customers accounts")
 	// ErrAccountNonZeroBalance ...
-	ErrAccountNonZeroBalance = grok.NewError(http.StatusConflict, "error account non zero balance")
+	ErrAccountNonZeroBalance = grok.NewError(http.StatusConflict, "INVALID_PARAMETER", "error account non zero balance")
 	// ErrAccountAlreadyBeenCanceled ...
-	ErrAccountAlreadyBeenCanceled = grok.NewError(http.StatusUnprocessableEntity, "error account already been canceled")
+	ErrAccountAlreadyBeenCanceled = grok.NewError(http.StatusUnprocessableEntity, "INVALID_PARAMETER", "error account already been canceled")
 	// ErrAccountNotFound ...
-	ErrAccountNotFound = grok.NewError(http.StatusNotFound, "error account not found")
+	ErrAccountNotFound = grok.NewError(http.StatusNotFound, "INVALID_PARAMETER", "error account not found")
 )
 
 // BanklyError ...
@@ -295,7 +295,7 @@ func FindError(code string, messages ...string) *Error {
 
 	return &Error{
 		ErrorKey:  code,
-		GrokError: grok.NewError(http.StatusConflict, messages...),
+		GrokError: grok.NewError(http.StatusConflict, code, messages...),
 	}
 }
 
@@ -306,7 +306,7 @@ func FindErrorByErrorModel(response ErrorModel) *Error {
 	}
 	return &Error{
 		ErrorKey:  response.Key,
-		GrokError: grok.NewError(http.StatusBadRequest, response.Value),
+		GrokError: grok.NewError(http.StatusBadRequest, response.Key, response.Value),
 	}
 }
 
@@ -354,7 +354,7 @@ func FindIncomeReportError(code string, messages ...string) *grok.Error {
 		}
 	}
 
-	return grok.NewError(http.StatusConflict, messages...)
+	return grok.NewError(http.StatusConflict, code, messages...)
 }
 
 // verifyInvalidIncomeReportParameter Find the correspondent error message for income reports.
@@ -409,7 +409,7 @@ func FindCardError(code string, messages ...string) *grok.Error {
 		}
 	}
 
-	return grok.NewError(http.StatusConflict, messages...)
+	return grok.NewError(http.StatusConflict, code, messages...)
 }
 
 // verifyInvalidCardParameter Find the correspondent error message for Cards.
@@ -488,7 +488,7 @@ func FindPixError(code string, messages ...string) *grok.Error {
 		}
 	}
 
-	return grok.NewError(http.StatusConflict, messages...)
+	return grok.NewError(http.StatusConflict, code, messages...)
 }
 
 // ParseErr ..
@@ -514,7 +514,7 @@ func FindTransferError(transferErrorResponse TransferErrorResponse) *grok.Error 
 			return v.grokError
 		}
 	}
-	return grok.NewError(http.StatusBadRequest, errorModel.Key+" - "+errorModel.Value)
+	return grok.NewError(http.StatusBadRequest, errorModel.Key, errorModel.Key+" - "+errorModel.Value)
 }
 
 func (e *Error) Error() string {

@@ -191,7 +191,7 @@ func handleResponse(resp *http.Response, fields logrus.Fields, handler ErrorHand
 	}
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-	return nil, grok.NewError(resp.StatusCode, string(respBody))
+	return nil, grok.NewError(resp.StatusCode, "DEFAULT_ERROR", string(respBody))
 }
 
 func (client *BanklyHttpClient) getEndpointAPI(fields logrus.Fields, URLpath string) (string, error) {
