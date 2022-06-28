@@ -12,7 +12,7 @@ jobs:
   run-tests:
     <<: *defaults
     docker:
-    - image: circleci/golang:1.14
+    - image: circleci/golang:1.17
     steps:
       - checkout
       - run:
@@ -27,7 +27,7 @@ jobs:
   release-vesion:
     <<: *defaults
     docker:
-    - image: circleci/golang:1.14
+    - image: circleci/golang:1.17
     steps:
       - add_ssh_keys:
           fingerprints:
