@@ -998,7 +998,7 @@ type CardTrackingStatus struct {
 	Reason      string    `json:"reason,omitempty"`
 }
 
-type Finalized []struct {
+type Finalized struct {
 	RecipientName    string    `json:"recipientName,omitempty"`
 	RecipientKinship string    `json:"recipientKinship,omitempty"`
 	Identifier   	 string    `json:"documentNumber,omitempty"`
