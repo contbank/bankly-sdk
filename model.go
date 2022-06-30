@@ -214,6 +214,7 @@ type CardAddress struct {
 	City         string  `validate:"required" json:"city,omitempty"`
 	State        string  `validate:"required" json:"state,omitempty"`
 	Country      string  `validate:"required" json:"country,omitempty"`
+	IsActive     bool    `json:"isActive,omitempty"`
 }
 
 type BoletoAddress struct {
@@ -981,7 +982,7 @@ type CardTrackingResponse struct {
 	EstimatedDeliveryDate time.Time             `json:"estimatedDeliveryDate,omitempty"`
 	Function              string                `json:"function,omitempty"`
 	ExternalTracking      CardExternalTracking  `json:"externalTracking,omitempty"`
-	Address               []CardTrackingAddress `json:"address,omitempty"`
+	Address               []CardAddress         `json:"address,omitempty"`
 	Status                []CardTrackingStatus  `json:"status,omitempty"`
 	Finalized             []Finalized           `json:"finalized,omitempty"`
 }
@@ -995,18 +996,6 @@ type CardTrackingStatus struct {
 	CreatedDate time.Time `json:"createdDate,omitempty"`
 	Type        string    `json:"type,omitempty"`
 	Reason      string    `json:"reason,omitempty"`
-}
-
-type CardTrackingAddress struct {
-	ZipCode      string `json:"zipCode,omitempty"`
-	Address      string `json:"address,omitempty"`
-	Number       string `json:"number,omitempty"`
-	Neighborhood string `json:"neighborhood,omitempty"`
-	Complement   string `json:"complement,omitempty"`
-	City         string `json:"city,omitempty"`
-	State        string `json:"state,omitempty"`
-	Country      string `json:"country,omitempty"`
-	IsActive     bool   `json:"isActive,omitempty"`
 }
 
 type Finalized []struct {
