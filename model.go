@@ -1010,11 +1010,11 @@ type CardTrackingAddress struct {
 }
 
 type Finalized []struct {
-	CreatedDate      time.Time `json:"createdDate,omitempty"`
 	RecipientName    string    `json:"recipientName,omitempty"`
 	RecipientKinship string    `json:"recipientKinship,omitempty"`
-	DocumentNumber   string    `json:"documentNumber,omitempty"`
+	Identifier   	 string    `json:"documentNumber,omitempty"`
 	Attempts         int       `json:"attempts,omitempty"`
+	CreatedDate      time.Time `json:"createdDate,omitempty"`
 }
 
 // ParseDocumentAnalysisResponse ....
