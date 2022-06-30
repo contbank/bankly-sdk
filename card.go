@@ -483,11 +483,11 @@ func (c *Card) GetPCIByProxy(ctx context.Context, proxy *string, cardPCIDTO *Car
 	return nil, ErrDefaultCard
 }
 
-// GetTrackingByProxy
+// GetTrackingByProxy ...
 func (c *Card) GetTrackingByProxy(ctx context.Context, proxy *string) (*CardTrackingResponse, error) {
 	fields := logrus.Fields{
-		"request_id": GetRequestID(ctx),
-		"proxy":      proxy,
+		"request_id" : GetRequestID(ctx),
+		"proxy" : proxy,
 	}
 
 	if proxy == nil {
@@ -508,13 +508,12 @@ func (c *Card) GetTrackingByProxy(ctx context.Context, proxy *string) (*CardTrac
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
-	if resp.StatusCode == http.StatusOK {
+	if respBody != nil && resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusAccepted {
 		var response *CardTrackingResponse
 
 		err = json.Unmarshal(respBody, &response)
-
 		if err != nil {
-			logrus.WithFields(fields).WithError(err).Error("error unmarshal")
+			logrus.WithFields(fields).WithError(err).Error("error unmarshal - card tracking")
 			return nil, err
 		}
 
@@ -525,6 +524,7 @@ func (c *Card) GetTrackingByProxy(ctx context.Context, proxy *string) (*CardTrac
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
+		logrus.WithFields(fields).WithError(ErrEntryNotFound).Error("entry not found - card tracking")
 		return nil, ErrEntryNotFound
 	}
 
@@ -540,9 +540,7 @@ func (c *Card) GetTrackingByProxy(ctx context.Context, proxy *string) (*CardTrac
 		return nil, FindError(errModel.Code, errModel.Messages...)
 	}
 
-	logrus.WithFields(fields).
-		Error("error default card response - FindRegistration")
-
+	logrus.WithFields(fields).WithError(ErrDefaultCard).Error("error response - card tracking")
 	return nil, ErrDefaultCard
 }
 
