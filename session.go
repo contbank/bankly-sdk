@@ -1,7 +1,6 @@
 package bankly
 
 import (
-	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"net/http"
@@ -81,13 +80,7 @@ func NewSession(config Config) (*Session, error) {
 	}
 
 	if config.Mtls {
-		client := NewClient(config, CreateMtlsHTTPClient(*config.Certificate))
-		resp, err := client.Register(context.Background())
-
-		if err != nil {
-			panic(err)
-		}
-		config.ClientID = &resp.ClientID
+		config.ClientID = &config.Certificate.ClientID
 	}
 
 	var session = &Session{

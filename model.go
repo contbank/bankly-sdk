@@ -976,15 +976,15 @@ type CardPCIResponse struct {
 }
 
 type CardTrackingResponse struct {
-	CreatedDate           time.Time             `json:"createdDate,omitempty"`
-	Name                  string                `json:"name,omitempty"`
-	Alias                 string                `json:"alias,omitempty"`
-	EstimatedDeliveryDate time.Time             `json:"estimatedDeliveryDate,omitempty"`
-	Function              string                `json:"function,omitempty"`
-	ExternalTracking      CardExternalTracking  `json:"externalTracking,omitempty"`
-	Address               []CardAddress         `json:"address,omitempty"`
-	Status                []CardTrackingStatus  `json:"status,omitempty"`
-	Finalized             []Finalized           `json:"finalized,omitempty"`
+	CreatedDate           time.Time            `json:"createdDate,omitempty"`
+	Name                  string               `json:"name,omitempty"`
+	Alias                 string               `json:"alias,omitempty"`
+	EstimatedDeliveryDate time.Time            `json:"estimatedDeliveryDate,omitempty"`
+	Function              string               `json:"function,omitempty"`
+	ExternalTracking      CardExternalTracking `json:"externalTracking,omitempty"`
+	Address               []CardAddress        `json:"address,omitempty"`
+	Status                []CardTrackingStatus `json:"status,omitempty"`
+	Finalized             []Finalized          `json:"finalized,omitempty"`
 }
 
 type CardExternalTracking struct {
@@ -1001,7 +1001,7 @@ type CardTrackingStatus struct {
 type Finalized struct {
 	RecipientName    string    `json:"recipientName,omitempty"`
 	RecipientKinship string    `json:"recipientKinship,omitempty"`
-	Identifier   	 string    `json:"documentNumber,omitempty"`
+	Identifier       string    `json:"documentNumber,omitempty"`
 	Attempts         int       `json:"attempts,omitempty"`
 	CreatedDate      time.Time `json:"createdDate,omitempty"`
 }
@@ -1469,4 +1469,5 @@ type Certificate struct {
 	PrivateKey       string `json:"privateKey"`
 	Passphrase       string `json:"passphrase"`
 	UUID             string `json:"uuid"`
+	ClientID         string `json:"client_id"`
 }
