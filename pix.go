@@ -45,12 +45,20 @@ func (p *Pix) GetAddressKeysByAccount(ctx context.Context, accountNumber string,
 
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
+
+	response := []*PixTypeValue{}
+
+	if resp.StatusCode == http.StatusNoContent {
+		logrus.WithFields(fields).Info("no data found")
+		return response, nil
+	}
+
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
 		return nil, err
 	}
 
-	response := []*PixTypeValue{}
+
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
