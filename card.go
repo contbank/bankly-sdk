@@ -361,7 +361,10 @@ func (c *Card) ContactlessCardByProxy(ctx context.Context, proxy *string,
 	}
 
 	q := endpoint.Query()
-	q.Set("allowContactless", fmt.Sprintf("%s", strconv.FormatBool(cardContactlessDTO.Active)))
+
+	allowContactless := fmt.Sprintf("%s", strconv.FormatBool(cardContactlessDTO.Active))
+	q.Set("allowContactless", allowContactless)
+
 	endpoint.RawQuery = q.Encode()
 	fields["url"] = endpoint.String()
 
