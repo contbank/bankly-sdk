@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/contbank/grok"
@@ -361,10 +360,11 @@ func (c *Card) ContactlessCardByProxy(ctx context.Context, proxy *string,
 	}
 
 	q := endpoint.Query()
-
-	allowContactless := fmt.Sprintf("%s", strconv.FormatBool(cardContactlessDTO.Active))
-	q.Set("allowContactless", allowContactless)
-
+	if cardContactlessDTO.Active {
+		q.Set("allowContactless", "true")
+	} else {
+		q.Set("allowContactless", "false")
+	}
 	endpoint.RawQuery = q.Encode()
 	fields["url"] = endpoint.String()
 
