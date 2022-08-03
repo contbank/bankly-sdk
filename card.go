@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/contbank/grok"
@@ -302,7 +303,7 @@ func (c *Card) UpdateStatusCardByProxy(ctx context.Context, proxy *string,
 	return nil
 }
 
-// ActivateCardByProxy
+// ActivateCardByProxy ...
 func (c *Card) ActivateCardByProxy(ctx context.Context, proxy *string,
 	cardActivateDTO *CardActivateDTO) error {
 
@@ -338,7 +339,47 @@ func (c *Card) ActivateCardByProxy(ctx context.Context, proxy *string,
 	return nil
 }
 
-// UpdatePasswordByProxy
+// ContactlessCardByProxy ...
+func (c *Card) ContactlessCardByProxy(ctx context.Context, proxy *string,
+	cardContactlessDTO *CardContactlessDTO) error {
+	fields := logrus.Fields{
+		"request_id": GetRequestID(ctx),
+		"proxy" : proxy,
+		"object" : cardContactlessDTO,
+	}
+
+	if proxy == nil || cardContactlessDTO == nil {
+		logrus.WithFields(fields).WithError(ErrInvalidParameter).Error("error invalid parameter")
+		return ErrInvalidParameter
+	}
+
+	endpoint, err := url.Parse(fmt.Sprintf("cards/%s/contactless", *proxy))
+	if err != nil {
+		logrus.WithError(err).Error("error while parsing url")
+		return err
+	}
+
+	q := endpoint.Query()
+	q.Set("allowContactless", fmt.Sprintf("%b", cardContactlessDTO.Active))
+	endpoint.RawQuery = q.Encode()
+	fields["url"] = endpoint.String()
+
+	response, err := c.httpClient.Patch(ctx, endpoint.String(), nil, nil)
+
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return err
+	} else if response != nil &&
+		response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted {
+		logrus.WithFields(fields).WithError(ErrCardActivate).Error(ErrCardActivate)
+		return ErrCardActivate
+	}
+
+	logrus.WithFields(fields).Info("update card contactless successfully")
+	return nil
+}
+
+// UpdatePasswordByProxy ...
 func (c *Card) UpdatePasswordByProxy(ctx context.Context, proxy *string,
 	cardUpdatePasswordDTO *CardUpdatePasswordDTO) error {
 
@@ -544,7 +585,7 @@ func (c *Card) GetTrackingByProxy(ctx context.Context, proxy *string) (*CardTrac
 	return nil, ErrDefaultCard
 }
 
-//CardErrorHandler ...
+// CardErrorHandler ...
 func CardErrorHandler(fields logrus.Fields, resp *http.Response) error {
 	var bodyErr *ErrorResponse
 
