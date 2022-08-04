@@ -84,7 +84,7 @@ func (p *TransactionalHashTOTP) TransactionalHashValidate(ctx context.Context, t
 	header := http.Header{}
 	header.Add("x-bkly-user-id", identifier)
 
-	resp, err := p.httpClient.Patch(ctx, url, transactional, &header)
+	resp, err := p.httpClient.Patch(ctx, url, transactional, nil, &header)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
