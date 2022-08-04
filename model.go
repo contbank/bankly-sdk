@@ -1257,6 +1257,7 @@ type PixCashOutBankResponse struct {
 type PixCashOutSenderResponse struct {
 	Account        PixCashOutAccountResponse `json:"account"`
 	Bank           PixCashOutBankResponse    `json:"bank"`
+	DocumentType   string                    `json:"documentType"`
 	DocumentNumber string                    `json:"documentNumber"`
 	Name           string                    `json:"name"`
 }
@@ -1264,6 +1265,7 @@ type PixCashOutSenderResponse struct {
 type PixCashOutRecipientResponse struct {
 	Account        PixCashOutAccountResponse `json:"account"`
 	Bank           PixCashOutBankResponse    `json:"bank"`
+	DocumentType   string                    `json:"documentType"`
 	DocumentNumber string                    `json:"documentNumber"`
 	Name           string                    `json:"name"`
 }
@@ -1347,8 +1349,10 @@ type PixQrCodeDecodeResponse struct {
 type PixCashOutByAuthenticationCodeResponse struct {
 	CompanyKey         string                      `json:"companyKey"`
 	AuthenticationCode string                      `json:"authenticationCode"`
+	EndToEndID         string                      `json:"endToEndId"`
 	InitializationType string                      `json:"initializationType"`
 	Amount             float64                     `json:"amount"`
+	Description        string                      `json:"description"`
 	CorrelationID      string                      `json:"correlationId"`
 	Sender             PixCashOutSenderResponse    `json:"sender"`
 	Recipient          PixCashOutRecipientResponse `json:"recipient"`

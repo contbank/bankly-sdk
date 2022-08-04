@@ -177,9 +177,10 @@ func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest,
 // GetCashOutByAuthenticationCode ...
 func (p *Pix) GetCashOutByAuthenticationCode(ctx context.Context, accountNumber string,
 	authenticationCode string) (*PixCashOutByAuthenticationCodeResponse, error) {
+
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id":          requestID,
+		"request_id" : requestID,
 		"authentication_code": authenticationCode,
 	}
 
