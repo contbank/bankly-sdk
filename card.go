@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/contbank/grok"
@@ -288,7 +288,7 @@ func (c *Card) UpdateStatusCardByProxy(ctx context.Context, proxy *string,
 	url := fmt.Sprintf("cards/%s/status", *proxy)
 	fields["url"] = url
 
-	response, err := c.httpClient.Patch(ctx, url, cardUpdateStatusDTO, nil)
+	response, err := c.httpClient.Patch(ctx, url, cardUpdateStatusDTO, nil,nil)
 
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
@@ -324,7 +324,7 @@ func (c *Card) ActivateCardByProxy(ctx context.Context, proxy *string,
 	url := fmt.Sprintf("cards/%s/activate", *proxy)
 	fields["url"] = url
 
-	response, err := c.httpClient.Patch(ctx, url, cardActivateDTO, nil)
+	response, err := c.httpClient.Patch(ctx, url, cardActivateDTO, nil, nil)
 
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
@@ -353,22 +353,14 @@ func (c *Card) ContactlessCardByProxy(ctx context.Context, proxy *string,
 		return ErrInvalidParameter
 	}
 
-	endpoint, err := url.Parse(fmt.Sprintf("cards/%s/contactless", *proxy))
-	if err != nil {
-		logrus.WithError(err).Error("error while parsing url")
-		return err
-	}
+	// endpoint url
+	url := fmt.Sprintf("cards/%s/contactless", *proxy)
+	fields["url"] = url
 
-	q := endpoint.Query()
-	if cardContactlessDTO.Active {
-		q.Set("allowContactless", "true")
-	} else {
-		q.Set("allowContactless", "false")
-	}
-	endpoint.RawQuery = q.Encode()
-	fields["url"] = endpoint.String()
+	query := make(map[string]string)
+	query["allowContactless"] = strconv.FormatBool(cardContactlessDTO.Active)
 
-	response, err := c.httpClient.Patch(ctx, endpoint.String(), nil, nil)
+	response, err := c.httpClient.Patch(ctx, url, nil, query, nil)
 
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
@@ -404,7 +396,7 @@ func (c *Card) UpdatePasswordByProxy(ctx context.Context, proxy *string,
 	url := fmt.Sprintf("cards/%s/password", *proxy)
 	fields["url"] = url
 
-	resp, err := c.httpClient.Patch(ctx, url, cardUpdatePasswordDTO, nil)
+	resp, err := c.httpClient.Patch(ctx, url, cardUpdatePasswordDTO, nil, nil)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return err
