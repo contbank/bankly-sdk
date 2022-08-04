@@ -1129,7 +1129,7 @@ type CardActivateDTO struct {
 }
 
 type CardContactlessDTO struct {
-	Active bool   `validate:"required" json:"active"`
+	Active bool `json:"active"`
 }
 
 type CardUpdatePasswordDTO struct {

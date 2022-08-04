@@ -358,10 +358,7 @@ func (c *Card) ContactlessCardByProxy(ctx context.Context, proxy *string,
 	fields["url"] = url
 
 	query := make(map[string]string)
-	query["allowContactless"] = "true"
-	if !cardContactlessDTO.Active {
-		query["allowContactless"] = "false"
-	}
+	query["allowContactless"] = strconv.FormatBool(cardContactlessDTO.Active)
 
 	response, err := c.httpClient.Patch(ctx, url, nil, query, nil)
 
