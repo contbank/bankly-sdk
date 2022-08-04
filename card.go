@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/contbank/grok"
@@ -359,10 +360,7 @@ func (c *Card) ContactlessCardByProxy(ctx context.Context, proxy *string,
 	logrus.WithFields(fields).Info("processing contactless")
 
 	query := make(map[string]string)
-	query["allowContactless"] = "true"
-	if !cardContactlessDTO.Active {
-		query["allowContactless"] = "false"
-	}
+	query["allowContactless"] = strconv.FormatBool(cardContactlessDTO.Active)
 
 	response, err := c.httpClient.Patch(ctx, url, nil, query, nil)
 
