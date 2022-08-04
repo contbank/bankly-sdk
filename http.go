@@ -138,7 +138,7 @@ func (client *BanklyHttpClient) Get(ctx context.Context, url string, query map[s
 	return handleResponse(resp, fields, client.errorHandler)
 }
 
-func (client *BanklyHttpClient) Patch(ctx context.Context, url string, body interface{}, header *http.Header) (*http.Response, error) {
+func (client *BanklyHttpClient) Patch(ctx context.Context, url string, body interface{}, query map[string]string, header *http.Header) (*http.Response, error) {
 	fields := initLog(ctx)
 	data, err := json.Marshal(body)
 	if err != nil {
@@ -147,6 +147,10 @@ func (client *BanklyHttpClient) Patch(ctx context.Context, url string, body inte
 	}
 
 	endpoint, _ := client.getEndpointAPI(fields, url)
+
+	if query != nil {
+		endpoint = buildQueryParams(endpoint, query)
+	}
 
 	req, err := http.NewRequestWithContext(ctx, PATCH, endpoint, bytes.NewReader(data))
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/contbank/grok"
@@ -287,7 +288,7 @@ func (c *Card) UpdateStatusCardByProxy(ctx context.Context, proxy *string,
 	url := fmt.Sprintf("cards/%s/status", *proxy)
 	fields["url"] = url
 
-	response, err := c.httpClient.Patch(ctx, url, cardUpdateStatusDTO, nil)
+	response, err := c.httpClient.Patch(ctx, url, cardUpdateStatusDTO, nil,nil)
 
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
@@ -302,7 +303,7 @@ func (c *Card) UpdateStatusCardByProxy(ctx context.Context, proxy *string,
 	return nil
 }
 
-// ActivateCardByProxy
+// ActivateCardByProxy ...
 func (c *Card) ActivateCardByProxy(ctx context.Context, proxy *string,
 	cardActivateDTO *CardActivateDTO) error {
 
@@ -323,7 +324,7 @@ func (c *Card) ActivateCardByProxy(ctx context.Context, proxy *string,
 	url := fmt.Sprintf("cards/%s/activate", *proxy)
 	fields["url"] = url
 
-	response, err := c.httpClient.Patch(ctx, url, cardActivateDTO, nil)
+	response, err := c.httpClient.Patch(ctx, url, cardActivateDTO, nil, nil)
 
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
@@ -338,7 +339,45 @@ func (c *Card) ActivateCardByProxy(ctx context.Context, proxy *string,
 	return nil
 }
 
-// UpdatePasswordByProxy
+// ContactlessCardByProxy ...
+func (c *Card) ContactlessCardByProxy(ctx context.Context, proxy *string,
+	cardContactlessDTO *CardContactlessDTO) error {
+	fields := logrus.Fields{
+		"request_id": GetRequestID(ctx),
+		"proxy" : proxy,
+		"object" : cardContactlessDTO,
+	}
+
+	if proxy == nil || cardContactlessDTO == nil {
+		logrus.WithFields(fields).WithError(ErrInvalidParameter).Error("error invalid parameter")
+		return ErrInvalidParameter
+	}
+
+	// endpoint url
+	url := fmt.Sprintf("cards/%s/contactless", *proxy)
+	fields["url"] = url
+
+	logrus.WithFields(fields).Info("processing contactless")
+
+	query := make(map[string]string)
+	query["allowContactless"] = strconv.FormatBool(cardContactlessDTO.Active)
+
+	response, err := c.httpClient.Patch(ctx, url, nil, query, nil)
+
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return err
+	} else if response != nil &&
+		response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted {
+		logrus.WithFields(fields).WithError(ErrCardActivate).Error(ErrCardActivate)
+		return ErrCardActivate
+	}
+
+	logrus.WithFields(fields).Info("update card contactless successfully")
+	return nil
+}
+
+// UpdatePasswordByProxy ...
 func (c *Card) UpdatePasswordByProxy(ctx context.Context, proxy *string,
 	cardUpdatePasswordDTO *CardUpdatePasswordDTO) error {
 
@@ -359,7 +398,7 @@ func (c *Card) UpdatePasswordByProxy(ctx context.Context, proxy *string,
 	url := fmt.Sprintf("cards/%s/password", *proxy)
 	fields["url"] = url
 
-	resp, err := c.httpClient.Patch(ctx, url, cardUpdatePasswordDTO, nil)
+	resp, err := c.httpClient.Patch(ctx, url, cardUpdatePasswordDTO, nil, nil)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return err
@@ -544,7 +583,7 @@ func (c *Card) GetTrackingByProxy(ctx context.Context, proxy *string) (*CardTrac
 	return nil, ErrDefaultCard
 }
 
-//CardErrorHandler ...
+// CardErrorHandler ...
 func CardErrorHandler(fields logrus.Fields, resp *http.Response) error {
 	var bodyErr *ErrorResponse
 

@@ -1128,6 +1128,10 @@ type CardActivateDTO struct {
 	ActivateCode string `json:"activateCode"`
 }
 
+type CardContactlessDTO struct {
+	Active bool `json:"active"`
+}
+
 type CardUpdatePasswordDTO struct {
 	Password string `json:"password"`
 }
