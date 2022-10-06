@@ -598,6 +598,12 @@ type BoletoAmount struct {
 	Currency string  `json:"currency,omitempty"`
 }
 
+// BoletoMinimumAmount ...
+type BoletoMinimumAmount struct {
+	Value    float64 `json:"value,omitempty"`
+	Currency string  `json:"currency,omitempty"`
+}
+
 // BoletoPayment ...
 type BoletoPayment struct {
 	ID             string    `json:"id,omitempty"`
@@ -608,26 +614,27 @@ type BoletoPayment struct {
 
 // BoletoDetailedResponse ...
 type BoletoDetailedResponse struct {
-	Alias              *string          `json:"alias,omitempty"`
-	AuthenticationCode string           `json:"authenticationCode,omitempty"`
-	Digitable          string           `json:"digitable,omitempty"`
-	Status             string           `json:"status,omitempty"`
-	Document           string           `json:"document,omitempty"`
-	DueDate            time.Time        `json:"dueDate,omitempty"`
-	EmissionFee        bool             `json:"emissionFee,omitempty"`
-	OurNumber          string           `json:"ourNumber,omitempty"`
-	Type               BoletoType       `json:"type,omitempty"`
-	Amount             *BoletoAmount    `json:"amount,omitempty"`
-	Account            *Account         `json:"account,omitempty"`
-	Payer              *Payer           `json:"payer,omitempty"`
-	RecipientFinal     *Payer           `json:"recipientFinal,omitempty"`
-	RecipientOrigin    *Payer           `json:"recipientOrigin,omitempty"`
-	Payments           []*BoletoPayment `json:"payments,omitempty"`
-
-	// API is returning error for this field
-	// EmissionDate time.Time `json:"emissionDate,omitempty"`
-
-	UpdatedAt time.Time `json:"updatedAt,omitempty"`
+	Alias              *string              `json:"alias,omitempty"`
+	AuthenticationCode string               `json:"authenticationCode,omitempty"`
+	Digitable          string               `json:"digitable,omitempty"`
+	Status             string               `json:"status,omitempty"`
+	Document           string               `json:"document,omitempty"`
+	DueDate            time.Time            `json:"dueDate,omitempty"`
+	ClosePayment       *time.Time           `json:"closePayment,omitempty"`
+	EmissionDate       *time.Time           `json:"emissionDate,omitempty"` // API is returning error for this field
+	OurNumber          string               `json:"ourNumber,omitempty"`
+	Type               BoletoType           `json:"type,omitempty"`
+	Amount             *BoletoAmount        `json:"amount,omitempty"`
+	MinimumAmount      *BoletoMinimumAmount `json:"minimumAmount,omitempty"`
+	Account            *Account             `json:"account,omitempty"`
+	Payer              *Payer               `json:"payer,omitempty"`
+	RecipientFinal     *Payer               `json:"recipientFinal,omitempty"`
+	RecipientOrigin    *Payer               `json:"recipientOrigin,omitempty"`
+	Payments           []*BoletoPayment     `json:"payments,omitempty"`
+	Interest           *BoletoInterest      `json:"interest,omitempty"`
+	Fine               *BoletoFine          `json:"fine,omitempty"`
+	Discounts          *BoletoDiscounts     `json:"discount,omitempty"`
+	UpdatedAt          time.Time            `json:"updatedAt,omitempty"`
 }
 
 //FilterBoletoData ...

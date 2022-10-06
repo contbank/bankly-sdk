@@ -125,18 +125,15 @@ func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*Bole
 
 // FindBoleto ...
 func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*BoletoDetailedResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id": requestID,
+		"request_id": GetRequestID(ctx),
+		"object":     model,
 	}
 
 	u, err := url.Parse(b.session.APIEndpoint)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error parsing api endpoint")
+		logrus.WithFields(fields).
+			WithError(err).Error("error parsing api endpoint")
 		return nil, err
 	}
 
@@ -149,22 +146,17 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 	endpoint := u.String()
 
 	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error creating request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error creating request")
 		return nil, err
 	}
 
 	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error in authentication request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error in authentication request")
 		return nil, err
 	}
 
@@ -172,12 +164,9 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 	req.Header.Add("api-version", b.session.APIVersion)
 
 	resp, err := b.httpClient.Do(req)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error performing the request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error performing the request")
 		return nil, err
 	}
 
@@ -189,12 +178,9 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 		var response *BoletoDetailedResponse
 
 		err = json.Unmarshal(respBody, &response)
-
 		if err != nil {
-			logrus.
-				WithFields(fields).
-				WithError(err).
-				Error("error decoding json response")
+			logrus.WithFields(fields).
+				WithError(err).Error("error decoding json response")
 			return nil, ErrDefaultBoletos
 		}
 
@@ -210,21 +196,16 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 	err = json.Unmarshal(respBody, &bodyErr)
 
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error decoding json response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultBoletos
 	}
 
 	if len(bodyErr.Errors) > 0 {
 		errModel := bodyErr.Errors[0]
 		err = FindError(errModel.Code, errModel.Messages...)
-		logrus.
-			WithField("bankly_error", bodyErr).
-			WithFields(fields).
-			WithError(err).
-			Error("bankly find boleto error")
+		logrus.WithField("bankly_error", bodyErr).WithFields(fields).
+			WithError(err).Error("bankly find boleto error")
 		return nil, err
 	}
 
