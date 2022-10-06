@@ -63,8 +63,6 @@ var (
 	ErrSendDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "SEND_DOCUMENT_ANALYSIS_ERROR", "send document analysis error")
 	// ErrGetDocumentAnalysis ...
 	ErrGetDocumentAnalysis = grok.NewError(http.StatusMethodNotAllowed, "GET_DOCUMENT_ANALYSIS_ERROR", "get document analysis error")
-	// ErrScouterQuantity ...
-	ErrScouterQuantity = grok.NewError(http.StatusUnprocessableEntity, "SCOUTER_QUANTITY_ERROR", "max boleto amount per day reached")
 	// ErrBoletoInvalidStatus ...
 	ErrBoletoInvalidStatus = grok.NewError(http.StatusUnprocessableEntity, "INVALID_BOLETO_STATUS", "boleto was in an invalid status")
 	// ErrBarcodeNotFound ...
@@ -92,7 +90,7 @@ var (
 	// ErrDefaultIncomeReport ...
 	ErrDefaultIncomeReport = grok.NewError(http.StatusInternalServerError, "INCOME_REPORT_ERROR", "error income report")
 	//ErrDefaultBoletos ...
-	ErrDefaultBoletos = grok.NewError(http.StatusInternalServerError, "BOLETOS_ERROR", "error bank boletos")
+	ErrDefaultBoletos = grok.NewError(http.StatusInternalServerError, "BOLETOS_ERROR", "error boletos bankly")
 	// ErrDefaultFreshDesk ...
 	ErrDefaultFreshDesk = grok.NewError(http.StatusInternalServerError, "FRESH_DESK_ERROR", "error in fresh desk api")
 	// ErrFreshDeskTicketNotFound ...
@@ -125,6 +123,10 @@ var (
 	ErrCardPasswordUpdate = grok.NewError(http.StatusNotModified, "CARD_PASSWORD_UPDATE_ERROR", "error update password card")
 	// ErrInvalidPassword ...
 	ErrInvalidPassword = grok.NewError(http.StatusUnauthorized, "INVALID_PASSWORD", "invalid password")
+	// ErrUnauthorized ...
+	ErrUnauthorized = grok.NewError(http.StatusUnauthorized, "UNAUTHORIZED", "error unauthorized")
+	// ErrBlockedByRiskAanalysis ...
+	ErrBlockedByRiskAanalysis = grok.NewError(http.StatusForbidden, "BLOCKED", "blocked")
 	// ErrInvalidCardName ...
 	ErrInvalidCardName = grok.NewError(http.StatusBadRequest, "INVALID_CARD_NAME", "invalid card name")
 	// ErrInvalidIdentifier ...
@@ -159,6 +161,8 @@ var (
 	ErrInvalidBankBranch = grok.NewError(http.StatusBadRequest, "INVALID_BANK_BRANCH", "error invalid bank branch")
 	// ErrInvalidBankAccount ...
 	ErrInvalidBankAccount = grok.NewError(http.StatusBadRequest, "INVALID_BANK_ACCOUNT", "error invalid bank account number")
+	// ErrInvalidBankAccountOrBranch ...
+	ErrInvalidBankAccountOrBranch = grok.NewError(http.StatusBadRequest, "INVALID_BANK_ACCOUNT_OR_BRANCH", "error invalid account number or branch")
 	// ErrRecipientAccountDoesNotMatchTheDocument ...
 	ErrRecipientAccountDoesNotMatchTheDocument = grok.NewError(http.StatusBadRequest, "RECIPIENT_ACCOUNT_DOES_NOT_MATCH_THE_DOCUMENT", "error recipient account does not match the document")
 	// ErrSenderAccountDoesNotMatchTheDocument ...
@@ -175,7 +179,14 @@ var (
 	ErrScheduleNotAllowed = grok.NewError(http.StatusBadRequest, "SCHEDULE_NOT_ALLOWED", "error schedule not allowed")
 	// ErrInvalidEndToEndId ...
 	ErrInvalidEndToEndId = grok.NewError(http.StatusBadRequest, "INVALID_END_TO_END_ID", "error invalid end to end id")
-
+	//ErrInvalidIssuerAddress ...
+	ErrInvalidIssuerAddress = grok.NewError(http.StatusBadRequest, "INVALID_ISSUER_ADDRESS", "error invalid issuer address")
+	// ErrScouterQuantity ...
+	ErrScouterQuantity = grok.NewError(http.StatusUnprocessableEntity, "SCOUTER_QUANTITY_ERROR", "error max boleto reached")
+	// ErrAmountNotAllowed ...
+	ErrAmountNotAllowed = grok.NewError(http.StatusBadRequest, "AMOUNT_NOT_ALLOWED", "error amount not allowed")
+	// ErrInvalidName ...
+	ErrInvalidName = grok.NewError(http.StatusBadRequest, "INVALID_NAME", "error invalid name")
 )
 
 // BanklyError ...
@@ -626,4 +637,48 @@ func (e *Error) Error() string {
 		e.ErrorKey,
 		strings.Join(e.GrokError.Messages, "\n"),
 	)
+}
+
+// errorBoletoList ...
+var errorBoletoList = []Error{
+	{
+		ErrorKey:  "ACCOUNT_VALIDATE",
+		GrokError: ErrInvalidBankAccountOrBranch,
+	},
+	{
+		ErrorKey:  "REGISTEREDNAME_INVALID",
+		GrokError: ErrInvalidName,
+	},
+	{
+		ErrorKey:  "ADDRESS_INVALID",
+		GrokError: ErrInvalidIssuerAddress,
+	},
+	{
+		ErrorKey:  "ACCOUNT_INTERNAL_ERROR",
+		GrokError: ErrDefaultBoletos,
+	},
+	{
+		ErrorKey:  "SCOUTER_QUANTITY",
+		GrokError: ErrScouterQuantity,
+	},
+	{
+		ErrorKey:  "SCOUTER_MAXIMUM_AMOUNT",
+		GrokError: ErrAmountNotAllowed,
+	},
+	{
+		ErrorKey:  "SCOUTER_MINIMUM_AMOUNT",
+		GrokError: ErrAmountNotAllowed,
+	},
+	{
+		ErrorKey:  "INVALID_PARAMETER",
+		GrokError: ErrInvalidParameter,
+	},
+	{
+		ErrorKey:  "BANKSLIP_UNAUTHORIZED",
+		GrokError: ErrUnauthorized,
+	},
+	{
+		ErrorKey:  "BLOCKED_BY_RISK_ANALYSIS",
+		GrokError: ErrBlockedByRiskAanalysis,
+	},
 }

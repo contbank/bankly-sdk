@@ -137,6 +137,15 @@ func IsOnlyDigits(value string) bool {
 	return true
 }
 
+// OnlyDate ...
+func OnlyDate(datetime *time.Time) *time.Time {
+	if datetime == nil {
+		return nil
+	}
+	response := time.Date(datetime.Year(), datetime.Month(), datetime.Day(), 00, 00, 00, 00, time.UTC)
+	return &response
+}
+
 // RandStringBytes ...
 func RandStringBytes(n int) string {
 	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"

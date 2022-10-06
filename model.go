@@ -217,6 +217,7 @@ type CardAddress struct {
 	IsActive     bool    `json:"isActive,omitempty"`
 }
 
+// BoletoAddress ...
 type BoletoAddress struct {
 	AddressLine string `validate:"required" json:"addressLine,omitempty"`
 	ZipCode     string `validate:"required" json:"zipCode,omitempty"`
@@ -239,9 +240,20 @@ type Payer struct {
 	Address   *BoletoAddress `validate:"required" json:"address,omitempty"`
 }
 
+// BoletoPayer ...
+type BoletoPayer struct {
+	Name      string         `validate:"required,max=50" json:"name,omitempty"`
+	TradeName string         `validate:"max=80" json:"tradeName,omitempty"`
+	Document  string         `validate:"required,cnpjcpf" json:"document,omitempty"`
+	Address   *BoletoAddress `validate:"required" json:"address,omitempty"`
+}
+
 // ErrorResponse ...
 type ErrorResponse struct {
 	Errors    []ErrorModel `json:"errors,omitempty"`
+	Title     string       `json:"title,omitempty"`
+	Status    int32        `json:"status,omitempty"`
+	TraceId   string       `json:"traceId,omitempty"`
 	Reference string       `json:"reference,omitempty"`
 	CodeMessageErrorResponse
 }
@@ -506,20 +518,24 @@ type BusinessAccountRequest struct {
 type BoletoType string
 
 const (
-	Deposit BoletoType = "Deposit"
-	Levy    BoletoType = "Levy"
+	Deposit BoletoType = "Deposit" // depósito (quando emitente é o próprio pagador)
+	Levy    BoletoType = "Levy"    // cobrança (quando emitente é diferente do pagador)
+	Invoice BoletoType = "Invoice" // cartão de crédito
 )
 
 //BoletoRequest ...
 type BoletoRequest struct {
-	Alias       *string    `json:"alias,omitempty"`
-	Document    string     `validate:"required,cnpjcpf" json:"documentNumber,omitempty"`
-	Amount      float64    `validate:"required" json:"amount,omitempty"`
-	DueDate     time.Time  `validate:"required" json:"dueDate,omitempty"`
-	EmissionFee bool       `json:"emissionFee,omitempty"`
-	Type        BoletoType `validate:"required" json:"type,omitempty"`
-	Account     *Account   `validate:"required" json:"account,omitempty"`
-	Payer       *Payer     `validate:"required" json:"payer,omitempty"`
+	Alias        *string          `json:"alias,omitempty"`
+	Document     string           `validate:"required,cnpjcpf" json:"documentNumber,omitempty"`
+	Amount       float64          `validate:"required" json:"amount,omitempty"`
+	DueDate      time.Time        `validate:"required" json:"dueDate,omitempty"`
+	Type         BoletoType       `validate:"required" json:"type,omitempty"`
+	Account      *Account         `validate:"required" json:"account,omitempty"`
+	Payer        *BoletoPayer     `json:"payer,omitempty"`
+	Interest     *BoletoInterest  `json:"interest,omitempty"`
+	Fine         *BoletoFine      `json:"fine,omitempty"`
+	Discounts    *BoletoDiscounts `json:"discounts,omitempty"`
+	ClosePayment time.Time        `json:"closePayment,omitempty"`
 }
 
 //BoletoResponse ...
@@ -528,13 +544,61 @@ type BoletoResponse struct {
 	Account            *Account `json:"account,omitempty"`
 }
 
-//BoletoAmount ...
+// BoletoInterestType ...
+type BoletoInterestType string
+
+const (
+	AmountPerBusinessDay       BoletoInterestType = "AmountPerBusinessDay"
+	AmountPerCalendaryDay      BoletoInterestType = "AmountPerCalendaryDay"
+	PercentPerMonth            BoletoInterestType = "PercentPerMonth"
+	PercentPerMonthBusinessDay BoletoInterestType = "PercentPerMonthBusinessDay"
+	Free                       BoletoInterestType = "Free"
+)
+
+// BoletoInterest ...
+type BoletoInterest struct {
+	StartDate time.Time          `validate:"required" json:"startDate,omitempty"`
+	Value     float64            `validate:"required" json:"value,omitempty"`
+	Type      BoletoInterestType `validate:"required" json:"type,omitempty"`
+}
+
+// BoletoFineType ...
+type BoletoFineType string
+
+const (
+	FixedAmount BoletoFineType = "FixedAmount"
+	Percent     BoletoFineType = "Percent"
+)
+
+// BoletoFine ...
+type BoletoFine struct {
+	StartDate time.Time      `validate:"required" json:"startDate,omitempty"`
+	Value     float64        `validate:"required" json:"value,omitempty"`
+	Type      BoletoFineType `validate:"required" json:"type,omitempty"`
+}
+
+// BoletoDiscountsType ...
+type BoletoDiscountsType string
+
+const (
+	FixedAmountUntilLimitDate  BoletoDiscountsType = "FixedAmountUntilLimitDate"
+	FixedPercentUntilLimitDate BoletoDiscountsType = "FixedPercentUntilLimitDate"
+)
+
+// BoletoDiscounts ...
+type BoletoDiscounts struct {
+	LimitDate time.Time           `json:"limitDate"`
+	Value     float64             `validate:"required" json:"value,omitempty"`
+	Type      BoletoDiscountsType `validate:"required" json:"type,omitempty"`
+}
+
+// BoletoAmount ...
 type BoletoAmount struct {
 	Value    float64 `json:"value,omitempty"`
 	Currency string  `json:"currency,omitempty"`
 }
 
-//BoletoPayment ...
+// BoletoPayment ...
 type BoletoPayment struct {
 	ID             string    `json:"id,omitempty"`
 	Amount         float64   `json:"amount,omitempty"`
@@ -542,13 +606,13 @@ type BoletoPayment struct {
 	PaidOutDate    time.Time `json:"paidOutDate,omitempty"`
 }
 
-//BoletoDetailedResponse ...
+// BoletoDetailedResponse ...
 type BoletoDetailedResponse struct {
 	Alias              *string          `json:"alias,omitempty"`
 	AuthenticationCode string           `json:"authenticationCode,omitempty"`
 	Digitable          string           `json:"digitable,omitempty"`
 	Status             string           `json:"status,omitempty"`
-	Document           string           `json:"documentNumber,omitempty"`
+	Document           string           `json:"document,omitempty"`
 	DueDate            time.Time        `json:"dueDate,omitempty"`
 	EmissionFee        bool             `json:"emissionFee,omitempty"`
 	OurNumber          string           `json:"ourNumber,omitempty"`

@@ -1,6 +1,10 @@
 package bankly_test
 
 import (
+	"context"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/contbank/grok"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"testing"
 	"time"
@@ -12,6 +16,7 @@ import (
 
 type BoletosTestSuite struct {
 	suite.Suite
+	ctx       context.Context
 	assert    *assert.Assertions
 	session   *bankly.Session
 	boletos   *bankly.Boletos
@@ -23,6 +28,7 @@ func TestBoletosTestSuite(t *testing.T) {
 }
 
 func (s *BoletosTestSuite) SetupTest() {
+	s.ctx = context.Background()
 	s.assert = assert.New(s.T())
 
 	session, err := bankly.NewSession(bankly.Config{
@@ -42,222 +48,175 @@ func (s *BoletosTestSuite) SetupTest() {
 	s.customers = bankly.NewCustomers(httpClient, *s.session)
 }
 
-// func (s *BoletosTestSuite) TestCreateBoleto() {
+// TestCreateBoleto_TypeLevy ...
+func (s *BoletosTestSuite) TestCreateBoleto_TypeLevy() {
+	s.ctx = context.WithValue(s.ctx, "Request-Id", primitive.NewObjectID().String())
 
-// 	res, err := s.boletos.CreateBoleto(context.Background(), &bankly.BoletoRequest{
-// 		Document: "36183588814",
-// 		Amount:   100,
-// 		DueDate:  time.Now().Add(24 * time.Hour),
-// 		Type:     bankly.Levy,
-// 		Account: &bankly.Account{
-// 			Branch: "0001",
-// 			Number: "184152",
-// 		},
-// 		Payer: &bankly.Payer{
-// 			Name:      grok.GeneratorIDBase(50) + grok.GeneratorIDBase(50),
-// 			TradeName: grok.GeneratorIDBase(500),
-// 			Document:  "36183588814",
-// 			Address: &bankly.BoletoAddress{
-// 				AddressLine: grok.GeneratorIDBase(24) + " " + grok.GeneratorIDBase(34),
-// 				ZipCode:     grok.GeneratorIDBase(500),
-// 				State:       grok.GeneratorIDBase(500),
-// 				City:        grok.GeneratorIDBase(500),
-// 			},
-// 		},
-// 	})
+	request := createBoletoRequest(bankly.Levy)
+	response, err := s.boletos.CreateBoleto(s.ctx, request)
 
-// 	s.assert.NoError(err)
-// 	s.assert.NotEmpty(res.Account)
-// 	s.assert.NotEmpty(res.Account.Branch)
-// 	s.assert.NotEmpty(res.Account.Number)
-// 	s.assert.NotEmpty(res.AuthenticationCode)
-// }
-
-/*
-
-func (s *BoletosTestSuite) TestFindBoleto() {
-	document, account := s.createCustomerAndAccount()
-	boleto := s.createBoleto(document, account)
-
-	res, err := s.boletos.CreateBoleto(boleto)
 	s.assert.NoError(err)
+	s.assert.NotEmpty(response)
+	s.assert.NotEmpty(response.AuthenticationCode)
+	s.assert.Equal(request.Account.Branch, response.Account.Branch)
+	s.assert.Equal(request.Account.Number, response.Account.Number)
+}
 
-	req := &bankly.FindBoletoRequest{
-		AuthenticationCode: res.AuthenticationCode,
+// TestCreateBoleto_TypeDeposit ...
+func (s *BoletosTestSuite) TestCreateBoleto_TypeDeposit() {
+	s.ctx = context.WithValue(s.ctx, "Request-Id", primitive.NewObjectID().String())
+
+	request := createBoletoRequest(bankly.Deposit)
+	response, err := s.boletos.CreateBoleto(s.ctx, request)
+
+	s.assert.NoError(err)
+	s.assert.NotEmpty(response)
+	s.assert.NotEmpty(response.AuthenticationCode)
+	s.assert.Equal(request.Account.Branch, response.Account.Branch)
+	s.assert.Equal(request.Account.Number, response.Account.Number)
+}
+
+// TestCreateBoleto_InvalidNameLength ...
+func (s *BoletosTestSuite) TestCreateBoleto_InvalidNameLength() {
+	s.ctx = context.WithValue(s.ctx, "Request-Id", primitive.NewObjectID().String())
+
+	request := createBoletoRequest(bankly.Levy)
+	request.Payer.Name = grok.GeneratorIDBase(51)
+	response, err := s.boletos.CreateBoleto(s.ctx, request)
+
+	s.assert.Error(err)
+	s.assert.Empty(response)
+}
+
+// TestCreateBoleto_InvalidTradeNameLength ...
+func (s *BoletosTestSuite) TestCreateBoleto_InvalidTradeNameLength() {
+	s.ctx = context.WithValue(s.ctx, "Request-Id", primitive.NewObjectID().String())
+
+	request := createBoletoRequest(bankly.Levy)
+	request.Payer.Name = grok.GeneratorIDBase(81)
+	response, err := s.boletos.CreateBoleto(s.ctx, request)
+
+	s.assert.Error(err)
+	s.assert.Empty(response)
+}
+
+// TestFindBoleto ...
+func (s *BoletosTestSuite) TestFindBoleto() {
+	s.ctx = context.WithValue(s.ctx, "Request-Id", primitive.NewObjectID().String())
+
+	// create boleto
+	request := createBoletoRequest(bankly.Deposit)
+	response, err := s.boletos.CreateBoleto(s.ctx, request)
+
+	s.assert.NoError(err)
+	s.assert.NotEmpty(response)
+
+	findRequest := &bankly.FindBoletoRequest{
+		AuthenticationCode: response.AuthenticationCode,
 		Account: &bankly.Account{
-			Branch: res.Account.Branch,
-			Number: res.Account.Number,
+			Branch: response.Account.Branch,
+			Number: response.Account.Number,
 		},
 	}
 
-	r, err := s.boletos.FindBoleto(req)
+	// find boleto
+	r, err := s.boletos.FindBoleto(s.ctx, findRequest)
+
 	s.assert.NoError(err)
 	s.assert.NotNil(r)
+	s.assert.Equal(request.Account.Number, r.Account.Number)
+	s.assert.Equal(findRequest.AuthenticationCode, r.AuthenticationCode)
 }
 
-// func (s *BoletosTestSuite) TestFilterBoleto() {
-// 	document, account := s.createCustomerAndAccount()
-// 	boleto := s.createBoleto(document, account)
-
-// 	_, err := s.boletos.CreateBoleto(boleto)
-// 	s.assert.NoError(err)
-
-// 	r, err := s.boletos.FilterBoleto(time.Now().Add(-24 * time.Hour))
-// 	s.assert.NoError(err)
-// 	s.assert.NotNil(r)
-// }
-
-// func (s *BoletosTestSuite) TestFindBoletoByBarCode() {
-// 	document, account := s.createCustomerAndAccount()
-// 	boleto := s.createBoleto(document, account)
-
-// 	res, err := s.boletos.CreateBoleto(boleto)
-// 	s.assert.NoError(err)
-
-// 	req := &bankly.FindBoletoRequest{
-// 		AuthenticationCode: res.AuthenticationCode,
-// 		Account: &bankly.Account{
-// 			Branch: res.Account.Branch,
-// 			Number: res.Account.Number,
-// 		},
-// 	}
-
-// 	r, err := s.boletos.FindBoleto(req)
-// 	s.assert.NoError(err)
-
-// 	r2, err := s.boletos.FindBoletoByBarCode(r.Digitable)
-// 	s.assert.NoError(err)
-// 	s.assert.NotNil(r2)
-// }
-
-func (s *BoletosTestSuite) TestDownloadBoleto() {
-	document, account := s.createCustomerAndAccount()
-	boleto := s.createBoleto(document, account)
-
-	res, err := s.boletos.CreateBoleto(boleto)
-	s.assert.NoError(err)
-
-	f, err := ioutil.TempFile(os.TempDir(), "temp-")
-	s.assert.NoError(err)
-
-	defer func() {
-		f.Close()
-		os.Remove(f.Name())
-	}()
-
-	err = s.boletos.DownloadBoleto(res.AuthenticationCode, f)
-	s.assert.NoError(err)
-
-	stats, err := f.Stat()
-	s.assert.NoError(err)
-	s.assert.NotZero(stats.Size())
-}
-
-
+// TestCancelBoleto
 func (s *BoletosTestSuite) TestCancelBoleto() {
-	document, account := s.createCustomerAndAccount()
-	boleto := s.createBoleto(document, account)
+	s.T().Skip("Necessário mockar")
 
-	res, err := s.boletos.CreateBoleto(boleto)
+	s.ctx = context.WithValue(s.ctx, "Request-Id", primitive.NewObjectID().String())
+
+	// create boleto
+	request := createBoletoRequest(bankly.Deposit)
+	response, err := s.boletos.CreateBoleto(s.ctx, request)
+
 	s.assert.NoError(err)
+	s.assert.NotEmpty(response)
 
-	req := &bankly.CancelBoletoRequest{
-		AuthenticationCode: res.AuthenticationCode,
+	// time.Sleep(time.Second * 3)
+
+	// cancel boleto
+	err = s.boletos.CancelBoleto(s.ctx,
+		&bankly.CancelBoletoRequest{
+			AuthenticationCode: response.AuthenticationCode,
+			Account: &bankly.Account{
+				Number: response.Account.Number,
+				Branch: response.Account.Branch,
+			},
+		})
+
+	s.assert.NoError(err)
+}
+
+// createBoletoRequest create BoletoRequest object to tests
+func createBoletoRequest(boletoType bankly.BoletoType) *bankly.BoletoRequest {
+	dueDate := time.Now().Add(24 * time.Hour * 10)           // today + 10 days
+	limitePaymentDate := time.Now().Add(24 * time.Hour * 60) // today + 60 days
+	request := &bankly.BoletoRequest{
+		Document: "36183588814",
+		Amount:   21.61,
+		DueDate:  dueDate,
+		Type:     boletoType,
 		Account: &bankly.Account{
-			Number: res.Account.Number,
-			Branch: res.Account.Branch,
+			Branch: "0001",
+			Number: "184152",
 		},
+		Alias:        aws.String(grok.GeneratorIDBase(15)),
+		ClosePayment: limitePaymentDate,
 	}
-
-	err = s.boletos.CancelBoleto(req)
-	s.assert.NoError(err)
-
+	if boletoType == bankly.Levy || boletoType == bankly.Invoice {
+		request.Payer = &bankly.BoletoPayer{
+			Name:      grok.GeneratorIDBase(25) + grok.GeneratorIDBase(25),
+			TradeName: grok.GeneratorIDBase(80),
+			Document:  grok.GeneratorCPF(),
+			Address: &bankly.BoletoAddress{
+				AddressLine: "Rua da Consolação, 1234",
+				ZipCode:     grok.OnlyDigits("01301100"),
+				State:       "SP",
+				City:        "São Paulo",
+			},
+		}
+		request.Interest = createInterest(dueDate)
+		request.Fine = createFine(dueDate)
+		request.Discounts = createDiscount(dueDate)
+	}
+	return request
 }
 
-func (s *BoletosTestSuite) TestPayBoleto() {
-	document, account := s.createCustomerAndAccount()
-	boleto := s.createBoleto(document, account)
-
-	res, err := s.boletos.CreateBoleto(boleto)
-	s.assert.NoError(err)
-
-	req := &bankly.PayBoletoRequest{
-		AuthenticationCode: res.AuthenticationCode,
-		Account: &bankly.Account{
-			Number: res.Account.Number,
-			Branch: res.Account.Branch,
-		},
-	}
-
-	err = s.boletos.PayBoleto(req)
-	s.assert.NoError(err)
-}
-
-func (s *BoletosTestSuite) createBoleto(document string, account *bankly.Account) *bankly.BoletoRequest {
-	return &bankly.BoletoRequest{
-		Alias:       bankly.String(bankly.RandStringBytes(12)),
-		Document:    document,
-		Amount:      1547.55,
-		DueDate:     time.Now().Add(48 * time.Hour),
-		EmissionFee: false,
-		Type:        bankly.Levy,
-		Account:     account,
-		Payer:       s.createPayer(),
+// createInterest create interest object to test
+func createInterest(dueDate time.Time) *bankly.BoletoInterest {
+	dueDate1D := dueDate.Add(24 * time.Hour)
+	return &bankly.BoletoInterest{
+		StartDate: *bankly.OnlyDate(&dueDate1D),
+		Value:     2.00,
+		Type:      bankly.PercentPerMonth,
 	}
 }
 
-func (s *BoletosTestSuite) createPayer() *bankly.Payer {
-	return &bankly.Payer{
-		Name:      bankly.RandStringBytes(9),
-		TradeName: bankly.RandStringBytes(15),
-		Document:  bankly.GeneratorCPF(),
-		Address:   s.createAddress(),
+// createFine create fine object to test
+func createFine(dueDate time.Time) *bankly.BoletoFine {
+	dueDate1D := dueDate.Add(24 * time.Hour)
+	return &bankly.BoletoFine{
+		StartDate: *bankly.OnlyDate(&dueDate1D),
+		Value:     1.75,
+		Type:      bankly.Percent,
 	}
 }
 
-func (s *BoletosTestSuite) createAddress() *bankly.Address {
-	return &bankly.Address{
-		ZipCode:        "03503030",
-		City:           "São Paulo",
-		AddressLine:    "Rua Fulano de Tal",
-		BuildingNumber: "1000",
-		Neighborhood:   "Chácara Califórnia",
-		State:          "SP",
-		Country:        "BR",
+// createDiscount create discount object to test
+func createDiscount(dueDate time.Time) *bankly.BoletoDiscounts {
+	previousDate := dueDate.Add(24 * time.Hour * -1)
+	return &bankly.BoletoDiscounts{
+		LimitDate: *bankly.OnlyDate(&previousDate),
+		Value:     1.75,
+		Type:      bankly.FixedPercentUntilLimitDate,
 	}
 }
-
-func (s *BoletosTestSuite) createCustomerAndAccount() (string, *bankly.Account) {
-	document := bankly.GeneratorCPF()
-	cellphone := bankly.GeneratorCellphone()
-	surname := bankly.RandStringBytes(10)
-	email := "email_de_teste_" + surname + "@contbank.com"
-
-	req := bankly.CustomersRequest{
-		Document: document,
-		Phone: &bankly.Phone{
-			CountryCode: "55",
-			Number:      cellphone,
-		},
-		Address:      s.createAddress(),
-		RegisterName: "Nome da Pessoa " + surname,
-		BirthDate:    time.Date(1993, time.March, 25, 0, 0, 0, 0, time.UTC),
-		MotherName:   "Nome da Mãe da Pessoa " + surname,
-		Email:        email,
-	}
-
-	err := s.customers.CreateRegistration(req)
-	s.assert.NoError(err)
-
-	time.Sleep(2 * time.Second)
-
-	account, err := s.customers.CreateAccount(document, bankly.PaymentAccount)
-	s.assert.NoError(err)
-	s.assert.NotNil(account)
-
-	return document, &bankly.Account{
-		Branch: account.Branch,
-		Number: account.Number,
-	}
-}
-*/
