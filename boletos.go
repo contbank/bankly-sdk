@@ -271,7 +271,7 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 	}
 	u.Path = path.Join(u.Path, BoletosPath)
 	u.Path = path.Join(u.Path, "searchstatus")
-	u.Path = path.Join(u.Path, url.QueryEscape(date.UTC().Format("2006-01-02T15:04:05")))
+	u.Path = path.Join(u.Path, url.QueryEscape(date.UTC().Format("2006-01-02")))
 	endpoint := u.String()
 
 	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
