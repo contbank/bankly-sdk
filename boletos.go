@@ -15,14 +15,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//Boletos ...
+// Boletos ...
 type Boletos struct {
 	session        Session
 	httpClient     *http.Client
 	authentication *Authentication
 }
 
-//NewBoletos ...
+// NewBoletos ...
 func NewBoletos(httpClient *http.Client, session Session) *Boletos {
 	return &Boletos{
 		session:        session,
@@ -31,57 +31,45 @@ func NewBoletos(httpClient *http.Client, session Session) *Boletos {
 	}
 }
 
-//CreateBoleto ...
+// CreateBoleto ...
 func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*BoletoResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id": requestID,
+		"request_id": GetRequestID(ctx),
+		"object":     model,
 	}
 
+	// validator
 	if err := grok.Validator.Struct(model); err != nil {
 		return nil, grok.FromValidationErros(err)
 	}
 
 	u, err := url.Parse(b.session.APIEndpoint)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error parsing api endpoint")
+		logrus.WithFields(fields).
+			WithError(err).Error("error parsing api endpoint")
 		return nil, err
 	}
-
 	u.Path = path.Join(u.Path, BoletosPath)
 	endpoint := u.String()
 
 	reqbyte, err := json.Marshal(model)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error encoding model to json")
+		logrus.WithFields(fields).
+			WithError(err).Error("error encoding model to json")
 		return nil, err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, bytes.NewReader(reqbyte))
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error creating request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error creating request")
 		return nil, err
 	}
 
 	token, err := b.authentication.Token(ctx)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error in authentication request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error in authentication request")
 		return nil, err
 	}
 
@@ -89,13 +77,11 @@ func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*Bole
 	req.Header.Add("Content-type", "application/json")
 	req.Header.Add("api-version", b.session.APIVersion)
 
+	// call bankly
 	resp, err := b.httpClient.Do(req)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error performing the request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error performing the request")
 		return nil, err
 	}
 
@@ -107,12 +93,9 @@ func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*Bole
 		var body *BoletoResponse
 
 		err = json.Unmarshal(respBody, &body)
-
 		if err != nil {
-			logrus.
-				WithFields(fields).
-				WithError(err).
-				Error("error decoding json response")
+			logrus.WithFields(fields).
+				WithError(err).Error("error decoding json response")
 			return nil, ErrDefaultBoletos
 		}
 
@@ -124,41 +107,33 @@ func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*Bole
 	err = json.Unmarshal(respBody, &bodyErr)
 
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error decoding json response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultBoletos
 	}
 
 	if len(bodyErr) > 0 {
 		errModel := bodyErr[0]
 		err = FindError(errModel.Code, errModel.Message)
-		logrus.
-			WithField("bankly_error", bodyErr).
-			WithFields(fields).
-			WithError(err).
-			Error("bankly create boleto error")
+		logrus.WithField("bankly_error", bodyErr).WithFields(fields).
+			WithError(err).Error("bankly create boleto error")
 		return nil, err
 	}
 
 	return nil, ErrDefaultBoletos
 }
 
-//FindBoleto ...
+// FindBoleto ...
 func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*BoletoDetailedResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id": requestID,
+		"request_id": GetRequestID(ctx),
+		"object":     model,
 	}
 
 	u, err := url.Parse(b.session.APIEndpoint)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error parsing api endpoint")
+		logrus.WithFields(fields).
+			WithError(err).Error("error parsing api endpoint")
 		return nil, err
 	}
 
@@ -171,22 +146,17 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 	endpoint := u.String()
 
 	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error creating request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error creating request")
 		return nil, err
 	}
 
 	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error in authentication request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error in authentication request")
 		return nil, err
 	}
 
@@ -194,12 +164,9 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 	req.Header.Add("api-version", b.session.APIVersion)
 
 	resp, err := b.httpClient.Do(req)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error performing the request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error performing the request")
 		return nil, err
 	}
 
@@ -211,12 +178,9 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 		var response *BoletoDetailedResponse
 
 		err = json.Unmarshal(respBody, &response)
-
 		if err != nil {
-			logrus.
-				WithFields(fields).
-				WithError(err).
-				Error("error decoding json response")
+			logrus.WithFields(fields).
+				WithError(err).Error("error decoding json response")
 			return nil, ErrDefaultBoletos
 		}
 
@@ -232,28 +196,23 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 	err = json.Unmarshal(respBody, &bodyErr)
 
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error decoding json response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultBoletos
 	}
 
 	if len(bodyErr.Errors) > 0 {
 		errModel := bodyErr.Errors[0]
 		err = FindError(errModel.Code, errModel.Messages...)
-		logrus.
-			WithField("bankly_error", bodyErr).
-			WithFields(fields).
-			WithError(err).
-			Error("bankly find boleto error")
+		logrus.WithField("bankly_error", bodyErr).WithFields(fields).
+			WithError(err).Error("bankly find boleto error")
 		return nil, err
 	}
 
 	return nil, ErrDefaultBoletos
 }
 
-//FilterBoleto ...
+// FilterBoleto ...
 func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBoletoResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
@@ -353,7 +312,7 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 	return nil, ErrDefaultBoletos
 }
 
-//FindBoletoByBarCode ...
+// FindBoletoByBarCode ...
 func (b *Boletos) FindBoletoByBarCode(ctx context.Context, barcode string) (*BoletoDetailedResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
@@ -458,7 +417,7 @@ func (b *Boletos) FindBoletoByBarCode(ctx context.Context, barcode string) (*Bol
 	return nil, ErrDefaultBoletos
 }
 
-//DownloadBoleto ...
+// DownloadBoleto ...
 func (b *Boletos) DownloadBoleto(ctx context.Context, authenticationCode string, w io.Writer) error {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
@@ -529,60 +488,50 @@ func (b *Boletos) DownloadBoleto(ctx context.Context, authenticationCode string,
 	return ErrDefaultBoletos
 }
 
-//CancelBoleto ...
+// CancelBoleto ...
 func (b *Boletos) CancelBoleto(ctx context.Context, model *CancelBoletoRequest) error {
-	requestID, _ := ctx.Value("Request-Id").(string)
+
 	fields := logrus.Fields{
-		"request_id": requestID,
+		"request_id": GetRequestID(ctx),
+		"object":     model,
 	}
 
+	// validator
 	err := grok.Validator.Struct(model)
-
 	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error cancel boleto validator")
 		return grok.FromValidationErros(err)
 	}
 
 	u, err := url.Parse(b.session.APIEndpoint)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error parsing api endpoint")
+		logrus.WithFields(fields).
+			WithError(err).Error("error parsing api endpoint")
 		return err
 	}
-
 	u.Path = path.Join(u.Path, BoletosPath)
 	u.Path = path.Join(u.Path, "cancel")
 	endpoint := u.String()
 
+	// mashal
 	reqbyte, err := json.Marshal(model)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error encoding model to json")
+		logrus.WithFields(fields).
+			WithError(err).Error("error encoding model to json")
 		return err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "DELETE", endpoint, bytes.NewReader(reqbyte))
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error creating request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error creating request")
 		return err
 	}
 
 	token, err := b.authentication.Token(ctx)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error in authentication request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error in authentication request")
 		return err
 	}
 
@@ -590,13 +539,11 @@ func (b *Boletos) CancelBoleto(ctx context.Context, model *CancelBoletoRequest) 
 	req.Header.Add("Content-type", "application/json")
 	req.Header.Add("api-version", b.session.APIVersion)
 
+	// call bankly
 	resp, err := b.httpClient.Do(req)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error performing the request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error performing the request")
 		return err
 	}
 
@@ -606,10 +553,12 @@ func (b *Boletos) CancelBoleto(ctx context.Context, model *CancelBoletoRequest) 
 		return nil
 	}
 
+	logrus.WithFields(fields).Error("error default - cancel boletos")
+
 	return ErrDefaultBoletos
 }
 
-//SimulatePayment ...
+// SimulatePayment ...
 func (b *Boletos) SimulatePayment(ctx context.Context, model *SimulatePaymentRequest) error {
 	err := grok.Validator.Struct(model)
 

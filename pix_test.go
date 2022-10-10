@@ -93,6 +93,8 @@ func (c *PixTestSuite) TestQrCodeDecode_OK() {
 }
 
 func (c *PixTestSuite) TestCreatePixByCPF_OK() {
+	c.T().Skip("Está retornando erro 504 Gateway Timeout")
+
 	addressingKeyValue := "41345365373"
 
 	c.pix.DeleteAddressKey(context.Background(), addressingKeyValue, addressingKeyValue)
