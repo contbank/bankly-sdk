@@ -378,30 +378,18 @@ func (c *Card) ContactlessCardByProxy(ctx context.Context, proxy *string,
 }
 
 // UpdatePasswordByProxy ...
-func (c *Card) UpdatePasswordByProxy(ctx context.Context, proxy *string,
-	cardUpdatePasswordDTO *CardUpdatePasswordDTO) error {
-
-	cardLog := *cardUpdatePasswordDTO
-	cardLog.Password = ""
-
+func (c *Card) UpdatePasswordByProxy(ctx context.Context, proxy string, model CardUpdatePasswordDTO) error {
 	fields := logrus.Fields{
 		"request_id": GetRequestID(ctx),
 		"proxy":      proxy,
-		"object":     cardLog,
 	}
 
-	if proxy == nil || cardUpdatePasswordDTO == nil {
-		logrus.WithFields(fields).WithField("error_key", "ERROR-CARD-0001").
-			WithError(ErrInvalidParameter).Error("error invalid parameter")
-		return ErrInvalidParameter
-	}
-
-	url := fmt.Sprintf("cards/%s/password", *proxy)
+	url := fmt.Sprintf("cards/%s/password", proxy)
 	fields["url"] = url
 
 	logrus.WithFields(fields).Info("updating card password at bankly")
 
-	resp, err := c.httpClient.Patch(ctx, url, cardUpdatePasswordDTO, nil, nil)
+	resp, err := c.httpClient.Patch(ctx, url, model, nil, nil)
 	if err != nil {
 		logrus.WithFields(fields).WithField("error_key", "ERROR-CARD-0002").
 			WithError(err).Error(err.Error())

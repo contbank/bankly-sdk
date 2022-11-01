@@ -140,6 +140,7 @@ func (client *BanklyHttpClient) Get(ctx context.Context, url string, query map[s
 
 func (client *BanklyHttpClient) Patch(ctx context.Context, url string, body interface{}, query map[string]string, header *http.Header) (*http.Response, error) {
 	fields := initLog(ctx)
+
 	data, err := json.Marshal(body)
 	if err != nil {
 		logrus.WithFields(fields).WithField("error_key", "ERROR-PATCH-0001").
