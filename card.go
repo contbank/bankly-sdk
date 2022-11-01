@@ -288,7 +288,7 @@ func (c *Card) UpdateStatusCardByProxy(ctx context.Context, proxy *string,
 	url := fmt.Sprintf("cards/%s/status", *proxy)
 	fields["url"] = url
 
-	response, err := c.httpClient.Patch(ctx, url, cardUpdateStatusDTO, nil,nil)
+	response, err := c.httpClient.Patch(ctx, url, cardUpdateStatusDTO, nil, nil)
 
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
@@ -344,8 +344,8 @@ func (c *Card) ContactlessCardByProxy(ctx context.Context, proxy *string,
 	cardContactlessDTO *CardContactlessDTO) error {
 	fields := logrus.Fields{
 		"request_id": GetRequestID(ctx),
-		"proxy" : proxy,
-		"object" : cardContactlessDTO,
+		"proxy":      proxy,
+		"object":     cardContactlessDTO,
 	}
 
 	if proxy == nil || cardContactlessDTO == nil {
@@ -398,13 +398,17 @@ func (c *Card) UpdatePasswordByProxy(ctx context.Context, proxy *string,
 	url := fmt.Sprintf("cards/%s/password", *proxy)
 	fields["url"] = url
 
+	logrus.WithFields(fields).Info("updating card password at bankly")
+
 	resp, err := c.httpClient.Patch(ctx, url, cardUpdatePasswordDTO, nil, nil)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		logrus.WithFields(fields).WithField("error_key", "ERROR-CARD-0001").
+			WithError(err).Error(err.Error())
 		return err
 	} else if resp != nil &&
 		resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted {
-		logrus.WithFields(fields).WithError(ErrCardPasswordUpdate).Error(ErrCardPasswordUpdate.Error())
+		logrus.WithFields(fields).WithField("error_key", "ERROR-CARD-0002").
+			WithError(ErrCardPasswordUpdate).Error(ErrCardPasswordUpdate.Error())
 		return err
 	}
 
@@ -525,8 +529,8 @@ func (c *Card) GetPCIByProxy(ctx context.Context, proxy *string, cardPCIDTO *Car
 // GetTrackingByProxy ...
 func (c *Card) GetTrackingByProxy(ctx context.Context, proxy *string) (*CardTrackingResponse, error) {
 	fields := logrus.Fields{
-		"request_id" : GetRequestID(ctx),
-		"proxy" : proxy,
+		"request_id": GetRequestID(ctx),
+		"proxy":      proxy,
 	}
 
 	if proxy == nil {
@@ -600,7 +604,7 @@ func CardErrorHandler(fields logrus.Fields, resp *http.Response) error {
 		err := FindCardError(errModel.Code, errModel.Messages...)
 
 		fields["bankly_error"] = bodyErr
-		logrus.WithFields(fields).WithError(err).Error("bankly get card error")
+		logrus.WithFields(fields).WithError(err).Error("bankly card error")
 
 		return err
 	}

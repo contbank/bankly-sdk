@@ -177,6 +177,11 @@ func (client *BanklyHttpClient) Patch(ctx context.Context, url string, body inte
 
 func handleResponse(resp *http.Response, fields logrus.Fields, handler ErrorHandler) (*http.Response, error) {
 
+	if resp != nil {
+		logrus.WithFields(fields).WithField("http response", resp.StatusCode).
+			Info("handle response - status code")
+	}
+
 	switch {
 	case resp.StatusCode == http.StatusOK:
 		return resp, nil
