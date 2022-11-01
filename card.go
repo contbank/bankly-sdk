@@ -391,7 +391,8 @@ func (c *Card) UpdatePasswordByProxy(ctx context.Context, proxy *string,
 	}
 
 	if proxy == nil || cardUpdatePasswordDTO == nil {
-		logrus.WithFields(fields).WithError(ErrInvalidParameter).Error("error invalid parameter")
+		logrus.WithFields(fields).WithField("error_key", "ERROR-CARD-0001").
+			WithError(ErrInvalidParameter).Error("error invalid parameter")
 		return ErrInvalidParameter
 	}
 
@@ -402,12 +403,12 @@ func (c *Card) UpdatePasswordByProxy(ctx context.Context, proxy *string,
 
 	resp, err := c.httpClient.Patch(ctx, url, cardUpdatePasswordDTO, nil, nil)
 	if err != nil {
-		logrus.WithFields(fields).WithField("error_key", "ERROR-CARD-0001").
+		logrus.WithFields(fields).WithField("error_key", "ERROR-CARD-0002").
 			WithError(err).Error(err.Error())
 		return err
 	} else if resp != nil &&
 		resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted {
-		logrus.WithFields(fields).WithField("error_key", "ERROR-CARD-0002").
+		logrus.WithFields(fields).WithField("error_key", "ERROR-CARD-0003").
 			WithError(ErrCardPasswordUpdate).Error(ErrCardPasswordUpdate.Error())
 		return err
 	}
