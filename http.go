@@ -142,7 +142,8 @@ func (client *BanklyHttpClient) Patch(ctx context.Context, url string, body inte
 	fields := initLog(ctx)
 	data, err := json.Marshal(body)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error marshal body request")
+		logrus.WithFields(fields).WithField("error_key", "ERROR-PATCH-0001").
+			WithError(err).Error("error marshal body request")
 		return nil, err
 	}
 
@@ -154,13 +155,15 @@ func (client *BanklyHttpClient) Patch(ctx context.Context, url string, body inte
 
 	req, err := http.NewRequestWithContext(ctx, PATCH, endpoint, bytes.NewReader(data))
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error new request")
+		logrus.WithFields(fields).WithField("error_key", "ERROR-PATCH-0002").
+			WithError(err).Error("error new request")
 		return nil, err
 	}
 
 	token, err := client.Authentication.Token(ctx)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error authentication")
+		logrus.WithFields(fields).WithField("error_key", "ERROR-PATCH-0003").
+			WithError(err).Error("error authentication")
 		return nil, err
 	}
 
@@ -168,7 +171,8 @@ func (client *BanklyHttpClient) Patch(ctx context.Context, url string, body inte
 
 	resp, err := client.HttpClient.Do(req)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error http client")
+		logrus.WithFields(fields).WithField("error_key", "ERROR-PATCH-0004").
+			WithError(err).Error("error http client")
 		return nil, err
 	}
 
@@ -176,6 +180,11 @@ func (client *BanklyHttpClient) Patch(ctx context.Context, url string, body inte
 }
 
 func handleResponse(resp *http.Response, fields logrus.Fields, handler ErrorHandler) (*http.Response, error) {
+
+	if resp != nil {
+		logrus.WithFields(fields).WithField("http response", resp.StatusCode).
+			Info("handle response - status code")
+	}
 
 	switch {
 	case resp.StatusCode == http.StatusOK:
