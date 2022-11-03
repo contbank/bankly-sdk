@@ -384,10 +384,16 @@ func (c *Card) UpdatePasswordByProxy(ctx context.Context, proxy string, model Ca
 		"proxy":      proxy,
 	}
 
+	// model validator
+	err := grok.Validator.Struct(model)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Errorf("error model validator")
+		return grok.FromValidationErros(err)
+	}
+
 	url := fmt.Sprintf("cards/%s/password", proxy)
 	fields["url"] = url
-
-	logrus.WithFields(fields).Info("updating card password at bankly")
 
 	resp, err := c.httpClient.Patch(ctx, url, model, nil, nil)
 	if err != nil {
@@ -401,7 +407,6 @@ func (c *Card) UpdatePasswordByProxy(ctx context.Context, proxy string, model Ca
 		return err
 	}
 
-	logrus.WithFields(fields).Info("card password updated with success")
 	return nil
 }
 

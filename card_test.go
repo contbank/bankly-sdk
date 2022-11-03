@@ -337,16 +337,49 @@ func (c *CardTestSuite) TestAlteredStatusCard_OK() {
 	c.CancelCard("93707422046")
 }
 */
-func (c *CardTestSuite) CancelCard(identifier string) {
-	card, err := c.card.GetCardsByIdentifier(context.Background(), identifier)
+
+func (c *CardTestSuite) TestUpdatePasswordByProxy_OK() {
+	model := bankly.CardUpdatePasswordDTO{
+		Password: "1234",
+	}
+
+	err := c.card.UpdatePasswordByProxy(context.Background(), "2229041000032315297", model)
 
 	c.assert.NoError(err)
+}
 
-	for _, elm := range card {
-		if elm.Status != "CanceledByCustomer" {
-			c.mockAlterCardCanceled(elm.Proxy)
-		}
+func (c *CardTestSuite) TestUpdatePasswordByProxy_InvalidProxy() {
+	model := bankly.CardUpdatePasswordDTO{
+		Password: "1234",
 	}
+
+	err := c.card.UpdatePasswordByProxy(context.Background(), "2200000000000000000", model)
+
+	c.assert.Error(err)
+	c.assert.Contains(err.Error(), "not found")
+}
+
+func (c *CardTestSuite) TestUpdatePasswordByProxy_PasswordIsEmpty() {
+	model := bankly.CardUpdatePasswordDTO{}
+
+	err := c.card.UpdatePasswordByProxy(context.Background(), "2229041000032315297", model)
+
+	c.assert.Error(err)
+	c.assert.Contains(err.Error(), "validation failed for password")
+
+	model.Password = ""
+
+	err = c.card.UpdatePasswordByProxy(context.Background(), "2229041000032315297", model)
+
+	c.assert.Error(err)
+	c.assert.Contains(err.Error(), "validation failed for password")
+
+	model.Password = "123"
+
+	err = c.card.UpdatePasswordByProxy(context.Background(), "2229041000032315297", model)
+
+	c.assert.Error(err)
+	c.assert.Contains(err.Error(), "validation failed for password")
 }
 
 func (c *CardTestSuite) TestGetTrackingByProxy_OK() {
@@ -366,6 +399,18 @@ func (c *CardTestSuite) TestGetTrackingByProxy_NOT_OK() {
 
 	c.assert.Error(err)
 	c.assert.Nil(tracking)
+}
+
+func (c *CardTestSuite) CancelCard(identifier string) {
+	card, err := c.card.GetCardsByIdentifier(context.Background(), identifier)
+
+	c.assert.NoError(err)
+
+	for _, elm := range card {
+		if elm.Status != "CanceledByCustomer" {
+			c.mockAlterCardCanceled(elm.Proxy)
+		}
+	}
 }
 
 // createCardModel ...

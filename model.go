@@ -1204,7 +1204,7 @@ type CardContactlessDTO struct {
 }
 
 type CardUpdatePasswordDTO struct {
-	Password string `json:"password"`
+	Password string `validate:"required,numeric,min=4,max=4" json:"password"`
 }
 
 type CardCreateRequest struct {
