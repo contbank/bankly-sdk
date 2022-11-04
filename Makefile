@@ -21,3 +21,13 @@ build-package:
 
 tag-version: set_version
 	git tag -d v$(VERSION) && git tag v$(VERSION) && git push --tags
+
+mockery:
+ifeq (,$(wildcard $(GOPATH)/bin/mockery))
+	echo "Installing mockery"
+	curl https://github.com/vektra/mockery/releases/download/v2.14.0/mockery_2.14.0_$(shell uname -s)_x86_64.tar.gz \
+	-o $(GOPATH)/bin/mockery
+endif
+
+mock: mockery
+	mockery --disable-version-string --with-expecter --keeptree --all
