@@ -4,14 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/contbank/grok"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
 	"strings"
-
-	"github.com/contbank/grok"
-	"github.com/sirupsen/logrus"
 )
 
 //Business ...
@@ -33,27 +32,19 @@ func NewBusiness(httpClient *http.Client, session Session) *Business {
 //CreateBusiness ...
 func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessRequest) error {
 
-	if businessRequest.BusinessType == BusinessTypeMEI {
-		businessName := businessRequest.LegalRepresentative.RegisterName
-
-		if !strings.Contains(businessRequest.LegalRepresentative.RegisterName, businessRequest.LegalRepresentative.Document) {
-			businessName = businessRequest.LegalRepresentative.RegisterName + " " + businessRequest.LegalRepresentative.Document
-		}
-
-		businessRequest.BusinessName = businessName
-	}
-
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id": requestID,
+		"object":     businessRequest,
 	}
+
+	businessRequest = normalizeBusinessName(businessRequest)
+	fields["object"] = businessRequest
 
 	endpoint, err := c.getBusinessAPIEndpoint(requestID, businessRequest.Document, false, nil)
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error get business api endpoint")
+		logrus.WithFields(fields).
+			WithError(err).Error("error get business api endpoint")
 		return err
 	}
 
@@ -61,19 +52,13 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 
 	req, err := http.NewRequestWithContext(ctx, "PUT", *endpoint, bytes.NewReader(reqbyte))
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error new request")
+		logrus.WithFields(fields).WithError(err).Error("error new request")
 		return err
 	}
 
 	token, err := c.authentication.Token(ctx)
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error authentication")
+		logrus.WithFields(fields).WithError(err).Error("error authentication")
 		return err
 	}
 
@@ -81,10 +66,7 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error http client")
+		logrus.WithFields(fields).WithError(err).Error("error http client")
 		return err
 	}
 
@@ -92,39 +74,44 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
-	if resp.StatusCode == http.StatusAccepted {
+	if resp.StatusCode == http.StatusAccepted || resp.StatusCode == http.StatusOK {
 		return nil
 	} else if resp.StatusCode == http.StatusInternalServerError {
-		logrus.
-			WithFields(fields).
-			Error("internal server error - CreateBusiness")
+		logrus.WithFields(fields).Error("internal server error - CreateBusiness")
 		return ErrDefaultBusinessAccounts
 	}
 
 	var bodyErr *ErrorResponse
-
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error unmarshal - CreateBusiness")
+		logrus.WithFields(fields).
+			WithError(err).Error("error unmarshal - CreateBusiness")
 		return err
 	}
 
 	if len(bodyErr.Errors) > 0 {
 		errModel := bodyErr.Errors[0]
-		logrus.
-			WithFields(fields).
-			Error("body error - CreateBusiness")
+		logrus.WithFields(fields).Error("body error - CreateBusiness")
 		return FindError(errModel.Code, errModel.Messages...)
 	}
 
-	logrus.
-		WithFields(fields).
-		Error("default error business accounts - CreateBusiness")
-
+	logrus.WithFields(fields).Error("default error business accounts - CreateBusiness")
 	return ErrDefaultBusinessAccounts
+}
+
+// normalizeBusinessName ...
+func normalizeBusinessName(businessRequest BusinessRequest) BusinessRequest {
+	if businessRequest.BusinessType == BusinessTypeMEI {
+		if strings.Contains(strings.ToUpper(businessRequest.BusinessName), "LTDA") {
+			return businessRequest
+		}
+		businessName := businessRequest.LegalRepresentative.RegisterName
+		if !strings.Contains(businessRequest.LegalRepresentative.RegisterName, businessRequest.LegalRepresentative.Document) {
+			businessName = businessRequest.LegalRepresentative.RegisterName + " " + businessRequest.LegalRepresentative.Document
+		}
+		businessRequest.BusinessName = businessName
+	}
+	return businessRequest
 }
 
 //UpdateBusiness ...

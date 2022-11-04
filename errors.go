@@ -366,6 +366,8 @@ func verifyInvalidParameter(code string, messages []string) string {
 				return "INVALID_EMAIL_LENGTH"
 			} else if strings.Contains(strings.ToLower(m), "not allowed to include numbers or special characters") {
 				return "INVALID_PARAMETER_SPECIAL_CHARACTERS"
+			} else if strings.Contains(strings.ToLower(m), " not allowed to include special characters") {
+				return "INVALID_PARAMETER_SPECIAL_CHARACTERS"
 			} else if strings.Contains(strings.ToLower(m), "length of") {
 				return "INVALID_PARAMETER_LENGTH"
 			}
