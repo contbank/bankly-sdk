@@ -18,7 +18,7 @@ type Pix struct {
 
 // NewPix ...
 func NewPix(newHttpClient BanklyHttpClient) *Pix {
-	newHttpClient.errorHandler = PixErrorHandler
+	newHttpClient.SetErrorHandler(PixErrorHandler)
 	return &Pix{newHttpClient}
 }
 
@@ -57,7 +57,6 @@ func (p *Pix) GetAddressKeysByAccount(ctx context.Context, accountNumber string,
 		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
 		return nil, err
 	}
-
 
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
@@ -180,7 +179,7 @@ func (p *Pix) GetCashOutByAuthenticationCode(ctx context.Context, accountNumber 
 
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id" : requestID,
+		"request_id":          requestID,
 		"authentication_code": authenticationCode,
 	}
 
@@ -291,12 +290,12 @@ func (p *Pix) DeleteAddressKey(ctx context.Context, identifier, addressingKey st
 }
 
 //PixErrorHandler ...
-func PixErrorHandler(fields logrus.Fields, resp *http.Response) error {
+func PixErrorHandler(log *logrus.Entry, resp *http.Response) error {
 	var bodyErr *ErrorResponse
 	respBody, _ := ioutil.ReadAll(resp.Body)
 	err := json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		log.WithError(err).Error("error decoding json response")
 		return ErrDefaultPix
 	}
 
@@ -304,8 +303,7 @@ func PixErrorHandler(fields logrus.Fields, resp *http.Response) error {
 		errModel := bodyErr.Errors[0]
 		err := FindPixError(errModel.Code, errModel.Messages...)
 
-		fields["bankly_error"] = bodyErr
-		logrus.WithFields(fields).WithError(err).Error("bankly get pix error")
+		log.WithField("bankly_error", bodyErr).WithError(err).Error("bankly get pix error")
 
 		return err
 	}

@@ -22,13 +22,13 @@ func (_m *ErrorHandler) EXPECT() *ErrorHandler_Expecter {
 	return &ErrorHandler_Expecter{mock: &_m.Mock}
 }
 
-// Execute provides a mock function with given fields: fields, resp
-func (_m *ErrorHandler) Execute(fields logrus.Fields, resp *http.Response) error {
-	ret := _m.Called(fields, resp)
+// Execute provides a mock function with given fields: log, resp
+func (_m *ErrorHandler) Execute(log *logrus.Entry, resp *http.Response) error {
+	ret := _m.Called(log, resp)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(logrus.Fields, *http.Response) error); ok {
-		r0 = rf(fields, resp)
+	if rf, ok := ret.Get(0).(func(*logrus.Entry, *http.Response) error); ok {
+		r0 = rf(log, resp)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -42,15 +42,15 @@ type ErrorHandler_Execute_Call struct {
 }
 
 // Execute is a helper method to define mock.On call
-//  - fields logrus.Fields
+//  - log *logrus.Entry
 //  - resp *http.Response
-func (_e *ErrorHandler_Expecter) Execute(fields interface{}, resp interface{}) *ErrorHandler_Execute_Call {
-	return &ErrorHandler_Execute_Call{Call: _e.mock.On("Execute", fields, resp)}
+func (_e *ErrorHandler_Expecter) Execute(log interface{}, resp interface{}) *ErrorHandler_Execute_Call {
+	return &ErrorHandler_Execute_Call{Call: _e.mock.On("Execute", log, resp)}
 }
 
-func (_c *ErrorHandler_Execute_Call) Run(run func(fields logrus.Fields, resp *http.Response)) *ErrorHandler_Execute_Call {
+func (_c *ErrorHandler_Execute_Call) Run(run func(log *logrus.Entry, resp *http.Response)) *ErrorHandler_Execute_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(logrus.Fields), args[1].(*http.Response))
+		run(args[0].(*logrus.Entry), args[1].(*http.Response))
 	})
 	return _c
 }

@@ -1,12 +1,21 @@
 package webhook
 
+type ConfigItem struct {
+	Name      string `json:"name"`
+	Context   string `json:"context"`
+	EventName string `json:"eventName"`
+	Uri       string `json:"uri"`
+	PublicKey string `json:"publicKey"`
+}
+
+type ConfigEntity struct {
+	Id string `json:"id"`
+	ConfigItem
+}
+
 type RegisterWebhookRequest struct {
-	Name       string `json:"name"`
-	EventName  string `json:"eventName"`
-	Context    string `json:"context"`
-	Uri        string `json:"uri"`
+	ConfigItem
 	PrivateKey string `json:"privateKey"`
-	PublicKey  string `json:"publicKey"`
 }
 
 type SchemaLink struct {
@@ -15,16 +24,7 @@ type SchemaLink struct {
 	Method string `json:"method"`
 }
 
-type WebhookRecord struct {
-	Id        string `json:"id"`
-	Name      string `json:"name"`
-	Context   string `json:"context"`
-	EventName string `json:"eventName"`
-	Uri       string `json:"uri"`
-	PublicKey string `json:"publicKey"`
-}
-
 type RegisterWebhookResponse struct {
-	Data  WebhookRecord `json:"data"`
-	Links []SchemaLink  `json:"links"`
+	Data  ConfigEntity `json:"data"`
+	Links []SchemaLink `json:"links"`
 }

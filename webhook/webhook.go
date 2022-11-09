@@ -2,8 +2,8 @@ package webhook
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/contbank/bankly-sdk"
-	"github.com/contbank/bankly-sdk/client"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -15,11 +15,11 @@ type Webhook interface {
 }
 
 type webhook struct {
-	client client.Client
+	client bankly.BanklyHttpClient
 }
 
 // NewWebhook ...
-func NewWebhook(client client.Client) Webhook {
+func NewWebhook(client bankly.BanklyHttpClient) Webhook {
 	return &webhook{client: client}
 }
 
@@ -28,21 +28,21 @@ func (w webhook) RegisterWebhook(ctx context.Context, data RegisterWebhookReques
 		"request_id": bankly.GetRequestID(ctx),
 		"object":     data,
 	})
-	banklyResponse, err := w.client.Post(ctx, "/webhooks/configurations", data)
+	response, err := w.client.Post(ctx, "/webhooks/configurations", data, nil)
 	if err != nil {
 		log.WithError(err).Error("Error registering the webhook")
 		return nil, err
 	}
-	log = log.WithFields(logrus.Fields{"status": banklyResponse.Status,
-		"code": banklyResponse.StatusCode})
-	if banklyResponse.StatusCode == http.StatusConflict {
+	log = log.WithFields(logrus.Fields{"status": response.Status,
+		"code": response.StatusCode})
+	if response.StatusCode == http.StatusConflict {
 		return RegisterWebhookConflict, nil
 	}
-	response := &RegisterWebhookResponse{}
-	err = banklyResponse.Json(response)
+	result := &RegisterWebhookResponse{}
+	err = json.NewDecoder(response.Body).Decode(result)
 	if err != nil {
 		log.WithError(err).Error("Error registering the webhook")
 		return nil, err
 	}
-	return response, nil
+	return result, nil
 }

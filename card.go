@@ -20,7 +20,7 @@ type Card struct {
 
 //NewCard ...
 func NewCard(newHttpClient BanklyHttpClient) *Card {
-	newHttpClient.errorHandler = CardErrorHandler
+	newHttpClient.SetErrorHandler(CardErrorHandler)
 	return &Card{newHttpClient}
 }
 
@@ -582,14 +582,14 @@ func (c *Card) GetTrackingByProxy(ctx context.Context, proxy *string) (*CardTrac
 }
 
 // CardErrorHandler ...
-func CardErrorHandler(fields logrus.Fields, resp *http.Response) error {
+func CardErrorHandler(log *logrus.Entry, resp *http.Response) error {
 	var bodyErr *ErrorResponse
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
 	err := json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		log.WithError(err).Error("error decoding json response")
 		return ErrDefaultCard
 	}
 
@@ -597,8 +597,7 @@ func CardErrorHandler(fields logrus.Fields, resp *http.Response) error {
 		errModel := bodyErr.Errors[0]
 		err := FindCardError(errModel.Code, errModel.Messages...)
 
-		fields["bankly_error"] = bodyErr
-		logrus.WithFields(fields).WithError(err).Error("bankly card error")
+		logrus.WithField("bankly_error", bodyErr).WithError(err).Error("bankly card error")
 
 		return err
 	}

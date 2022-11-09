@@ -19,3 +19,4 @@ vendor/
 
 # IntelliJ configs
 .idea/
+.run/
