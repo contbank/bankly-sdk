@@ -4,186 +4,138 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/contbank/grok"
+	"github.com/sirupsen/logrus"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
-
-	"github.com/contbank/grok"
-	"github.com/sirupsen/logrus"
 )
 
-type ErrorHandler func(fields logrus.Fields, resp *http.Response) error
+type ErrorHandler func(log *logrus.Entry, resp *http.Response) error
 
-const (
-	GET    = "GET"
-	POST   = "POST"
-	PATCH  = "PATCH"
-	DELETE = "DELETE"
-)
+type TokenProvider interface {
+	Token(ctx context.Context) (string, error)
+}
 
-type BanklyHttpClient struct {
+type BanklyHttpClient interface {
+	NewRequest(ctx context.Context, method string, url string, body interface{}, query map[string]string, header *http.Header) (*http.Request, error)
+	Request(ctx context.Context, method string, url string, body interface{}, query map[string]string, header *http.Header) (*http.Response, error)
+	Do(req *http.Request) (*http.Response, error)
+	Post(ctx context.Context, url string, body interface{}, header *http.Header) (*http.Response, error)
+	Delete(ctx context.Context, url string, body interface{}, header *http.Header) (*http.Response, error)
+	Patch(ctx context.Context, url string, body interface{}, query map[string]string, header *http.Header) (*http.Response, error)
+	Put(ctx context.Context, url string, body interface{}, header *http.Header) (*http.Response, error)
+	Get(ctx context.Context, url string, query map[string]string, header *http.Header) (*http.Response, error)
+	SetErrorHandler(handler ErrorHandler)
+}
+
+type apiClient struct {
 	Session        Session
 	HttpClient     *http.Client
-	Authentication *Authentication
+	Authentication TokenProvider
 	errorHandler   ErrorHandler
+}
+
+func (c *apiClient) SetErrorHandler(handler ErrorHandler) {
+	c.errorHandler = handler
 }
 
 //NewBanklyHttpClient ...
 func NewBanklyHttpClient(session Session,
 	httpClient *http.Client,
-	authentication *Authentication) *BanklyHttpClient {
-	return &BanklyHttpClient{
+	authentication TokenProvider) BanklyHttpClient {
+	return &apiClient{
 		Session:        session,
 		HttpClient:     httpClient,
 		Authentication: authentication,
 	}
 }
 
-func (client *BanklyHttpClient) Post(ctx context.Context, url string, body interface{}, header *http.Header) (*http.Response, error) {
-	fields := initLog(ctx)
-	data, err := json.Marshal(body)
+func (c *apiClient) NewRequest(ctx context.Context, method string, url string, body interface{}, query map[string]string, header *http.Header) (*http.Request, error) {
+	var bodyReader io.Reader
+	log := logrus.WithFields(initLog(ctx))
+	endpoint, err := c.getEndpointAPI(log, url)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error marshal body request")
 		return nil, err
 	}
-
-	endpoint, _ := client.getEndpointAPI(fields, url)
-
-	req, err := http.NewRequestWithContext(ctx, POST, endpoint, bytes.NewReader(data))
-	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error new request")
-		return nil, err
-	}
-
-	token, err := client.Authentication.Token(ctx)
-	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error authentication")
-		return nil, err
-	}
-
-	req = setRequestHeader(req, token, client.Session.APIVersion, header)
-
-	resp, err := client.HttpClient.Do(req)
-	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error http client")
-		return nil, err
-	}
-
-	return handleResponse(resp, fields, client.errorHandler)
-}
-
-func (client *BanklyHttpClient) Delete(ctx context.Context, url string, body interface{}, header *http.Header) (*http.Response, error) {
-	fields := initLog(ctx)
-	data, err := json.Marshal(body)
-	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error marshal body request")
-		return nil, err
-	}
-
-	endpoint, _ := client.getEndpointAPI(fields, url)
-
-	req, err := http.NewRequestWithContext(ctx, DELETE, endpoint, bytes.NewReader(data))
-	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error new request")
-		return nil, err
-	}
-
-	token, err := client.Authentication.Token(ctx)
-	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error authentication")
-		return nil, err
-	}
-
-	req = setRequestHeader(req, token, client.Session.APIVersion, header)
-
-	resp, err := client.HttpClient.Do(req)
-	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error http client")
-		return nil, err
-	}
-
-	return handleResponse(resp, fields, client.errorHandler)
-}
-
-func (client *BanklyHttpClient) Get(ctx context.Context, url string, query map[string]string, header *http.Header) (*http.Response, error) {
-	fields := initLog(ctx)
-
-	endpoint, _ := client.getEndpointAPI(fields, url)
 
 	if query != nil {
 		endpoint = buildQueryParams(endpoint, query)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, GET, endpoint, nil)
+	if body != nil {
+		data, err := json.Marshal(body)
+		if err != nil {
+			log.WithError(err).Error("error marshal body request")
+			return nil, err
+		}
+		bodyReader = bytes.NewReader(data)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint, bodyReader)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error new request")
+		log.WithError(err).Error("error new request")
 		return nil, err
 	}
 
-	token, err := client.Authentication.Token(ctx)
+	token, err := c.Authentication.Token(ctx)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error authentication")
+		log.WithError(err).Error("error authentication")
 		return nil, err
 	}
 
-	req = setRequestHeader(req, token, client.Session.APIVersion, header)
-
-	resp, err := client.HttpClient.Do(req)
-	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error http client")
-		return nil, err
-	}
-
-	return handleResponse(resp, fields, client.errorHandler)
+	req = setRequestHeader(req, token, c.Session.APIVersion, header)
+	return req, nil
 }
 
-func (client *BanklyHttpClient) Patch(ctx context.Context, url string, body interface{}, query map[string]string, header *http.Header) (*http.Response, error) {
-	fields := initLog(ctx)
-
-	data, err := json.Marshal(body)
+func (c *apiClient) Request(ctx context.Context, method string, url string, body interface{}, query map[string]string, header *http.Header) (*http.Response, error) {
+	log := logrus.WithFields(initLog(ctx))
+	req, err := c.NewRequest(ctx, method, url, body, query, header)
 	if err != nil {
-		logrus.WithFields(fields).WithField("error_key", "ERROR-PATCH-0001").
-			WithError(err).Error("error marshal body request")
+		log.WithError(err).Error("error http client")
 		return nil, err
 	}
-
-	endpoint, _ := client.getEndpointAPI(fields, url)
-
-	if query != nil {
-		endpoint = buildQueryParams(endpoint, query)
-	}
-
-	req, err := http.NewRequestWithContext(ctx, PATCH, endpoint, bytes.NewReader(data))
-	if err != nil {
-		logrus.WithFields(fields).WithField("error_key", "ERROR-PATCH-0002").
-			WithError(err).Error("error new request")
-		return nil, err
-	}
-
-	token, err := client.Authentication.Token(ctx)
-	if err != nil {
-		logrus.WithFields(fields).WithField("error_key", "ERROR-PATCH-0003").
-			WithError(err).Error("error authentication")
-		return nil, err
-	}
-
-	req = setRequestHeader(req, token, client.Session.APIVersion, header)
-
-	resp, err := client.HttpClient.Do(req)
-	if err != nil {
-		logrus.WithFields(fields).WithField("error_key", "ERROR-PATCH-0004").
-			WithError(err).Error("error http client")
-		return nil, err
-	}
-
-	return handleResponse(resp, fields, client.errorHandler)
+	return c.Do(req)
 }
 
-func handleResponse(resp *http.Response, fields logrus.Fields, handler ErrorHandler) (*http.Response, error) {
+func (c *apiClient) Do(req *http.Request) (*http.Response, error) {
+	log := logrus.WithFields(initLog(req.Context()))
+	resp, err := c.HttpClient.Do(req)
+	if err != nil {
+		log.WithError(err).Error("error http client")
+		return nil, err
+	}
+
+	return handleResponse(resp, log, c.errorHandler)
+}
+
+func (c *apiClient) Post(ctx context.Context, url string, body interface{}, header *http.Header) (*http.Response, error) {
+	return c.Request(ctx, http.MethodPost, url, body, nil, header)
+}
+
+func (c *apiClient) Delete(ctx context.Context, url string, body interface{}, header *http.Header) (*http.Response, error) {
+	return c.Request(ctx, http.MethodDelete, url, body, nil, header)
+
+}
+
+func (c *apiClient) Patch(ctx context.Context, url string, body interface{}, query map[string]string, header *http.Header) (*http.Response, error) {
+	return c.Request(ctx, http.MethodPatch, url, body, query, header)
+}
+
+func (c *apiClient) Put(ctx context.Context, url string, body interface{}, header *http.Header) (*http.Response, error) {
+	return c.Request(ctx, http.MethodPut, url, body, nil, header)
+}
+
+func (c *apiClient) Get(ctx context.Context, url string, query map[string]string, header *http.Header) (*http.Response, error) {
+	return c.Request(ctx, http.MethodGet, url, nil, query, header)
+}
+
+func handleResponse(resp *http.Response, log *logrus.Entry, handler ErrorHandler) (*http.Response, error) {
 
 	if resp != nil {
-		logrus.WithFields(fields).WithField("http response", resp.StatusCode).
+		log.WithField("http response", resp.StatusCode).
 			Info("handle response - status code")
 	}
 
@@ -201,24 +153,23 @@ func handleResponse(resp *http.Response, fields logrus.Fields, handler ErrorHand
 	}
 
 	if handler != nil {
-		return nil, handler(fields, resp)
+		return nil, handler(log, resp)
 	}
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
 	return nil, grok.NewError(resp.StatusCode, "DEFAULT_ERROR", string(respBody))
 }
 
-func (client *BanklyHttpClient) getEndpointAPI(fields logrus.Fields, URLpath string) (string, error) {
-	u, err := url.Parse(client.Session.APIEndpoint)
+func (c *apiClient) getEndpointAPI(log *logrus.Entry, relativePath string) (string, error) {
+	u, err := url.Parse(c.Session.APIEndpoint)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error parsing api endpoint")
+		log.WithError(err).Error("error parsing api endpoint")
 		return "", err
 	}
 
-	u.Path = path.Join(u.Path, URLpath)
+	u.Path = path.Join(u.Path, relativePath)
 	endpoint := u.String()
-	fields["endpoint"] = endpoint
-	logrus.WithFields(fields).Info("get endpoint success")
+	log.WithField("endpoint", endpoint).Info("get endpoint success")
 	return endpoint, nil
 }
 
@@ -229,10 +180,13 @@ func initLog(ctx context.Context) logrus.Fields {
 	}
 }
 
-func buildQueryParams(endpoint string, query map[string]string) string {
-	endpoint = endpoint + "?"
-	for key, value := range query {
-		endpoint += key + "=" + value + "&"
+func buildQueryParams(endpoint string, queryParams map[string]string) string {
+	if len(queryParams) == 0 {
+		return endpoint
 	}
-	return endpoint
+	query := url.Values{}
+	for key, value := range queryParams {
+		query.Set(key, value)
+	}
+	return endpoint + "?" + query.Encode()
 }

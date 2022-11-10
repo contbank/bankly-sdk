@@ -17,7 +17,7 @@ type IncomeReport struct {
 
 // NewIncomeReport ...
 func NewIncomeReport(newHttpClient BanklyHttpClient) *IncomeReport {
-	newHttpClient.errorHandler = CardErrorHandler
+	newHttpClient.SetErrorHandler(CardErrorHandler)
 	return &IncomeReport{newHttpClient}
 }
 

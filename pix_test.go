@@ -37,11 +37,7 @@ func (s *PixTestSuite) SetupTest() {
 		Timeout: 30 * time.Second,
 	}
 
-	newHttpClient := bankly.BanklyHttpClient{
-		Session:        *session,
-		HttpClient:     httpClient,
-		Authentication: bankly.NewAuthentication(httpClient, *session),
-	}
+	newHttpClient := bankly.NewBanklyHttpClient(*session, httpClient, bankly.NewAuthentication(httpClient, *session))
 
 	s.pix = bankly.NewPix(newHttpClient)
 }

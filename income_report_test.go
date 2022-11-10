@@ -42,11 +42,7 @@ func (s *IncomeReportTestSuite) SetupTest() {
 
 	s.session = session
 
-	newHttpClient := bankly.BanklyHttpClient{
-		Session:        *session,
-		HttpClient:     httpClient,
-		Authentication: bankly.NewAuthentication(httpClient, *session),
-	}
+	newHttpClient := bankly.NewBanklyHttpClient(*session, httpClient, bankly.NewAuthentication(httpClient, *session))
 
 	s.bankIncomeReport = bankly.NewIncomeReport(newHttpClient)
 }
