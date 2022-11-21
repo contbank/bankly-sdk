@@ -222,10 +222,8 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 	u, err := url.Parse(b.session.APIEndpoint)
 
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error parsing api endpoint")
+		logrus.WithFields(fields).
+			WithError(err).Error("error parsing api endpoint")
 		return nil, err
 	}
 	u.Path = path.Join(u.Path, BoletosPath)
@@ -236,20 +234,16 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error creating request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error creating request")
 		return nil, err
 	}
 
 	token, err := b.authentication.Token(ctx)
 
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error in authentication request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error in authentication request")
 		return nil, err
 	}
 
@@ -259,10 +253,8 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 	resp, err := b.httpClient.Do(req)
 
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error performing the request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error performing the request")
 		return nil, err
 	}
 
@@ -272,40 +264,31 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 
 	if resp.StatusCode == http.StatusOK {
 		var response *FilterBoletoResponse
-
 		err = json.Unmarshal(respBody, &response)
-
 		if err != nil {
-			logrus.
-				WithFields(fields).
-				WithError(err).
-				Error("error decoding json response")
+			logrus.WithFields(fields).
+				WithError(err).Error("error decoding json response")
 			return nil, ErrDefaultBoletos
 		}
-
 		return response, nil
+	} else if resp.StatusCode == http.StatusNotFound {
+		logrus.WithFields(fields).Info("not found")
+		return nil, ErrBoletoNotFound
 	}
 
 	var bodyErr *ErrorResponse
-
 	err = json.Unmarshal(respBody, &bodyErr)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error decoding json response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultBoletos
 	}
 
 	if len(bodyErr.Errors) > 0 {
 		errModel := bodyErr.Errors[0]
 		err = FindError(errModel.Code, errModel.Messages...)
-		logrus.
-			WithField("bankly_error", bodyErr).
-			WithFields(fields).
-			WithError(err).
-			Error("bankly filteting boleto error")
+		logrus.WithFields(fields).WithField("bankly_error", bodyErr).
+			WithError(err).Error("bankly filteting boleto error")
 		return nil, err
 	}
 
