@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/contbank/bankly-sdk/test_images"
 	"io/ioutil"
 	"net/http"
 
@@ -139,39 +140,46 @@ func (p *Pix) CashOut(ctx context.Context, pix *PixCashOutRequest) (*PixCashOutR
 // QrCodeDynamic ...
 func (p *Pix) QrCodeDynamic(ctx context.Context, data *PixQrCodeDynamicRequest,
 	currentIdentity string) (*PixQrCodeResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
-	log := logrus.WithFields(logrus.Fields{
-		"request_id": requestID,
-		"object":     data,
-	})
 
-	url := "pix/qrcodes/dynamic/payment"
+	/*	Fake response while error occurs in bankly url
 
-	header := http.Header{}
-	header.Add("x-bkly-pix-user-id", currentIdentity)
-	header.Add("x-correlation-id", requestID)
+		requestID, _ := ctx.Value("Request-Id").(string)
+		log := logrus.WithFields(logrus.Fields{
+			"request_id": requestID,
+			"object":     data,
+		})
 
-	resp, err := p.httpClient.Post(ctx, url, data, &header)
-	if err != nil {
-		log.WithError(err).Error(err.Error())
-		return nil, err
+		url := "pix/qrcodes/dynamic/payment"
+
+		header := http.Header{}
+		header.Add("x-bkly-pix-user-id", currentIdentity)
+		header.Add("x-correlation-id", requestID)
+
+		resp, err := p.httpClient.Post(ctx, url, data, &header)
+		if err != nil {
+			log.WithError(err).Error(err.Error())
+			return nil, err
+		}
+
+		defer resp.Body.Close()
+		respBody, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.WithError(err).Error("error decoding body response")
+			return nil, err
+		}
+
+		response := new(PixQrCodeResponse)
+		err = json.Unmarshal(respBody, &response)
+		if err != nil {
+			log.WithError(err).Error("error decoding json response")
+			return nil, ErrDefaultPix
+		}
+	*/
+	response := PixQrCodeResponse{
+		EncodedValue: test_images.GetMockEncodedQrcode(),
 	}
 
-	defer resp.Body.Close()
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.WithError(err).Error("error decoding body response")
-		return nil, err
-	}
-
-	response := new(PixQrCodeResponse)
-	err = json.Unmarshal(respBody, &response)
-	if err != nil {
-		log.WithError(err).Error("error decoding json response")
-		return nil, ErrDefaultPix
-	}
-
-	return response, nil
+	return &response, nil
 }
 
 // QrCodeDecode ...
