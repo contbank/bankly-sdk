@@ -508,13 +508,13 @@ type BusinessResponse struct {
 	UpdatedAt     time.Time    `json:"updatedAt"`
 }
 
-//BusinessAccountRequest ...
+// BusinessAccountRequest ...
 type BusinessAccountRequest struct {
 	Document    string      `validate:"required,cnpj" json:"documentNumber,omitempty"`
 	AccountType AccountType `validate:"required" json:"accountType"`
 }
 
-//BoletoType ...
+// BoletoType ...
 type BoletoType string
 
 const (
@@ -523,7 +523,7 @@ const (
 	Invoice BoletoType = "Invoice" // cartão de crédito
 )
 
-//BoletoRequest ...
+// BoletoRequest ...
 type BoletoRequest struct {
 	Alias        *string          `json:"alias,omitempty"`
 	Document     string           `validate:"required,cnpjcpf" json:"documentNumber,omitempty"`
@@ -538,7 +538,7 @@ type BoletoRequest struct {
 	ClosePayment time.Time        `json:"closePayment,omitempty"`
 }
 
-//BoletoResponse ...
+// BoletoResponse ...
 type BoletoResponse struct {
 	AuthenticationCode string   `json:"authenticationCode,omitempty"`
 	Account            *Account `json:"account,omitempty"`
@@ -637,7 +637,7 @@ type BoletoDetailedResponse struct {
 	UpdatedAt          time.Time            `json:"updatedAt,omitempty"`
 }
 
-//FilterBoletoData ...
+// FilterBoletoData ...
 type FilterBoletoData struct {
 	Alias              *string          `json:"alias,omitempty"`
 	AuthenticationCode string           `json:"authenticationCode,omitempty"`
@@ -654,31 +654,31 @@ type FilterBoletoData struct {
 	// EmissionDate time.Time `json:"emissionDate,omitempty"`
 }
 
-//FilterBoletoResponse ...
+// FilterBoletoResponse ...
 type FilterBoletoResponse struct {
 	NextPageToken string             `json:"nextPageToken,omitempty"`
 	Data          []FilterBoletoData `json:"data,omitempty"`
 }
 
-//FindBoletoRequest ...
+// FindBoletoRequest ...
 type FindBoletoRequest struct {
 	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
 	Account            *Account `validate:"required" json:"account,omitempty"`
 }
 
-//CancelBoletoRequest ...
+// CancelBoletoRequest ...
 type CancelBoletoRequest struct {
 	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
 	Account            *Account `validate:"required" json:"account,omitempty"`
 }
 
-//SimulatePaymentRequest ...
+// SimulatePaymentRequest ...
 type SimulatePaymentRequest struct {
 	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
 	Account            *Account `validate:"required" json:"account,omitempty"`
 }
 
-//FilterBankListRequest ...
+// FilterBankListRequest ...
 type FilterBankListRequest struct {
 	IDs      []string
 	Name     *string
@@ -694,7 +694,7 @@ type BankData struct {
 	Code string `json:"compe,omitempty"`
 }
 
-//BankDataResponse ...
+// BankDataResponse ...
 type BankDataResponse struct {
 	Name        string   `json:"name,omitempty"`
 	ISPB        string   `json:"ispb,omitempty"`
@@ -1347,6 +1347,47 @@ type PixCashOutResponse struct {
 	Sender             PixCashOutSenderResponse    `json:"sender"`
 	Recipient          PixCashOutRecipientResponse `json:"recipient"`
 	AuthenticationCode string                      `json:"authenticationCode"`
+}
+
+// PixAdditionalDataValue ...
+type PixAdditionalDataValue struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+// PixAddress ...
+type PixAddress struct {
+	AddressLine string `json:"addressLine"`
+	State       string `json:"state"`
+	City        string `json:"city"`
+	ZipCode     string `json:"zipCode"`
+}
+
+// PixPayer ...
+type PixPayer struct {
+	Type           string     `json:"type"`
+	Address        PixAddress `json:"address"`
+	DocumentNumber string     `json:"documentNumber"`
+	Name           string     `json:"name"`
+}
+
+// PixQrCodeDynamicRequest ...
+type PixQrCodeDynamicRequest struct {
+	AddressingKey    PixTypeValue             `json:"addressingKey"`
+	Amount           float64                  `json:"amount"`
+	RecipientName    string                   `json:"recipientName"`
+	ConciliationID   string                   `json:"conciliationId"`
+	AdditionalData   []PixAdditionalDataValue `json:"additionalData"`
+	SinglePayment    bool                     `json:"singlePayment"`
+	Payer            PixPayer                 `json:"payer"`
+	ChangeAmountType string                   `json:"changeAmountType"`
+	ExpiresAt        string                   `json:"expiresAt"`
+	PayerRequestText string                   `json:"payerRequestText"`
+}
+
+// PixQrCodeResponse ...
+type PixQrCodeResponse struct {
+	EncodedValue string `json:"encodedValue"`
 }
 
 type PixQrCodeDecodeRequest struct {

@@ -136,6 +136,45 @@ func (p *Pix) CashOut(ctx context.Context, pix *PixCashOutRequest) (*PixCashOutR
 	return response, nil
 }
 
+// QrCodeDynamic ...
+func (p *Pix) QrCodeDynamic(ctx context.Context, data *PixQrCodeDynamicRequest,
+	currentIdentity string) (*PixQrCodeResponse, error) {
+
+	requestID, _ := ctx.Value("Request-Id").(string)
+	log := logrus.WithFields(logrus.Fields{
+		"request_id": requestID,
+		"object":     data,
+	})
+
+	url := "pix/qrcodes/dynamic/payment"
+
+	header := http.Header{}
+	header.Add("x-bkly-pix-user-id", currentIdentity)
+	header.Add("x-correlation-id", requestID)
+
+	resp, err := p.httpClient.Post(ctx, url, data, &header)
+	if err != nil {
+		log.WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.WithError(err).Error("error decoding body response")
+		return nil, err
+	}
+
+	result := new(PixQrCodeResponse)
+	err = json.Unmarshal(respBody, &result)
+	if err != nil {
+		log.WithError(err).Error("error decoding json response")
+		return nil, ErrDefaultPix
+	}
+
+	return result, nil
+}
+
 // QrCodeDecode ...
 func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest,
 	currentIdentity string) (*PixQrCodeDecodeResponse, error) {
@@ -289,7 +328,7 @@ func (p *Pix) DeleteAddressKey(ctx context.Context, identifier, addressingKey st
 	return nil
 }
 
-//PixErrorHandler ...
+// PixErrorHandler ...
 func PixErrorHandler(log *logrus.Entry, resp *http.Response) error {
 	var bodyErr *ErrorResponse
 	respBody, _ := ioutil.ReadAll(resp.Body)
