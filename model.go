@@ -142,6 +142,26 @@ const (
 	DetailsStatusDetectedDocument DetailsStatus = "DETECTED_DOCUMENT"
 )
 
+type DeclaredIncome string
+
+const (
+	LESS_THAN_ONE_THOUSAND               DeclaredIncome = "LESS_THAN_ONE_THOUSAND"
+	FROM_ONE_THOUSAND_TO_TWO_THOUSAND    DeclaredIncome = "FROM_ONE_THOUSAND_TO_TWO_THOUSAND"
+	FROM_TWO_THOUSAND_TO_THREE_THOUSAND  DeclaredIncome = "FROM_TWO_THOUSAND_TO_THREE_THOUSAND"
+	FROM_THREE_THOUSAND_TO_FIVE_THOUSAND DeclaredIncome = "FROM_THREE_THOUSAND_TO_FIVE_THOUSAND"
+	FROM_FIVE_THOUSAND_TO_TEN_THOUSAND   DeclaredIncome = "FROM_FIVE_THOUSAND_TO_TEN_THOUSAND"
+	FROM_TEN_THOUSAND_TO_TWENTY_THOUSAND DeclaredIncome = "FROM_TEN_THOUSAND_TO_TWENTY_THOUSAND"
+	OVER_TWENTY_THOUSAND                 DeclaredIncome = "OVER_TWENTY_THOUSAND"
+)
+
+type PoliticallyExposedPersonLevel string
+
+const (
+	NONE    PoliticallyExposedPersonLevel = "NONE"
+	SELF    PoliticallyExposedPersonLevel = "SELF"
+	RELATED PoliticallyExposedPersonLevel = "RELATED"
+)
+
 // AuthenticationResponse ...
 type AuthenticationResponse struct {
 	AccessToken string `json:"access_token"`
@@ -156,14 +176,30 @@ type ErrorLoginResponse struct {
 
 // CustomersRequest ...
 type CustomersRequest struct {
-	Document     string    `validate:"required,cpf" json:"documentNumber,omitempty"`
-	RegisterName string    `validate:"required" json:"registerName,omitempty"`
-	SocialName   string    `json:"socialName,omitempty"`
-	Phone        *Phone    `validate:"required,dive" json:"phone,omitempty"`
-	Address      *Address  `validate:"required,dive" json:"address,omitempty"`
-	BirthDate    time.Time `validate:"required" json:"birthDate,omitempty"`
-	MotherName   string    `validate:"required" json:"motherName,omitempty"`
-	Email        string    `validate:"required" json:"email,omitempty"`
+	Document                 string                   `validate:"required,cpf" json:"documentNumber,omitempty"`
+	RegisterName             string                   `validate:"required" json:"registerName,omitempty"`
+	SocialName               string                   `json:"socialName,omitempty"`
+	Email                    string                   `validate:"required" json:"email,omitempty"`
+	Phone                    *Phone                   `validate:"required,dive" json:"phone,omitempty"`
+	Address                  *Address                 `validate:"required,dive" json:"address,omitempty"`
+	BirthDate                time.Time                `validate:"required" json:"birthDate,omitempty"`
+	MotherName               string                   `validate:"required" json:"motherName,omitempty"`
+	DeclaredIncome           DeclaredIncome           `validate:"required" json:"declaredIncome,omitempty"`
+	Occupation               string                   `validate:"required" json:"occupation,omitempty"`
+	PoliticallyExposedPerson PoliticallyExposedPerson `validate:"required,dive" json:"pep,omitempty"`
+	Documentation            Documentation            `validate:"required,dive" json:"documentation,omitempty"`
+}
+
+// Documentation
+type Documentation struct {
+	TokenSelfie    string `json:"selfie,omitempty"`
+	TokenCardFront string `json:"idCardFront,omitempty"`
+	TokenCardBack  string `json:"idCardBack,omitempty"`
+}
+
+// PoliticallyExposedPerson ...
+type PoliticallyExposedPerson struct {
+	Level PoliticallyExposedPersonLevel `validate:"required" json:"level,omitempty"`
 }
 
 // CustomersAccountRequest ...

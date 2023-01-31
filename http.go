@@ -42,10 +42,8 @@ func (c *apiClient) SetErrorHandler(handler ErrorHandler) {
 	c.errorHandler = handler
 }
 
-//NewBanklyHttpClient ...
-func NewBanklyHttpClient(session Session,
-	httpClient *http.Client,
-	authentication TokenProvider) BanklyHttpClient {
+// NewBanklyHttpClient ...
+func NewBanklyHttpClient(session Session, httpClient *http.Client, authentication TokenProvider) BanklyHttpClient {
 	return &apiClient{
 		Session:        session,
 		HttpClient:     httpClient,
@@ -53,6 +51,7 @@ func NewBanklyHttpClient(session Session,
 	}
 }
 
+// NewRequest ...
 func (c *apiClient) NewRequest(ctx context.Context, method string, url string, body interface{}, query map[string]string, header *http.Header) (*http.Request, error) {
 	var bodyReader io.Reader
 	log := logrus.WithFields(initLog(ctx))
