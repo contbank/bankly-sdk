@@ -142,24 +142,75 @@ const (
 	DetailsStatusDetectedDocument DetailsStatus = "DETECTED_DOCUMENT"
 )
 
+// DeclaredIncome Faixa de renda declarada (PF)
 type DeclaredIncome string
 
 const (
-	LESS_THAN_ONE_THOUSAND               DeclaredIncome = "LESS_THAN_ONE_THOUSAND"
-	FROM_ONE_THOUSAND_TO_TWO_THOUSAND    DeclaredIncome = "FROM_ONE_THOUSAND_TO_TWO_THOUSAND"
-	FROM_TWO_THOUSAND_TO_THREE_THOUSAND  DeclaredIncome = "FROM_TWO_THOUSAND_TO_THREE_THOUSAND"
+	// LESS_THAN_ONE_THOUSAND Inferior a mil.
+	LESS_THAN_ONE_THOUSAND DeclaredIncome = "LESS_THAN_ONE_THOUSAND"
+	// FROM_ONE_THOUSAND_TO_TWO_THOUSAND De mil a dois mil.
+	FROM_ONE_THOUSAND_TO_TWO_THOUSAND DeclaredIncome = "FROM_ONE_THOUSAND_TO_TWO_THOUSAND"
+	// FROM_TWO_THOUSAND_TO_THREE_THOUSAND De 2 mil a 3 mil.
+	FROM_TWO_THOUSAND_TO_THREE_THOUSAND DeclaredIncome = "FROM_TWO_THOUSAND_TO_THREE_THOUSAND"
+	// FROM_THREE_THOUSAND_TO_FIVE_THOUSAND De 3 mil a 5 mil.
 	FROM_THREE_THOUSAND_TO_FIVE_THOUSAND DeclaredIncome = "FROM_THREE_THOUSAND_TO_FIVE_THOUSAND"
-	FROM_FIVE_THOUSAND_TO_TEN_THOUSAND   DeclaredIncome = "FROM_FIVE_THOUSAND_TO_TEN_THOUSAND"
+	// FROM_FIVE_THOUSAND_TO_TEN_THOUSAND De 5 mil a 10 mil.
+	FROM_FIVE_THOUSAND_TO_TEN_THOUSAND DeclaredIncome = "FROM_FIVE_THOUSAND_TO_TEN_THOUSAND"
+	// FROM_TEN_THOUSAND_TO_TWENTY_THOUSAND De 10 mil a 20 mil.
 	FROM_TEN_THOUSAND_TO_TWENTY_THOUSAND DeclaredIncome = "FROM_TEN_THOUSAND_TO_TWENTY_THOUSAND"
-	OVER_TWENTY_THOUSAND                 DeclaredIncome = "OVER_TWENTY_THOUSAND"
+	// OVER_TWENTY_THOUSAND Acima de 20 mil.
+	OVER_TWENTY_THOUSAND DeclaredIncome = "OVER_TWENTY_THOUSAND"
 )
 
 type PoliticallyExposedPersonLevel string
 
 const (
-	NONE    PoliticallyExposedPersonLevel = "NONE"
-	SELF    PoliticallyExposedPersonLevel = "SELF"
+	// NONE nenhuma exposição política
+	NONE PoliticallyExposedPersonLevel = "NONE"
+	// SELF a própria pessoa é exposta politicamente
+	SELF PoliticallyExposedPersonLevel = "SELF"
+	// RELATED algum parente ou pessoa relacionada é exposta politicamente
 	RELATED PoliticallyExposedPersonLevel = "RELATED"
+)
+
+// DeclaredAnnualBilling Faixa de faturamento anual da empresa (PJ)
+type DeclaredAnnualBilling string
+
+const (
+	// UP_TO_FIFTY_THOUSAND Até 50 mil
+	UP_TO_FIFTY_THOUSAND DeclaredAnnualBilling = "UP_TO_FIFTY_THOUSAND"
+	// MORE_THAN_FIFTY_THOUSAND_UP_TO_ONE_HUNDRED_THOUSAND De 50 mil a 100 mil.
+	MORE_THAN_FIFTY_THOUSAND_UP_TO_ONE_HUNDRED_THOUSAND DeclaredAnnualBilling = "MORE_THAN_FIFTY_THOUSAND_UP_TO_ONE_HUNDRED_THOUSAND"
+	// MORE_THAN_ONE_HUNDRED_THOUSAND_UP_TO_TWO_HUNDRED_AND_FIFTY_THOUSAND De 100 mil a 250 mil.
+	MORE_THAN_ONE_HUNDRED_THOUSAND_UP_TO_TWO_HUNDRED_AND_FIFTY_THOUSAND DeclaredAnnualBilling = "MORE_THAN_ONE_HUNDRED_THOUSAND_UP_TO_TWO_HUNDRED_AND_FIFTY_THOUSAND"
+	// MORE_THAN_TWO_HUNDRED_AND_FIFTY_THOUSAND_UP_TO_FIVE_HUNDRED_THOUSAND De 250 mil a 500 mil.
+	MORE_THAN_TWO_HUNDRED_AND_FIFTY_THOUSAND_UP_TO_FIVE_HUNDRED_THOUSAND DeclaredAnnualBilling = "MORE_THAN_TWO_HUNDRED_AND_FIFTY_THOUSAND_UP_TO_FIVE_HUNDRED_THOUSAND"
+	// MORE_THAN_FIVE_HUNDRED_THOUSAND_UP_TO_ONE_MILLION De 500 mil a 1 milhão.
+	MORE_THAN_FIVE_HUNDRED_THOUSAND_UP_TO_ONE_MILLION DeclaredAnnualBilling = "MORE_THAN_FIVE_HUNDRED_THOUSAND_UP_TO_ONE_MILLION"
+	// MORE_THAN_ONE_MILLION_UP_TO_TWO_MILLION_AND_FIVE_HUNDRED_THOUSAND De 1 milhão a 2 milhões e 500 mil.
+	MORE_THAN_ONE_MILLION_UP_TO_TWO_MILLION_AND_FIVE_HUNDRED_THOUSAND DeclaredAnnualBilling = "MORE_THAN_ONE_MILLION_UP_TO_TWO_MILLION_AND_FIVE_HUNDRED_THOUSAND"
+	// MORE_THAN_TWO_MILLION_AND_FIVE_HUNDRED_THOUSAND_UP_TO_FIVE_MILLION De 2 milhões e 500 mil a 5 milhões.
+	MORE_THAN_TWO_MILLION_AND_FIVE_HUNDRED_THOUSAND_UP_TO_FIVE_MILLION DeclaredAnnualBilling = "MORE_THAN_TWO_MILLION_AND_FIVE_HUNDRED_THOUSAND_UP_TO_FIVE_MILLION"
+	// MORE_THAN_FIVE_MILLION_UP_TO_TEN_MILLION De 5 milhões a 10 milhões.
+	MORE_THAN_FIVE_MILLION_UP_TO_TEN_MILLION DeclaredAnnualBilling = "MORE_THAN_FIVE_MILLION_UP_TO_TEN_MILLION"
+	// MORE_THAN_TEN_MILLION_UP_TO_TWENTY_FIVE_MILLION De 10 milhões a 25 milhões.
+	MORE_THAN_TEN_MILLION_UP_TO_TWENTY_FIVE_MILLION DeclaredAnnualBilling = "MORE_THAN_TEN_MILLION_UP_TO_TWENTY_FIVE_MILLION"
+	// MORE_THAN_TWENTY_FIVE_MILLION_UP_TO_FIFTY_MILLION De 25 milhões a 50 milhões.
+	MORE_THAN_TWENTY_FIVE_MILLION_UP_TO_FIFTY_MILLION DeclaredAnnualBilling = "MORE_THAN_TWENTY_FIVE_MILLION_UP_TO_FIFTY_MILLION"
+	// MORE_THAN_FIFTY_MILLION_UP_TO_ONE_HUNDRED_MILLION De 50 milhões a 100 milhões.
+	MORE_THAN_FIFTY_MILLION_UP_TO_ONE_HUNDRED_MILLION DeclaredAnnualBilling = "MORE_THAN_FIFTY_MILLION_UP_TO_ONE_HUNDRED_MILLION"
+	// MORE_THAN_ONE_HUNDRED_MILLION_UP_TO_TWO_HUNDRED_AND_FIFTY_MILLION De 100 milhões a 250 milhões.
+	MORE_THAN_ONE_HUNDRED_MILLION_UP_TO_TWO_HUNDRED_AND_FIFTY_MILLION DeclaredAnnualBilling = "MORE_THAN_ONE_HUNDRED_MILLION_UP_TO_TWO_HUNDRED_AND_FIFTY_MILLION"
+	// MORE_THAN_TWO_HUNDRED_AND_FIFTY_MILLION_UP_TO_FIVE_HUNDRED_MILLION De 250 milhões a 500 milhões.
+	MORE_THAN_TWO_HUNDRED_AND_FIFTY_MILLION_UP_TO_FIVE_HUNDRED_MILLION DeclaredAnnualBilling = "MORE_THAN_TWO_HUNDRED_AND_FIFTY_MILLION_UP_TO_FIVE_HUNDRED_MILLION"
+	// MORE_THAN_FIVE_HUNDRED_MILLION Mais de 500 milhões.
+	MORE_THAN_FIVE_HUNDRED_MILLION DeclaredAnnualBilling = "MORE_THAN_FIVE_HUNDRED_MILLION"
+	// NOT_DECLARED Não declarada.
+	NOT_DECLARED DeclaredAnnualBilling = "NOT_DECLARED"
+	// EXEMPT_COMPANY Empresa isenta.
+	EXEMPT_COMPANY DeclaredAnnualBilling = "EXEMPT_COMPANY"
+	// INACTIVE_COMPANY Empresa inativa.
+	INACTIVE_COMPANY DeclaredAnnualBilling = "INACTIVE_COMPANY"
 )
 
 // AuthenticationResponse ...
@@ -443,14 +494,15 @@ type TransferByCodeResponse struct {
 
 // BusinessRequest ...
 type BusinessRequest struct {
-	Document            string               `validate:"required,cnpj" json:"documentNumber,omitempty"`
-	BusinessName        string               `validate:"required" json:"businessName,omitempty"`
-	TradingName         string               `json:"tradingName,omitempty"`
-	BusinessEmail       string               `json:"businessEmail,omitempty"`
-	BusinessType        BusinessType         `validate:"required" json:"businessType"`
-	BusinessSize        BusinessSize         `validate:"required" json:"businessSize"`
-	BusinessAddress     *Address             `validate:"required,dive" json:"businessAddress,omitempty"`
-	LegalRepresentative *LegalRepresentative `validate:"required,dive" json:"legalRepresentative,omitempty"`
+	DocumentNumber        string                `validate:"required,cnpj" json:"documentNumber,omitempty"`
+	BusinessName          string                `validate:"required" json:"businessName,omitempty"`
+	TradingName           string                `json:"tradingName,omitempty"`
+	BusinessEmail         string                `validate:"required" json:"businessEmail,omitempty"`
+	BusinessType          BusinessType          `validate:"required" json:"businessType"`
+	BusinessSize          BusinessSize          `validate:"required" json:"businessSize"`
+	BusinessAddress       *Address              `validate:"required,dive" json:"businessAddress,omitempty"`
+	DeclaredAnnualBilling DeclaredAnnualBilling `validate:"required" json:"declaredAnnualBilling"`
+	LegalRepresentative   *LegalRepresentative  `validate:"required,dive" json:"legalRepresentative,omitempty"`
 }
 
 // BusinessUpdateRequest ...
@@ -519,14 +571,25 @@ const (
 
 // LegalRepresentative ...
 type LegalRepresentative struct {
-	Document     string    `validate:"required,cpf" json:"documentNumber,omitempty"`
-	RegisterName string    `validate:"required" json:"registerName,omitempty"`
-	SocialName   string    `json:"socialName,omitempty"`
-	Phone        *Phone    `validate:"required,dive" json:"phone,omitempty"`
-	Address      *Address  `validate:"required,dive" json:"address,omitempty"`
-	BirthDate    time.Time `validate:"required" json:"birthDate,omitempty"`
-	MotherName   string    `validate:"required" json:"motherName,omitempty"`
-	Email        string    `validate:"required" json:"email,omitempty"`
+	DocumentNumber           string                      `validate:"required,cpf" json:"documentNumber,omitempty"`
+	Document                 LegalRepresentativeDocument `validate:"required,dive" json:"document,omitempty"`
+	RegisterName             string                      `validate:"required" json:"registerName,omitempty"`
+	SocialName               string                      `json:"socialName,omitempty"`
+	Email                    string                      `validate:"required" json:"email,omitempty"`
+	Phone                    *Phone                      `validate:"required,dive" json:"phone,omitempty"`
+	Address                  *Address                    `validate:"required,dive" json:"address,omitempty"`
+	BirthDate                time.Time                   `validate:"required" json:"birthDate,omitempty"`
+	MotherName               string                      `validate:"required" json:"motherName,omitempty"`
+	DeclaredIncome           DeclaredIncome              `validate:"required" json:"declaredIncome,omitempty"`
+	Occupation               string                      `validate:"required" json:"occupation,omitempty"`
+	PoliticallyExposedPerson PoliticallyExposedPerson    `validate:"required,dive" json:"pep,omitempty"`
+	Documentation            Documentation               `validate:"required,dive" json:"documentation,omitempty"`
+}
+
+// LegalRepresentativeDocument ...
+type LegalRepresentativeDocument struct {
+	Value string `validate:"required,cnpjcpf" json:"value,omitempty"`
+	Type  string `validate:"required" json:"type,omitempty"`
 }
 
 // BusinessResponse ...

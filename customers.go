@@ -13,14 +13,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//Customers ...
+// Customers ...
 type Customers struct {
 	session        Session
 	httpClient     *http.Client
 	authentication *Authentication
 }
 
-//NewCustomers ...
+// NewCustomers ...
 func NewCustomers(httpClient *http.Client, session Session) *Customers {
 	return &Customers{
 		session:        session,
@@ -108,7 +108,7 @@ func (c *Customers) CreateCustomerRegistration(ctx context.Context, customer Cus
 	return ErrDefaultCustomersAccounts
 }
 
-//FindRegistration ...
+// FindRegistration ...
 func (c *Customers) FindRegistration(ctx context.Context, identifier string) (*CustomersResponse, error) {
 
 	fields := logrus.Fields{
@@ -195,7 +195,7 @@ func (c *Customers) FindRegistration(ctx context.Context, identifier string) (*C
 	return nil, ErrDefaultCustomersAccounts
 }
 
-//UpdateRegistration ...
+// UpdateRegistration ...
 func (c *Customers) UpdateRegistration(ctx context.Context, document string, customerUpdateRequest CustomerUpdateRequest) error {
 
 	requestID, _ := ctx.Value("Request-Id").(string)
@@ -266,7 +266,7 @@ func (c *Customers) UpdateRegistration(ctx context.Context, document string, cus
 	return ErrDefaultCustomersAccounts
 }
 
-//CreateAccount ...
+// CreateAccount ...
 func (c *Customers) CreateAccount(ctx context.Context, document string, accountType AccountType) (*AccountResponse, error) {
 
 	requestID, _ := ctx.Value("Request-Id").(string)
@@ -339,7 +339,7 @@ func (c *Customers) CreateAccount(ctx context.Context, document string, accountT
 	return nil, ErrDefaultCustomersAccounts
 }
 
-//FindAccounts ...
+// FindAccounts ...
 func (c *Customers) FindAccounts(ctx context.Context, document string) ([]AccountResponse, error) {
 
 	requestID, _ := ctx.Value("Request-Id").(string)
@@ -434,7 +434,7 @@ func (c *Customers) FindAccounts(ctx context.Context, document string) ([]Accoun
 	return nil, ErrDefaultCustomersAccounts
 }
 
-//CancelAccount ...
+// CancelAccount ...
 func (c *Customers) CancelAccount(ctx context.Context, identifier string, cancelAccountRequest CancelAccountRequest) error {
 
 	requestID, _ := ctx.Value("Request-Id").(string)
@@ -547,15 +547,13 @@ func (c *Customers) getCustomerAPIEndpoint(requestID string, identifier string,
 	return &endpoint, nil
 }
 
-// setRequestHeader
+// setRequestHeader Set header with Bankly requirements
 func setRequestHeader(request *http.Request, token string, apiVersion string, headers *http.Header) *http.Request {
 	if headers != nil {
 		request.Header = *headers
 	}
-
 	request.Header.Add("Authorization", token)
 	request.Header.Add("Content-type", "application/json")
 	request.Header.Add("api-version", apiVersion)
-
 	return request
 }
