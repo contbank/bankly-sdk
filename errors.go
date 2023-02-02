@@ -45,6 +45,8 @@ var (
 	ErrInvalidParameter = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER", "invalid parameter")
 	// ErrInvalidParameterLength ...
 	ErrInvalidParameterLength = grok.NewError(http.StatusBadRequest, "INVALID_PARAMETER_LENGTH", "invalid parameter length")
+	// ErrInvalidUF ...
+	ErrInvalidUF = grok.NewError(http.StatusBadRequest, "INVALID_UF", "invalid uf")
 	// ErrInvalidAddressNumberLength ...
 	ErrInvalidAddressNumberLength = grok.NewError(http.StatusBadRequest, "INVALID_ADDRESS_NUMBER_LENGTH", "invalid address number length")
 	// ErrInvalidRegisterNameLength ...
@@ -368,10 +370,12 @@ func verifyInvalidParameter(code string, messages []string) string {
 				return "INVALID_EMAIL_LENGTH"
 			} else if strings.Contains(strings.ToLower(m), "not allowed to include numbers or special characters") {
 				return "INVALID_PARAMETER_SPECIAL_CHARACTERS"
-			} else if strings.Contains(strings.ToLower(m), " not allowed to include special characters") {
+			} else if strings.Contains(strings.ToLower(m), "not allowed to include special characters") {
 				return "INVALID_PARAMETER_SPECIAL_CHARACTERS"
 			} else if strings.Contains(strings.ToLower(m), "length of") {
 				return "INVALID_PARAMETER_LENGTH"
+			} else if strings.Contains(strings.ToLower(m), "invalid brazilian state acronym") {
+				return "INVALID_UF"
 			}
 		}
 	}
