@@ -29,48 +29,42 @@ func NewCustomers(httpClient *http.Client, session Session) *Customers {
 	}
 }
 
-//CreateRegistration ...
-func (c *Customers) CreateRegistration(ctx context.Context, customer CustomersRequest) error {
+// CreateCustomerRegistration ...
+func (c *Customers) CreateCustomerRegistration(ctx context.Context, customer CustomersRequest) error {
+
+	fields := logrus.Fields{
+		"request_id": grok.GetRequestID(ctx),
+		"object":     customer,
+	}
+
+	// validator
 	err := grok.Validator.Struct(customer)
 	if err != nil {
+		logrus.WithFields(fields).Error("error customer model validation")
 		return grok.FromValidationErros(err)
 	}
 
-	requestID, _ := ctx.Value("Request-Id").(string)
-	fields := logrus.Fields{
-		"request_id": requestID,
-		"customer":   customer,
-	}
-
-	endpoint, err := c.getCustomerAPIEndpoint(requestID, customer.Document, false, nil)
+	endpoint, err := c.getCustomerAPIEndpoint(grok.GetRequestID(ctx), customer.Document, false, nil)
 	if err != nil {
 		return err
 	}
 
 	reqbyte, err := json.Marshal(customer)
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error marshal")
+		logrus.WithFields(fields).WithError(err).Error("error marshal")
 		return err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "PUT", *endpoint, bytes.NewReader(reqbyte))
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error new request")
+		logrus.WithFields(fields).WithError(err).Error("error new request")
 		return err
 	}
 
 	token, err := c.authentication.Token(ctx)
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error authentication")
+		logrus.WithFields(fields).
+			WithError(err).Error("error authentication")
 		return err
 	}
 
@@ -79,18 +73,16 @@ func (c *Customers) CreateRegistration(ctx context.Context, customer CustomersRe
 	req.Header.Add("api-version", c.session.APIVersion)
 
 	resp, err := c.httpClient.Do(req)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error http client")
+		logrus.WithFields(fields).
+			WithError(err).Error("error http client")
 		return err
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusAccepted {
+		logrus.WithFields(fields).Info("created with success")
 		return nil
 	}
 
@@ -99,12 +91,9 @@ func (c *Customers) CreateRegistration(ctx context.Context, customer CustomersRe
 	respBody, _ := ioutil.ReadAll(resp.Body)
 
 	err = json.Unmarshal(respBody, &bodyErr)
-
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error unmarshal")
+		logrus.WithFields(fields).
+			WithError(err).Error("error unmarshal")
 		return err
 	}
 
@@ -113,9 +102,8 @@ func (c *Customers) CreateRegistration(ctx context.Context, customer CustomersRe
 		return FindError(errModel.Code, errModel.Messages...)
 	}
 
-	logrus.
-		WithFields(fields).
-		Error("error default customers accounts - CreateRegistration")
+	logrus.WithFields(fields).
+		Error("error default customers accounts - CreateCustomerRegistration")
 
 	return ErrDefaultCustomersAccounts
 }
@@ -123,33 +111,28 @@ func (c *Customers) CreateRegistration(ctx context.Context, customer CustomersRe
 //FindRegistration ...
 func (c *Customers) FindRegistration(ctx context.Context, identifier string) (*CustomersResponse, error) {
 
-	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id": requestID,
+		"request_id": grok.GetRequestID(ctx),
 		"identifier": identifier,
 	}
 
 	resultLevel := ResultLevelDetailed
-	endpoint, err := c.getCustomerAPIEndpoint(requestID, identifier, false, &resultLevel)
+	endpoint, err := c.getCustomerAPIEndpoint(grok.GetRequestID(ctx), identifier, false, &resultLevel)
 	if err != nil {
 		return nil, err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "GET", *endpoint, nil)
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error new request")
+		logrus.WithFields(fields).
+			WithError(err).Error("error new request")
 		return nil, err
 	}
 
 	token, err := c.authentication.Token(ctx)
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error authentication")
+		logrus.WithFields(fields).
+			WithError(err).Error("error authentication")
 		return nil, err
 	}
 
@@ -538,10 +521,8 @@ func (c *Customers) getCustomerAPIEndpoint(requestID string, identifier string,
 
 	u, err := url.Parse(c.session.APIEndpoint)
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error api endpoint")
+		logrus.WithFields(fields).
+			WithError(err).Error("error api endpoint")
 		return nil, err
 	}
 
@@ -561,9 +542,7 @@ func (c *Customers) getCustomerAPIEndpoint(requestID string, identifier string,
 	endpoint := u.String()
 
 	fields["endpoint"] = endpoint
-	logrus.
-		WithFields(fields).
-		Info("get endpoint success")
+	logrus.WithFields(fields).Info("get endpoint success")
 
 	return &endpoint, nil
 }

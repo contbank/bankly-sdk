@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/aws/aws-sdk-go v1.34.28
-	github.com/contbank/grok v0.0.85
+	github.com/contbank/grok v0.0.90
 	github.com/google/uuid v1.1.2
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/sirupsen/logrus v1.7.0

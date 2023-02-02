@@ -181,9 +181,12 @@ func (s *CustomersTestSuite) TestCreateAndFindAccount() {
 }
 
 func (s *CustomersTestSuite) createRegistrationWithParams(surname string, document string, cellphone string, email string) error {
-	return s.customers.CreateRegistration(context.Background(),
+	return s.customers.CreateCustomerRegistration(context.Background(),
 		bankly.CustomersRequest{
-			Document: document,
+			Document:     document,
+			RegisterName: grok.ToTitle("Nome da Pessoa " + surname),
+			SocialName:   grok.ToTitle("Nome social " + surname),
+			Email:        strings.ToLower(email),
 			Phone: &bankly.Phone{
 				CountryCode: "55",
 				Number:      cellphone,
@@ -197,10 +200,13 @@ func (s *CustomersTestSuite) createRegistrationWithParams(surname string, docume
 				State:          "SP",
 				Country:        "BR",
 			},
-			RegisterName: "Nome da Pessoa " + surname,
-			BirthDate:    time.Date(1993, time.March, 25, 0, 0, 0, 0, time.UTC),
-			MotherName:   "Nome da Mãe da Pessoa " + surname,
-			Email:        email,
+			BirthDate:      time.Date(1993, time.March, 25, 0, 0, 0, 0, time.UTC),
+			MotherName:     "Nome da Mãe da Pessoa " + surname,
+			DeclaredIncome: "LESS_THAN_ONE_THOUSAND",
+			Occupation:     "OCP0001",
+			PoliticallyExposedPerson: bankly.PoliticallyExposedPerson{
+				Level: "NONE",
+			},
 		})
 }
 
