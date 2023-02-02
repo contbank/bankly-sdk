@@ -48,7 +48,7 @@ func (s *BusinessTestSuite) TestCreateBusiness_TypeEI_SizeME() {
 
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeEI, bankly.BusinessSizeME)
 
-	err := s.business.CreateBusiness(context.Background(), businessRequest)
+	err := s.business.CreateBusinessRegistration(context.Background(), businessRequest)
 
 	s.assert.NoError(err)
 	s.assert.Nil(err)
@@ -60,7 +60,7 @@ func (s *BusinessTestSuite) TestCreateBusiness_TypeMEI_SizeMEI() {
 
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeMEI)
 
-	err := s.business.CreateBusiness(context.Background(), businessRequest)
+	err := s.business.CreateBusinessRegistration(context.Background(), businessRequest)
 
 	s.assert.NoError(err)
 	s.assert.Nil(err)
@@ -72,7 +72,7 @@ func (s *BusinessTestSuite) TestCreateBusiness_TypeEIRELI_SizeEPP() {
 
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeEIRELI, bankly.BusinessSizeEPP)
 
-	err := s.business.CreateBusiness(context.Background(), businessRequest)
+	err := s.business.CreateBusinessRegistration(context.Background(), businessRequest)
 
 	s.assert.NoError(err)
 	s.assert.Nil(err)
@@ -84,7 +84,7 @@ func (s *BusinessTestSuite) TestCreateBusinessErrorInvalidTypeMEIAndSizeEPP() {
 
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeEPP)
 
-	err := s.business.CreateBusiness(context.Background(), businessRequest)
+	err := s.business.CreateBusinessRegistration(context.Background(), businessRequest)
 
 	s.assert.Error(err)
 
@@ -100,7 +100,7 @@ func (s *BusinessTestSuite) TestCreateBusinessErrorInvalidTypeMEIAndSizeME() {
 
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeME)
 
-	err := s.business.CreateBusiness(context.Background(), businessRequest)
+	err := s.business.CreateBusinessRegistration(context.Background(), businessRequest)
 
 	s.assert.Error(err)
 
@@ -117,7 +117,7 @@ func (s *BusinessTestSuite) TestUpdateBusinessName() {
 
 	// create business
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeMEI)
-	err := s.business.CreateBusiness(context.Background(), businessRequest)
+	err := s.business.CreateBusinessRegistration(context.Background(), businessRequest)
 	s.assert.NoError(err)
 	s.assert.Nil(err)
 
@@ -126,15 +126,15 @@ func (s *BusinessTestSuite) TestUpdateBusinessName() {
 	businessUpdateRequest := &bankly.BusinessUpdateRequest{
 		BusinessName: newBusinessName,
 	}
-	err = s.business.UpdateBusiness(context.Background(), businessRequest.Document, *businessUpdateRequest)
+	err = s.business.UpdateBusiness(context.Background(), businessRequest.DocumentNumber, *businessUpdateRequest)
 	s.assert.NoError(err)
 	s.assert.Nil(err)
 
 	// find updated business
-	updatedAccount, err := s.business.FindBusiness(context.Background(), businessRequest.Document)
+	updatedAccount, err := s.business.FindBusiness(context.Background(), businessRequest.DocumentNumber)
 	s.assert.NoError(err)
 	s.assert.NotNil(updatedAccount)
-	s.assert.Equal(businessRequest.Document, updatedAccount.Document)
+	s.assert.Equal(businessRequest.DocumentNumber, updatedAccount.Document)
 	s.assert.Equal(newBusinessName, updatedAccount.BusinessName)
 }
 
@@ -145,18 +145,18 @@ func (s *BusinessTestSuite) TestUpdateBusinessEmailAndBusinessTypeAndBusinessTyp
 
 	// create business
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeMEI)
-	err := s.business.CreateBusiness(context.Background(), businessRequest)
+	err := s.business.CreateBusinessRegistration(context.Background(), businessRequest)
 	s.assert.NoError(err)
 	s.assert.Nil(err)
 
 	// update business
-	newEmail := "novo_email_" + businessRequest.Document + "@contbank.com"
+	newEmail := "novo_email_" + businessRequest.DocumentNumber + "@contbank.com"
 	businessUpdateRequest := &bankly.BusinessUpdateRequest{
 		BusinessEmail: newEmail,
 		BusinessType:  bankly.BusinessTypeEI,
 		BusinessSize:  bankly.BusinessSizeME,
 	}
-	err = s.business.UpdateBusiness(context.Background(), businessRequest.Document, *businessUpdateRequest)
+	err = s.business.UpdateBusiness(context.Background(), businessRequest.DocumentNumber, *businessUpdateRequest)
 	s.assert.NoError(err)
 	s.assert.Nil(err)
 
@@ -164,7 +164,7 @@ func (s *BusinessTestSuite) TestUpdateBusinessEmailAndBusinessTypeAndBusinessTyp
 	updatedAccount, err := s.business.FindBusiness(context.Background(), "59619372000143")
 	s.assert.NoError(err)
 	s.assert.NotNil(updatedAccount)
-	s.assert.Equal(businessRequest.Document, updatedAccount.Document)
+	s.assert.Equal(businessRequest.DocumentNumber, updatedAccount.Document)
 	s.assert.Equal(bankly.BusinessTypeEI, updatedAccount.BusinessType)
 	s.assert.Equal(bankly.BusinessSizeME, updatedAccount.BusinessSize)
 	s.assert.Equal(newEmail, updatedAccount.BusinessEmail)
@@ -177,12 +177,12 @@ func (s *BusinessTestSuite) TestCreateBusinessAccount() {
 
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeEI, bankly.BusinessSizeME)
 
-	err := s.business.CreateBusiness(context.Background(), businessRequest)
+	err := s.business.CreateBusinessRegistration(context.Background(), businessRequest)
 	s.assert.NoError(err)
 	s.assert.Nil(err)
 
 	businessAccountRequest := bankly.BusinessAccountRequest{
-		Document:    businessRequest.Document,
+		Document:    businessRequest.DocumentNumber,
 		AccountType: bankly.PaymentAccount,
 	}
 
@@ -262,15 +262,15 @@ func (s *BusinessTestSuite) TestBusinessName_TypeMEI() {
 	s.T().Skip("Bankly está retornando erro 403 no endpoint de business. Mockar este teste.")
 
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeMEI)
-	businessName := businessRequest.LegalRepresentative.RegisterName + " " + businessRequest.LegalRepresentative.Document
-	err := s.business.CreateBusiness(context.Background(), businessRequest)
+	businessName := businessRequest.LegalRepresentative.RegisterName + " " + businessRequest.LegalRepresentative.DocumentNumber
+	err := s.business.CreateBusinessRegistration(context.Background(), businessRequest)
 
 	s.assert.NoError(err)
 	s.assert.Nil(err)
 
 	time.Sleep(time.Millisecond)
 
-	account, err := s.business.FindBusiness(context.Background(), businessRequest.Document)
+	account, err := s.business.FindBusiness(context.Background(), businessRequest.DocumentNumber)
 
 	s.assert.NoError(err)
 	s.assert.NotNil(account)
@@ -282,14 +282,14 @@ func (s *BusinessTestSuite) TestBusinessName_TypeEI() {
 	s.T().Skip("Bankly está retornando erro 403 no endpoint de business. Mockar este teste.")
 
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeEI, bankly.BusinessSizeEPP)
-	err := s.business.CreateBusiness(context.Background(), businessRequest)
+	err := s.business.CreateBusinessRegistration(context.Background(), businessRequest)
 
 	s.assert.NoError(err)
 	s.assert.Nil(err)
 
 	time.Sleep(time.Millisecond)
 
-	account, err := s.business.FindBusiness(context.Background(), businessRequest.Document)
+	account, err := s.business.FindBusiness(context.Background(), businessRequest.DocumentNumber)
 
 	s.assert.NoError(err)
 	s.assert.NotNil(account)
@@ -301,14 +301,14 @@ func (s *BusinessTestSuite) TestBusinessName_TypeEIRELI() {
 	s.T().Skip("Bankly está retornando erro 403 no endpoint de business. Mockar este teste.")
 
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeEIRELI, bankly.BusinessSizeEPP)
-	err := s.business.CreateBusiness(context.Background(), businessRequest)
+	err := s.business.CreateBusinessRegistration(context.Background(), businessRequest)
 
 	s.assert.NoError(err)
 	s.assert.Nil(err)
 
 	time.Sleep(time.Millisecond)
 
-	account, err := s.business.FindBusiness(context.Background(), businessRequest.Document)
+	account, err := s.business.FindBusiness(context.Background(), businessRequest.DocumentNumber)
 
 	s.assert.NoError(err)
 	s.assert.NotNil(account)
@@ -321,7 +321,7 @@ func createBusinessRequest(document string, businessType bankly.BusinessType, bu
 	email := "email_de_teste_" + randomName + "@contbank.com"
 
 	return bankly.BusinessRequest{
-		Document:            bankly.OnlyDigits(document),
+		DocumentNumber:      bankly.OnlyDigits(document),
 		BusinessName:        "Nome da Empresa " + randomName,
 		TradingName:         "Nome Fantasia " + randomName,
 		BusinessEmail:       email,
@@ -335,8 +335,8 @@ func createBusinessRequest(document string, businessType bankly.BusinessType, bu
 func createLegalRepresentative() *bankly.LegalRepresentative {
 	randSurname := randStringBytes(10)
 	return &bankly.LegalRepresentative{
-		Document:     grok.GeneratorCPF(),
-		RegisterName: "Nome do Representante Legal " + randSurname,
+		DocumentNumber: grok.GeneratorCPF(),
+		RegisterName:   "Nome do Representante Legal " + randSurname,
 		Phone: &bankly.Phone{
 			CountryCode: "55",
 			Number:      bankly.GeneratorCellphone(),

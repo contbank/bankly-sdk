@@ -13,14 +13,14 @@ import (
 	"strings"
 )
 
-//Business ...
+// Business ...
 type Business struct {
 	session        Session
 	httpClient     *http.Client
 	authentication *Authentication
 }
 
-//NewBusiness ...
+// NewBusiness ...
 func NewBusiness(httpClient *http.Client, session Session) *Business {
 	return &Business{
 		session:        session,
@@ -29,19 +29,19 @@ func NewBusiness(httpClient *http.Client, session Session) *Business {
 	}
 }
 
-//CreateBusiness ...
-func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessRequest) error {
+// CreateBusinessRegistration ...
+func (c *Business) CreateBusinessRegistration(ctx context.Context, businessRequest BusinessRequest) error {
 
-	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
-		"request_id": requestID,
+		"request_id": grok.GetRequestID(ctx),
 		"object":     businessRequest,
 	}
 
-	businessRequest = normalizeBusinessName(businessRequest)
+	businessRequest = normalizeBusinessNameMEI(businessRequest)
 	fields["object"] = businessRequest
 
-	endpoint, err := c.getBusinessAPIEndpoint(requestID, businessRequest.Document, false, nil)
+	// getting API endpoint URL
+	endpoint, err := c.getBusinessAPIEndpoint(grok.GetRequestID(ctx), businessRequest.DocumentNumber, false, nil)
 	if err != nil {
 		logrus.WithFields(fields).
 			WithError(err).Error("error get business api endpoint")
@@ -77,7 +77,7 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 	if resp.StatusCode == http.StatusAccepted || resp.StatusCode == http.StatusOK {
 		return nil
 	} else if resp.StatusCode == http.StatusInternalServerError {
-		logrus.WithFields(fields).Error("internal server error - CreateBusiness")
+		logrus.WithFields(fields).Error("internal server error - CreateBusinessRegistration")
 		return ErrDefaultBusinessAccounts
 	}
 
@@ -85,36 +85,39 @@ func (c *Business) CreateBusiness(ctx context.Context, businessRequest BusinessR
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
 		logrus.WithFields(fields).
-			WithError(err).Error("error unmarshal - CreateBusiness")
+			WithError(err).Error("error unmarshal - CreateBusinessRegistration")
 		return err
 	}
 
 	if len(bodyErr.Errors) > 0 {
 		errModel := bodyErr.Errors[0]
-		logrus.WithFields(fields).Error("body error - CreateBusiness")
+		logrus.WithFields(fields).Error("body error - CreateBusinessRegistration")
 		return FindError(errModel.Code, errModel.Messages...)
 	}
 
-	logrus.WithFields(fields).Error("default error business accounts - CreateBusiness")
+	logrus.WithFields(fields).Error("default error business accounts - CreateBusinessRegistration")
 	return ErrDefaultBusinessAccounts
 }
 
-// normalizeBusinessName ...
-func normalizeBusinessName(businessRequest BusinessRequest) BusinessRequest {
+// normalizeBusinessNameMEI Ajusta o nome da empresa quando MEI, incluindo o identifier do proprietário ao final
+func normalizeBusinessNameMEI(businessRequest BusinessRequest) BusinessRequest {
 	if businessRequest.BusinessType == BusinessTypeMEI {
+		// SLU
 		if strings.Contains(strings.ToUpper(businessRequest.BusinessName), "LTDA") {
 			return businessRequest
 		}
+		// MEI
+		cpf := businessRequest.LegalRepresentative.DocumentNumber
 		businessName := businessRequest.LegalRepresentative.RegisterName
-		if !strings.Contains(businessRequest.LegalRepresentative.RegisterName, businessRequest.LegalRepresentative.Document) {
-			businessName = businessRequest.LegalRepresentative.RegisterName + " " + businessRequest.LegalRepresentative.Document
+		if !strings.Contains(businessName, cpf) {
+			businessName = businessRequest.LegalRepresentative.RegisterName + " " + cpf
 		}
 		businessRequest.BusinessName = businessName
 	}
 	return businessRequest
 }
 
-//UpdateBusiness ...
+// UpdateBusiness ...
 func (c *Business) UpdateBusiness(ctx context.Context,
 	businessDocument string, businessUpdateRequest BusinessUpdateRequest) error {
 
@@ -197,7 +200,7 @@ func (c *Business) UpdateBusiness(ctx context.Context,
 	return ErrDefaultBusinessAccounts
 }
 
-//CreateBusinessAccount ...
+// CreateBusinessAccount ...
 func (c *Business) CreateBusinessAccount(ctx context.Context,
 	businessAccountRequest BusinessAccountRequest) (*AccountResponse, error) {
 
@@ -290,7 +293,7 @@ func (c *Business) CreateBusinessAccount(ctx context.Context,
 	return nil, ErrDefaultBusinessAccounts
 }
 
-//FindBusiness ...
+// FindBusiness ...
 func (c *Business) FindBusiness(ctx context.Context, identifier string) (*BusinessResponse, error) {
 
 	requestID, _ := ctx.Value("Request-Id").(string)
@@ -388,7 +391,7 @@ func (c *Business) FindBusiness(ctx context.Context, identifier string) (*Busine
 	return nil, ErrDefaultBusinessAccounts
 }
 
-//FindBusinessAccounts ...
+// FindBusinessAccounts ...
 func (c *Business) FindBusinessAccounts(ctx context.Context, identifier string) ([]AccountResponse, error) {
 
 	requestID, _ := ctx.Value("Request-Id").(string)
@@ -493,7 +496,7 @@ func (c *Business) FindBusinessAccounts(ctx context.Context, identifier string) 
 	return nil, ErrDefaultBusinessAccounts
 }
 
-//CancelBusinessAccount ...
+// CancelBusinessAccount ...
 func (c *Business) CancelBusinessAccount(ctx context.Context, identifier string,
 	cancelAccountRequest CancelAccountRequest) error {
 
@@ -581,10 +584,8 @@ func (c *Business) getBusinessAPIEndpoint(requestID string, identifier string,
 
 	u, err := url.Parse(c.session.APIEndpoint)
 	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error api endpoint")
+		logrus.WithFields(fields).
+			WithError(err).Error("error api endpoint")
 		return nil, err
 	}
 
@@ -604,8 +605,7 @@ func (c *Business) getBusinessAPIEndpoint(requestID string, identifier string,
 	endpoint := u.String()
 
 	fields["endpoint"] = endpoint
-	logrus.
-		WithFields(fields).
+	logrus.WithFields(fields).
 		Info("get endpoint success")
 
 	return &endpoint, nil
