@@ -36,7 +36,10 @@ func NewDocumentAnalysis(httpClient *http.Client, session Session) *DocumentAnal
 }
 
 // SendDocumentAnalysis ...
-func (c *DocumentAnalysis) SendDocumentAnalysis(ctx context.Context, request DocumentAnalysisRequest) (*DocumentAnalysisResponse, error) {
+func (c *DocumentAnalysis) SendDocumentAnalysis(ctx context.Context,
+	request DocumentAnalysisRequest) (*DocumentAnalysisResponse, error) {
+
+	// validator
 	err := grok.Validator.Struct(request)
 	if err != nil {
 		return nil, grok.FromValidationErros(err)
@@ -124,7 +127,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(ctx context.Context, request Doc
 // FindDocumentAnalysis ...
 func (c *DocumentAnalysis) FindDocumentAnalysis(ctx context.Context, documentNumber string,
 	documentAnalysisToken string) (*DocumentAnalysisResponse, error) {
-	
+
 	resultLevel := ResultLevelDetailed
 	endpoint, err := c.getDocumentAnalysisAPIEndpoint(documentNumber, &resultLevel, &documentAnalysisToken, nil)
 	if err != nil {
@@ -232,42 +235,37 @@ func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *mu
 
 	writerFormFile, errFormFile := createFormFile(writer, file)
 	if errFormFile != nil {
-		logrus.
-			WithError(errFormFile).
-			Error("error")
+		logrus.WithError(errFormFile).Error("error creating form file")
 		return nil, nil, errFormFile
 	}
 
 	bFormFile, bErrorFormFile := ioutil.ReadFile(file.Name())
 	if bErrorFormFile != nil {
-		logrus.
-			WithError(bErrorFormFile).
-			Error("error")
+		logrus.WithError(bErrorFormFile).Error("error reading file")
 		return nil, nil, bErrorFormFile
 	}
 	writerFormFile.Write(bFormFile)
 
+	// document type
 	errTypeField := writer.WriteField("documentType", string(request.DocumentType))
 	if errTypeField != nil {
-		logrus.
-			WithError(errTypeField).
-			Error("error document type field")
+		logrus.WithError(errTypeField).Error("error document type field")
 		return nil, nil, errTypeField
 	}
 
-	errSideField := writer.WriteField("documentSide", string(request.DocumentSide))
-	if errSideField != nil {
-		logrus.
-			WithError(errSideField).
-			Error("error document side field")
-		return nil, nil, errSideField
+	// document side - dont send when is a corporation business
+	if request.IsCorporationBusiness == nil ||
+		(request.IsCorporationBusiness != nil && *request.IsCorporationBusiness == false) {
+		errSideField := writer.WriteField("documentSide", string(request.DocumentSide))
+		if errSideField != nil {
+			logrus.WithError(errSideField).Error("error document side field")
+			return nil, nil, errSideField
+		}
 	}
 
 	errClose := writer.Close()
 	if errClose != nil {
-		logrus.
-			WithError(errClose).
-			Error("error writer close")
+		logrus.WithError(errClose).Error("error writer close")
 		return nil, nil, errClose
 	}
 
