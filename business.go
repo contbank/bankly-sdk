@@ -30,28 +30,33 @@ func NewBusiness(httpClient *http.Client, session Session) *Business {
 }
 
 // CreateBusinessRegistration ...
-func (c *Business) CreateBusinessRegistration(ctx context.Context, modal BusinessRequest) error {
+func (c *Business) CreateBusinessRegistration(ctx context.Context, model BusinessRequest) error {
 
 	fields := logrus.Fields{
 		"request_id": grok.GetRequestID(ctx),
-		"object":     modal,
+		"object":     model,
 	}
 
 	// validator
-	if err := grok.Validator.Struct(modal); err != nil {
+	if err := grok.Validator.Struct(model); err != nil {
+		logrus.WithFields(fields).Error("invalid model - model")
 		return grok.FromValidationErros(err)
 	}
 
 	// error if is LTDA or SA (PJOTAO)
-	if isCorporationBusiness(modal.BusinessType) {
+	if isCorporationBusiness(model.BusinessType) {
+		logrus.WithFields(fields).
+			WithError(ErrCorporationBusinessNotAllowed).
+			Error("error corporation business not allowed")
 		return ErrCorporationBusinessNotAllowed
 	}
 
-	modal = normalizeBusinessNameMEI(modal)
-	businessRequest := ParseSimpleBusinessRequest(&modal)
+	model = normalizeBusinessNameMEI(model)
+	businessRequest := ParseSimpleBusinessRequest(&model)
 
 	// validator
 	if err := grok.Validator.Struct(businessRequest); err != nil {
+		logrus.WithFields(fields).Error("invalid model - business request")
 		return grok.FromValidationErros(err)
 	}
 
@@ -75,15 +80,17 @@ func (c *Business) CreateBusinessRegistration(ctx context.Context, modal Busines
 
 	token, err := c.authentication.Token(ctx)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error authentication")
+		logrus.WithFields(fields).WithError(err).Error("error authentication - CreateBusinessRegistration")
 		return err
 	}
 
 	req = setRequestHeader(req, token, c.session.APIVersion, nil)
 
+	logrus.WithFields(fields).Info("doing request - CreateBusinessRegistration")
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error http client")
+		logrus.WithFields(fields).WithError(err).Error("error http client - CreateBusinessRegistration")
 		return err
 	}
 
