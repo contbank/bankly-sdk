@@ -635,25 +635,28 @@ const (
 
 // LegalRepresentative ...
 type LegalRepresentative struct {
-	DocumentNumber             string                      `validate:"required,cnpjcpf" json:"documentNumber,omitempty"` //// corporation nao
-	Document                   LegalRepresentativeDocument `validate:"required,dive" json:"document,omitempty"`          //// corporation nao
-	RegisterName               string                      `validate:"required" json:"registerName,omitempty"`
+	DocumentNumber             string                      `validate:"required,cnpjcpf" json:"documentNumber,omitempty"`
+	Document                   LegalRepresentativeDocument `json:"document,omitempty"`
+	RegisterName               string                      `json:"registerName,omitempty"`
 	SocialName                 string                      `json:"socialName,omitempty"`
+	BusinessName               string                      `json:"businessName,omitempty"`
+	TradingName                string                      `json:"tradingName,omitempty"`
+	BusinessType               BusinessType                `json:"businessType,omitempty"`
 	Email                      string                      `validate:"required" json:"email,omitempty"`
 	Phone                      *Phone                      `validate:"required,dive" json:"phone,omitempty"`
 	Address                    *Address                    `validate:"required,dive" json:"address,omitempty"`
-	BirthDate                  time.Time                   `validate:"required" json:"birthDate,omitempty"`
-	MotherName                 string                      `validate:"required" json:"motherName,omitempty"`
-	IncomeDeclared             *float64                    `json:"incomeDeclared,omitempty"` //deprecated //// corporation nao
-	DeclaredIncome             DeclaredIncome              `validate:"required" json:"declaredIncome,omitempty"`
-	DeclaredAnnualBilling      DeclaredAnnualBilling       `json:"declaredAnnualBilling,omitempty"` //// corporation nao
-	Occupation                 string                      `validate:"required" json:"occupation,omitempty"`
-	ParticipationPercentage    *float64                    `json:"participationPercentage,omitempty"`    //// corporation nao
+	BirthDate                  time.Time                   `json:"birthDate,omitempty"`
+	MotherName                 string                      `json:"motherName,omitempty"`
+	IncomeDeclared             *float64                    `json:"incomeDeclared,omitempty"` //deprecated
+	DeclaredIncome             DeclaredIncome              `json:"declaredIncome,omitempty"`
+	DeclaredAnnualBilling      DeclaredAnnualBilling       `json:"declaredAnnualBilling,omitempty"`
+	Occupation                 string                      `json:"occupation,omitempty"`
+	ParticipationPercentage    *float64                    `json:"participationPercentage,omitempty"`
 	IsPoliticallyExposedPerson *bool                       `json:"isPoliticallyExposedPerson,omitempty"` //deprecated
-	PoliticallyExposedPerson   PoliticallyExposedPerson    `validate:"required,dive" json:"pep,omitempty"`
+	PoliticallyExposedPerson   PoliticallyExposedPerson    `json:"pep,omitempty"`
 	MemberQualification        *string                     `json:"memberQualification,omitempty"`
 	PowerOfAttorney            *PowerOfAttorney            `json:"powerOfAttorney,omitempty"`
-	Documentation              Documentation               `validate:"required,dive" json:"documentation,omitempty"` //// corporation nao
+	Documentation              Documentation               `json:"documentation,omitempty"`
 }
 
 // CorporationLegalRepresentative ...
