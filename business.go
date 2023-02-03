@@ -30,25 +30,31 @@ func NewBusiness(httpClient *http.Client, session Session) *Business {
 }
 
 // CreateBusinessRegistration ...
-func (c *Business) CreateBusinessRegistration(ctx context.Context, req BusinessRequest) error {
+func (c *Business) CreateBusinessRegistration(ctx context.Context, modal BusinessRequest) error {
 
 	fields := logrus.Fields{
 		"request_id": grok.GetRequestID(ctx),
-		"object":     req,
+		"object":     modal,
 	}
 
-	// model validator
-	if err := grok.Validator.Struct(req); err != nil {
+	// validator
+	if err := grok.Validator.Struct(modal); err != nil {
 		return grok.FromValidationErros(err)
 	}
 
-	// PJOTAO validation
-	if isCorporationBusiness(req.BusinessType) {
+	// error if is LTDA or SA (PJOTAO)
+	if isCorporationBusiness(modal.BusinessType) {
 		return ErrCorporationBusinessNotAllowed
 	}
 
-	req = normalizeBusinessNameMEI(req)
-	businessRequest := ParseSimpleBusinessRequest(&req)
+	modal = normalizeBusinessNameMEI(modal)
+	businessRequest := ParseSimpleBusinessRequest(&modal)
+
+	// validator
+	if err := grok.Validator.Struct(businessRequest); err != nil {
+		return grok.FromValidationErros(err)
+	}
+
 	fields["object"] = businessRequest
 
 	// getting API endpoint URL
@@ -110,22 +116,88 @@ func (c *Business) CreateBusinessRegistration(ctx context.Context, req BusinessR
 	return ErrDefaultBusinessAccounts
 }
 
-// normalizeBusinessNameMEI Ajusta o nome da empresa quando MEI, incluindo o identifier do proprietário ao final
-func normalizeBusinessNameMEI(businessRequest BusinessRequest) BusinessRequest {
-	if businessRequest.BusinessType == BusinessTypeMEI {
-		// SLU
-		if strings.Contains(strings.ToUpper(businessRequest.BusinessName), "LTDA") {
-			return businessRequest
-		}
-		// MEI
-		cpf := businessRequest.LegalRepresentative.DocumentNumber
-		businessName := businessRequest.LegalRepresentative.RegisterName
-		if !strings.Contains(businessName, cpf) {
-			businessName = businessRequest.LegalRepresentative.RegisterName + " " + cpf
-		}
-		businessRequest.BusinessName = businessName
+// CreateCorporationBusinessRequest ...
+func (c *Business) CreateCorporationBusinessRequest(ctx context.Context,
+	businessRequest CorporationBusinessRequest) error {
+
+	fields := logrus.Fields{
+		"request_id": grok.GetRequestID(ctx),
+		"object":     businessRequest,
 	}
-	return businessRequest
+
+	// validator
+	if err := grok.Validator.Struct(businessRequest); err != nil {
+		return grok.FromValidationErros(err)
+	}
+
+	// error if is MEI, EI or EIRELI (PJOTINHA)
+	if !isCorporationBusiness(businessRequest.BusinessType) {
+		return ErrSimpleBusinessNotAllowed
+	}
+
+	// corporation business size adjust
+	businessRequest.BusinessSize =
+		string(ParseCorporationBusinessSize(BusinessSize(businessRequest.BusinessSize)))
+
+	fields["object"] = businessRequest
+
+	// getting API endpoint URL
+	endpoint, err := c.getCorporationBusinessAPIEndpoint(grok.GetRequestID(ctx), businessRequest.DocumentNumber)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error get corporation business api endpoint")
+		return err
+	}
+
+	reqbyte, err := json.Marshal(businessRequest)
+
+	req, err := http.NewRequestWithContext(ctx, "PUT", *endpoint, bytes.NewReader(reqbyte))
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error new request")
+		return err
+	}
+
+	token, err := c.authentication.Token(ctx)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error authentication")
+		return err
+	}
+
+	req = setRequestHeader(req, token, c.session.APIVersion, nil)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error http client")
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode == http.StatusAccepted || resp.StatusCode == http.StatusOK {
+		return nil
+	} else if resp.StatusCode == http.StatusInternalServerError {
+		logrus.WithFields(fields).Error("internal server error - CreateCorporationBusinessRegistration")
+		return ErrDefaultCorporationBusinessAccounts
+	}
+
+	var bodyErr *ErrorResponse
+	err = json.Unmarshal(respBody, &bodyErr)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error unmarshal - CreateCorporationBusinessRegistration")
+		return err
+	}
+
+	if len(bodyErr.Errors) > 0 {
+		errModel := bodyErr.Errors[0]
+		logrus.WithFields(fields).Error("body error - CreateCorporationBusinessRegistration")
+		return FindError(errModel.Code, errModel.Messages...)
+	}
+
+	logrus.WithFields(fields).Error("default error corporation business accounts - CreateCorporationBusinessRegistration")
+	return ErrDefaultCorporationBusinessAccounts
 }
 
 // UpdateBusiness ...
@@ -582,7 +654,7 @@ func (c *Business) CancelBusinessAccount(ctx context.Context, identifier string,
 	return ErrDefaultCancelCustomersAccounts
 }
 
-// getBusinessAPIEndpoint
+// getBusinessAPIEndpoint ...
 func (c *Business) getBusinessAPIEndpoint(requestID string, identifier string,
 	isAccountPath bool, resultLevel *ResultLevel) (*string, error) {
 
@@ -620,6 +692,51 @@ func (c *Business) getBusinessAPIEndpoint(requestID string, identifier string,
 		Info("get endpoint success")
 
 	return &endpoint, nil
+} // getBusinessAPIEndpoint
+
+// getCorporationBusinessAPIEndpoint ...
+func (c *Business) getCorporationBusinessAPIEndpoint(requestID string, identifier string) (*string, error) {
+
+	fields := logrus.Fields{
+		"request_id": requestID,
+		"identifier": identifier,
+	}
+
+	u, err := url.Parse(c.session.APIEndpoint)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error api endpoint")
+		return nil, err
+	}
+
+	u.Path = path.Join(u.Path, CorporationBusinessPath)
+	u.Path = path.Join(u.Path, grok.OnlyDigits(identifier))
+
+	endpoint := u.String()
+
+	fields["endpoint"] = endpoint
+	logrus.WithFields(fields).
+		Info("get endpoint success")
+
+	return &endpoint, nil
+}
+
+// normalizeBusinessNameMEI Ajusta o nome da empresa quando MEI, incluindo o identifier do proprietário ao final
+func normalizeBusinessNameMEI(businessRequest BusinessRequest) BusinessRequest {
+	if businessRequest.BusinessType == BusinessTypeMEI && len(businessRequest.LegalRepresentatives) > 0 {
+		// SLU
+		if strings.Contains(strings.ToUpper(businessRequest.BusinessName), "LTDA") {
+			return businessRequest
+		}
+		// MEI
+		cpf := businessRequest.LegalRepresentatives[0].DocumentNumber
+		businessName := businessRequest.LegalRepresentatives[0].RegisterName
+		if !strings.Contains(businessName, cpf) {
+			businessName = businessRequest.LegalRepresentatives[0].RegisterName + " " + cpf
+		}
+		businessRequest.BusinessName = businessName
+	}
+	return businessRequest
 }
 
 // isCorporationBusiness ...
