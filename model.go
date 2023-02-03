@@ -540,11 +540,11 @@ type CorporationBusinessRequest struct {
 	BusinessAddress       *Address                          `validate:"required,dive" json:"businessAddress,omitempty"`
 	BusinessType          BusinessType                      `validate:"required" json:"businessType"`
 	BusinessSize          string                            `validate:"required" json:"businessSize"`
-	CnaeCode              *string                           `validate:"required" json:"cnaeCode,omitempty"`
+	CNAECode              *string                           `validate:"required" json:"cnaeCode,omitempty"`
 	LegalNature           *string                           `validate:"required" json:"legalNature,omitempty"`
 	OpeningDate           *time.Time                        `validate:"required" json:"openingDate,omitempty"`
 	AnnualBilling         *float64                          `json:"annualBilling,omitempty"` //deprecated
-	declaredAnnualBililng DeclaredAnnualBilling             `validate:"required" json:"declaredAnnualBilling,omitempty"`
+	DeclaredAnnualBilling DeclaredAnnualBilling             `validate:"required" json:"declaredAnnualBilling,omitempty"`
 	LegalRepresentatives  []*CorporationLegalRepresentative `validate:"required,dive" json:"legalRepresentatives,omitempty"`
 	Owners                []*Owners                         `json:"owners,omitempty"`
 	Documentation         CorporationBusinessDocumentation  `validate:"required,dive" json:"documentation,omitempty"`
