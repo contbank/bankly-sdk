@@ -262,7 +262,8 @@ func (s *BusinessTestSuite) TestBusinessName_TypeMEI() {
 	s.T().Skip("Bankly está retornando erro 403 no endpoint de business. Mockar este teste.")
 
 	businessRequest := createBusinessRequest(grok.GeneratorCNPJ(), bankly.BusinessTypeMEI, bankly.BusinessSizeMEI)
-	businessName := businessRequest.LegalRepresentative.RegisterName + " " + businessRequest.LegalRepresentative.DocumentNumber
+	businessName := businessRequest.LegalRepresentatives[0].RegisterName + " " +
+		businessRequest.LegalRepresentatives[0].DocumentNumber
 	err := s.business.CreateBusinessRegistration(context.Background(), businessRequest)
 
 	s.assert.NoError(err)
@@ -315,20 +316,25 @@ func (s *BusinessTestSuite) TestBusinessName_TypeEIRELI() {
 	s.assert.Equal(businessRequest.BusinessName, account.BusinessName)
 }
 
-func createBusinessRequest(document string, businessType bankly.BusinessType, businessSize bankly.BusinessSize) bankly.BusinessRequest {
+// createBusinessRequest ...
+func createBusinessRequest(document string, businessType bankly.BusinessType,
+	businessSize bankly.BusinessSize) bankly.BusinessRequest {
 
 	randomName := bankly.RandStringBytes(10)
 	email := "email_de_teste_" + randomName + "@contbank.com"
 
 	return bankly.BusinessRequest{
-		DocumentNumber:      bankly.OnlyDigits(document),
-		BusinessName:        "Nome da Empresa " + randomName,
-		TradingName:         "Nome Fantasia " + randomName,
-		BusinessEmail:       email,
-		BusinessType:        businessType,
-		BusinessSize:        businessSize,
-		BusinessAddress:     createAddress(),
-		LegalRepresentative: createLegalRepresentative(),
+		DocumentNumber:  bankly.OnlyDigits(document),
+		BusinessName:    "Nome da Empresa " + randomName,
+		TradingName:     "Nome Fantasia " + randomName,
+		BusinessEmail:   email,
+		BusinessType:    businessType,
+		BusinessSize:    businessSize,
+		BusinessAddress: createAddress(),
+		LegalRepresentatives: []*bankly.LegalRepresentative{
+			createLegalRepresentative(),
+		},
+		DeclaredAnnualBilling: bankly.NOT_DECLARED,
 	}
 }
 
