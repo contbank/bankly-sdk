@@ -30,14 +30,25 @@ func NewBusiness(httpClient *http.Client, session Session) *Business {
 }
 
 // CreateBusinessRegistration ...
-func (c *Business) CreateBusinessRegistration(ctx context.Context, businessRequest BusinessRequest) error {
+func (c *Business) CreateBusinessRegistration(ctx context.Context, req BusinessRequest) error {
 
 	fields := logrus.Fields{
 		"request_id": grok.GetRequestID(ctx),
-		"object":     businessRequest,
+		"object":     req,
 	}
 
-	businessRequest = normalizeBusinessNameMEI(businessRequest)
+	// model validator
+	if err := grok.Validator.Struct(req); err != nil {
+		return grok.FromValidationErros(err)
+	}
+
+	// PJOTAO validation
+	if isCorporationBusiness(req.BusinessType) {
+		return ErrCorporationBusinessNotAllowed
+	}
+
+	req = normalizeBusinessNameMEI(req)
+	businessRequest := ParseSimpleBusinessRequest(&req)
 	fields["object"] = businessRequest
 
 	// getting API endpoint URL
@@ -609,4 +620,12 @@ func (c *Business) getBusinessAPIEndpoint(requestID string, identifier string,
 		Info("get endpoint success")
 
 	return &endpoint, nil
+}
+
+// isCorporationBusiness ...
+func isCorporationBusiness(businessType BusinessType) bool {
+	if businessType == BusinessTypeLTDA || businessType == BusinessTypeSA {
+		return true
+	}
+	return false
 }

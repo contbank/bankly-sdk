@@ -243,9 +243,19 @@ type CustomersRequest struct {
 
 // Documentation
 type Documentation struct {
+	DocumentNumber string `json:"documentNumber,omitempty"`
 	TokenSelfie    string `json:"selfie,omitempty"`
 	TokenCardFront string `json:"idCardFront,omitempty"`
 	TokenCardBack  string `json:"idCardBack,omitempty"`
+}
+
+// CorporationBusinessDocumentation
+type CorporationBusinessDocumentation struct {
+	ArticlesOfIncorporation string        `json:"articlesOfIncorporation,omitempty"`
+	LastContractChange      string        `json:"lastContractChange,omitempty"`
+	BalanceSheet            string        `json:"balanceSheet,omitempty"`
+	PowerOfAttorney         string        `json:"powerOfAttorney,omitempty"`
+	LegalRepresentative     Documentation `validate:"required,dive" json:"legalRepresentative,omitempty"`
 }
 
 // PoliticallyExposedPerson ...
@@ -494,6 +504,19 @@ type TransferByCodeResponse struct {
 
 // BusinessRequest ...
 type BusinessRequest struct {
+	DocumentNumber        string                 `json:"documentNumber,omitempty"`
+	BusinessName          string                 `json:"businessName,omitempty"`
+	TradingName           string                 `json:"tradingName,omitempty"`
+	BusinessEmail         string                 `json:"businessEmail,omitempty"`
+	BusinessType          BusinessType           `json:"businessType"`
+	BusinessSize          BusinessSize           `json:"businessSize"`
+	BusinessAddress       *Address               `json:"businessAddress,omitempty"`
+	DeclaredAnnualBilling DeclaredAnnualBilling  `json:"declaredAnnualBilling"`
+	LegalRepresentatives  []*LegalRepresentative `json:"legalRepresentatives,omitempty"`
+}
+
+// SimpleBusinessRequest ...
+type SimpleBusinessRequest struct {
 	DocumentNumber        string                `validate:"required,cnpj" json:"documentNumber,omitempty"`
 	BusinessName          string                `validate:"required" json:"businessName,omitempty"`
 	TradingName           string                `json:"tradingName,omitempty"`
@@ -503,6 +526,26 @@ type BusinessRequest struct {
 	BusinessAddress       *Address              `validate:"required,dive" json:"businessAddress,omitempty"`
 	DeclaredAnnualBilling DeclaredAnnualBilling `validate:"required" json:"declaredAnnualBilling"`
 	LegalRepresentative   *LegalRepresentative  `validate:"required,dive" json:"legalRepresentative,omitempty"`
+}
+
+// CorporationBusinessRequest ...
+type CorporationBusinessRequest struct {
+	DocumentNumber        string                           `validate:"required,cnpj" json:"documentNumber,omitempty"`
+	BusinessName          string                           `validate:"required" json:"businessName,omitempty"`
+	TradingName           string                           `json:"tradingName,omitempty"`
+	BusinessEmail         string                           `validate:"required" json:"businessEmail,omitempty"`
+	Phone                 *Phone                           `validate:"required,dive" json:"phone,omitempty"`
+	BusinessAddress       *Address                         `validate:"required,dive" json:"businessAddress,omitempty"`
+	BusinessType          BusinessType                     `validate:"required" json:"businessType"`
+	BusinessSize          BusinessSize                     `validate:"required" json:"businessSize"`
+	CnaeCode              *string                          `validate:"required" json:"cnaeCode,omitempty"`
+	LegalNature           *string                          `validate:"required" json:"legalNature,omitempty"`
+	OpeningDate           *time.Time                       `validate:"required" json:"openingDate,omitempty"`
+	AnnualBilling         *float64                         `json:"annualBilling,omitempty"` //deprecated
+	declaredAnnualBililng DeclaredAnnualBilling            `validate:"required" json:"declaredAnnualBilling,omitempty"`
+	LegalRepresentatives  []*LegalRepresentative           `validate:"required,dive" json:"legalRepresentatives,omitempty"`
+	Owners                []*LegalRepresentative           `json:"owners,omitempty"`
+	Documentation         CorporationBusinessDocumentation `validate:"required,dive" json:"documentation,omitempty"`
 }
 
 // BusinessUpdateRequest ...
@@ -549,6 +592,8 @@ const (
 	BusinessTypeMEI    BusinessType = "MEI"
 	BusinessTypeEI     BusinessType = "EI"
 	BusinessTypeEIRELI BusinessType = "EIRELI"
+	BusinessTypeLTDA   BusinessType = "LTDA"
+	BusinessTypeSA     BusinessType = "SA"
 )
 
 // BusinessSize ...
@@ -571,19 +616,24 @@ const (
 
 // LegalRepresentative ...
 type LegalRepresentative struct {
-	DocumentNumber           string                      `validate:"required,cpf" json:"documentNumber,omitempty"`
-	Document                 LegalRepresentativeDocument `validate:"required,dive" json:"document,omitempty"`
-	RegisterName             string                      `validate:"required" json:"registerName,omitempty"`
-	SocialName               string                      `json:"socialName,omitempty"`
-	Email                    string                      `validate:"required" json:"email,omitempty"`
-	Phone                    *Phone                      `validate:"required,dive" json:"phone,omitempty"`
-	Address                  *Address                    `validate:"required,dive" json:"address,omitempty"`
-	BirthDate                time.Time                   `validate:"required" json:"birthDate,omitempty"`
-	MotherName               string                      `validate:"required" json:"motherName,omitempty"`
-	DeclaredIncome           DeclaredIncome              `validate:"required" json:"declaredIncome,omitempty"`
-	Occupation               string                      `validate:"required" json:"occupation,omitempty"`
-	PoliticallyExposedPerson PoliticallyExposedPerson    `validate:"required,dive" json:"pep,omitempty"`
-	Documentation            Documentation               `validate:"required,dive" json:"documentation,omitempty"`
+	DocumentNumber             string                      `validate:"required,cnpjcpf" json:"documentNumber,omitempty"`
+	Document                   LegalRepresentativeDocument `validate:"required,dive" json:"document,omitempty"`
+	RegisterName               string                      `validate:"required" json:"registerName,omitempty"`
+	SocialName                 string                      `json:"socialName,omitempty"`
+	Email                      string                      `validate:"required" json:"email,omitempty"`
+	Phone                      *Phone                      `validate:"required,dive" json:"phone,omitempty"`
+	Address                    *Address                    `validate:"required,dive" json:"address,omitempty"`
+	BirthDate                  time.Time                   `validate:"required" json:"birthDate,omitempty"`
+	MotherName                 string                      `validate:"required" json:"motherName,omitempty"`
+	IncomeDeclared             *float64                    `json:"incomeDeclared,omitempty"` //deprecated
+	DeclaredIncome             DeclaredIncome              `validate:"required" json:"declaredIncome,omitempty"`
+	DeclaredAnnualBilling      DeclaredAnnualBilling       `json:"declaredAnnualBilling,omitempty"`
+	ParticipationPercentage    *float64                    `json:"participationPercentage,omitempty"`
+	Occupation                 string                      `validate:"required" json:"occupation,omitempty"`
+	IsPoliticallyExposedPerson *bool                       `json:"isPoliticallyExposedPerson,omitempty"` //deprecated
+	PoliticallyExposedPerson   PoliticallyExposedPerson    `validate:"required,dive" json:"pep,omitempty"`
+	MemberQualification        *string                     `json:"memberQualification,omitempty"`
+	Documentation              Documentation               `validate:"required,dive" json:"documentation,omitempty"`
 }
 
 // LegalRepresentativeDocument ...
@@ -1681,6 +1731,7 @@ type ClientRegisterResponse struct {
 	ResponseTypes                    []string `json:"response_types"`
 }
 
+// Certificate ...
 type Certificate struct {
 	Certificate      string `json:"certificate"`
 	CertificateChain string `json:"certificateChain"`
@@ -1689,4 +1740,25 @@ type Certificate struct {
 	Passphrase       string `json:"passphrase"`
 	UUID             string `json:"uuid"`
 	ClientID         string `json:"client_id"`
+}
+
+// ParseSimpleBusinessRequest ...
+func ParseSimpleBusinessRequest(r *BusinessRequest) *SimpleBusinessRequest {
+	if r == nil {
+		return nil
+	}
+	resp := &SimpleBusinessRequest{
+		DocumentNumber:        r.DocumentNumber,
+		BusinessName:          r.BusinessName,
+		TradingName:           r.TradingName,
+		BusinessEmail:         r.BusinessEmail,
+		BusinessType:          r.BusinessType,
+		BusinessSize:          r.BusinessSize,
+		BusinessAddress:       r.BusinessAddress,
+		DeclaredAnnualBilling: r.DeclaredAnnualBilling,
+	}
+	if len(r.LegalRepresentatives) > 0 {
+		resp.LegalRepresentative = r.LegalRepresentatives[0]
+	}
+	return resp
 }
