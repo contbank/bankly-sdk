@@ -261,11 +261,11 @@ type Documentation struct {
 
 // CorporationBusinessDocumentation
 type CorporationBusinessDocumentation struct {
-	ArticlesOfIncorporation string        `json:"articlesOfIncorporation,omitempty"`
-	LastContractChange      string        `json:"lastContractChange,omitempty"`
-	BalanceSheet            string        `json:"balanceSheet,omitempty"`
+	ArticlesOfIncorporation *string        `json:"articlesOfIncorporation,omitempty"`
+	LastContractChange      *string        `json:"lastContractChange,omitempty"`
+	BalanceSheet            *string        `json:"balanceSheet,omitempty"`
 	LegalRepresentative     Documentation `json:"legalRepresentative,omitempty"`
-	PowerOfAttorney         string        `json:"powerOfAttorney,omitempty"`
+	PowerOfAttorney         *string        `json:"powerOfAttorney,omitempty"`
 }
 
 // PoliticallyExposedPerson ...
@@ -656,7 +656,7 @@ type LegalRepresentative struct {
 	PoliticallyExposedPerson   PoliticallyExposedPerson    `json:"pep,omitempty"`
 	MemberQualification        *string                     `json:"memberQualification,omitempty"`
 	PowerOfAttorney            *PowerOfAttorney            `json:"powerOfAttorney,omitempty"`
-	Documentation              Documentation               `json:"documentation,omitempty"`
+	Documentation              *Documentation              `json:"documentation,omitempty"`
 }
 
 // CorporationLegalRepresentative ...
@@ -1838,7 +1838,7 @@ func ParseSimpleLegalRepresentative(rep *LegalRepresentative) *SimpleLegalRepres
 	if rep == nil {
 		return nil
 	}
-	return &SimpleLegalRepresentative{
+	response := &SimpleLegalRepresentative{
 		DocumentNumber: rep.DocumentNumber,
 		Document: LegalRepresentativeDocument{
 			Value: rep.DocumentNumber,
@@ -1854,8 +1854,11 @@ func ParseSimpleLegalRepresentative(rep *LegalRepresentative) *SimpleLegalRepres
 		DeclaredIncome:           rep.DeclaredIncome,
 		Occupation:               rep.Occupation,
 		PoliticallyExposedPerson: rep.PoliticallyExposedPerson,
-		Documentation:            rep.Documentation,
 	}
+	if rep.Documentation != nil {
+		response.Documentation = *rep.Documentation
+	}
+	return response
 }
 
 // ParseCorporationBusinessSize ...
