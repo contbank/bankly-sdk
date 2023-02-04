@@ -196,8 +196,7 @@ func (c *DocumentAnalysis) getDocumentAnalysisAPIEndpoint(document string, resul
 	}
 	u.Path = path.Join(u.Path, DocumentAnalysisPath)
 	u.Path = path.Join(u.Path, grok.OnlyDigits(document))
-	if isCorporationBusiness != nil && *isCorporationBusiness == true &&
-		len(grok.OnlyDigits(document)) == 14 {
+	if isCorporationBusiness != nil && *isCorporationBusiness == true {
 		u.Path = path.Join(u.Path, CorporationBusinessPath)
 	}
 	if documentAnalysisToken != nil {
@@ -225,12 +224,7 @@ func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *mu
 	}
 	defer file.Close()
 
-	isCorporationBusinessFile := false
-	if request.IsCorporationBusiness != nil && *request.IsCorporationBusiness == true {
-		isCorporationBusinessFile = true
-	}
-
-	writerFormFile, errFormFile := createFormFile(writer, file, isCorporationBusinessFile)
+	writerFormFile, errFormFile := createFormFile(writer, file, request.IsCorporationBusiness)
 	if errFormFile != nil {
 		logrus.WithError(errFormFile).Error("error creating form file")
 		return nil, nil, errFormFile
@@ -251,7 +245,8 @@ func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *mu
 	}
 
 	// document side - dont send when is a corporation business
-	if !isCorporationBusinessFile {
+	if request.IsCorporationBusiness == nil ||
+		(request.IsCorporationBusiness != nil && *request.IsCorporationBusiness == false) {
 		errSideField := writer.WriteField("documentSide", string(request.DocumentSide))
 		if errSideField != nil {
 			logrus.WithError(errSideField).Error("error document side field")
@@ -268,11 +263,11 @@ func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *mu
 	return payload, writer, nil
 }
 
-func createFormFile(writer *multipart.Writer, file *os.File, isCorporationBusinessFile bool) (io.Writer, error) {
+func createFormFile(writer *multipart.Writer, file *os.File, isCorporationBusinessFile *bool) (io.Writer, error) {
 	h := make(textproto.MIMEHeader)
 
 	key := "image"
-	if isCorporationBusinessFile {
+	if isCorporationBusinessFile != nil && *isCorporationBusinessFile == true {
 		key = "file"
 	}
 
