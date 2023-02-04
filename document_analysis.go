@@ -205,7 +205,8 @@ func (c *DocumentAnalysis) getDocumentAnalysisAPIEndpoint(document string, resul
 	}
 	u.Path = path.Join(u.Path, DocumentAnalysisPath)
 	u.Path = path.Join(u.Path, grok.OnlyDigits(document))
-	if isCorporationBusiness != nil && *isCorporationBusiness == true {
+	if isCorporationBusiness != nil && *isCorporationBusiness == true &&
+		len(grok.OnlyDigits(document)) == 14 {
 		u.Path = path.Join(u.Path, CorporationBusinessPath)
 	}
 	if documentAnalysisToken != nil {
