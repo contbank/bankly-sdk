@@ -57,17 +57,13 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(ctx context.Context,
 
 	req, err := http.NewRequestWithContext(ctx, "PUT", *endpoint, payload)
 	if err != nil {
-		logrus.
-			WithError(err).
-			Error("error new request")
+		logrus.WithError(err).Error("error new request")
 		return nil, err
 	}
 
 	token, err := c.authentication.Token(ctx)
 	if err != nil {
-		logrus.
-			WithError(err).
-			Error("error authentication")
+		logrus.WithError(err).Error("error authentication")
 		return nil, err
 	}
 
@@ -77,9 +73,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(ctx context.Context,
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		logrus.
-			WithError(err).
-			Error("error http client")
+		logrus.WithError(err).Error("error http client")
 		return nil, err
 	}
 
@@ -91,9 +85,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(ctx context.Context,
 
 		err = json.Unmarshal(respBody, &bodyResp)
 		if err != nil {
-			logrus.
-				WithError(err).
-				Error("error unmarshal")
+			logrus.WithError(err).Error("error unmarshal")
 			return nil, err
 		}
 
@@ -103,6 +95,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(ctx context.Context,
 			DocumentSide:   string(request.DocumentSide),
 			Token:          bodyResp.Token,
 		}
+
 		return response, nil
 	}
 
@@ -110,9 +103,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(ctx context.Context,
 
 	err = json.Unmarshal(respBody, &bodyErr)
 	if err != nil {
-		logrus.
-			WithError(err).
-			Error("error unmarshal")
+		logrus.WithError(err).Error("error unmarshal")
 		return nil, err
 	}
 
@@ -234,7 +225,12 @@ func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *mu
 	}
 	defer file.Close()
 
-	writerFormFile, errFormFile := createFormFile(writer, file)
+	isCorporationBusinessFile := false
+	if request.IsCorporationBusiness != nil && *request.IsCorporationBusiness == true {
+		isCorporationBusinessFile = true
+	}
+
+	writerFormFile, errFormFile := createFormFile(writer, file, isCorporationBusinessFile)
 	if errFormFile != nil {
 		logrus.WithError(errFormFile).Error("error creating form file")
 		return nil, nil, errFormFile
@@ -255,8 +251,7 @@ func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *mu
 	}
 
 	// document side - dont send when is a corporation business
-	if request.IsCorporationBusiness == nil ||
-		(request.IsCorporationBusiness != nil && *request.IsCorporationBusiness == false) {
+	if !isCorporationBusinessFile {
 		errSideField := writer.WriteField("documentSide", string(request.DocumentSide))
 		if errSideField != nil {
 			logrus.WithError(errSideField).Error("error document side field")
@@ -273,19 +268,26 @@ func createSendImagePayload(request DocumentAnalysisRequest) (*bytes.Buffer, *mu
 	return payload, writer, nil
 }
 
-func createFormFile(writer *multipart.Writer, file *os.File) (io.Writer, error) {
+func createFormFile(writer *multipart.Writer, file *os.File, isCorporationBusinessFile bool) (io.Writer, error) {
 	h := make(textproto.MIMEHeader)
+
+	key := "image"
+	if isCorporationBusinessFile {
+		key = "file"
+	}
+
 	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
-		escapeQuotes("image"), escapeQuotes(file.Name())))
+		escapeQuotes(key), escapeQuotes(file.Name())))
 
 	contentType, errorContentType := getFileContentType(file)
 	if errorContentType != nil {
-		logrus.
-			WithError(errorContentType).
+		logrus.WithError(errorContentType).
 			Error("error document type field")
 		return nil, errorContentType
 	}
+
 	h.Set("Content-Type", contentType)
+
 	return writer.CreatePart(h)
 }
 
