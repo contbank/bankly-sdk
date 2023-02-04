@@ -261,10 +261,10 @@ type Documentation struct {
 
 // CorporationBusinessDocumentation
 type CorporationBusinessDocumentation struct {
-	ArticlesOfIncorporation string        `validate:"required" json:"articlesOfIncorporation,omitempty"`
-	LastContractChange      string        `validate:"required" json:"lastContractChange,omitempty"`
-	BalanceSheet            string        `validate:"required" json:"balanceSheet,omitempty"`
-	LegalRepresentative     Documentation `validate:"required,dive" json:"legalRepresentative,omitempty"`
+	ArticlesOfIncorporation string        `json:"articlesOfIncorporation,omitempty"`
+	LastContractChange      string        `json:"lastContractChange,omitempty"`
+	BalanceSheet            string        `json:"balanceSheet,omitempty"`
+	LegalRepresentative     Documentation `json:"legalRepresentative,omitempty"`
 	PowerOfAttorney         string        `json:"powerOfAttorney,omitempty"`
 }
 
