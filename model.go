@@ -261,11 +261,11 @@ type Documentation struct {
 
 // CorporationBusinessDocumentation
 type CorporationBusinessDocumentation struct {
-	ArticlesOfIncorporation *string        `json:"articlesOfIncorporation,omitempty"`
-	LastContractChange      *string        `json:"lastContractChange,omitempty"`
-	BalanceSheet            *string        `json:"balanceSheet,omitempty"`
+	ArticlesOfIncorporation *string       `json:"articlesOfIncorporation,omitempty"`
+	LastContractChange      *string       `json:"lastContractChange,omitempty"`
+	BalanceSheet            *string       `json:"balanceSheet,omitempty"`
 	LegalRepresentative     Documentation `json:"legalRepresentative,omitempty"`
-	PowerOfAttorney         *string        `json:"powerOfAttorney,omitempty"`
+	PowerOfAttorney         *string       `json:"powerOfAttorney,omitempty"`
 }
 
 // PoliticallyExposedPerson ...
@@ -651,7 +651,7 @@ type LegalRepresentative struct {
 	DeclaredIncome             DeclaredIncome              `json:"declaredIncome,omitempty"`
 	DeclaredAnnualBilling      DeclaredAnnualBilling       `json:"declaredAnnualBilling,omitempty"`
 	Occupation                 string                      `json:"occupation,omitempty"`
-	ParticipationPercentage    *float64                    `json:"participationPercentage,omitempty"`
+	ParticipationPercentage    *int                        `json:"participationPercentage,omitempty"`
 	IsPoliticallyExposedPerson *bool                       `json:"isPoliticallyExposedPerson,omitempty"` //deprecated
 	PoliticallyExposedPerson   PoliticallyExposedPerson    `json:"pep,omitempty"`
 	MemberQualification        *string                     `json:"memberQualification,omitempty"`
