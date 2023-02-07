@@ -1596,12 +1596,12 @@ type PixQrCodeDynamicRequest struct {
 	Amount           float64                  `json:"amount"`
 	RecipientName    string                   `json:"recipientName"`
 	ConciliationID   string                   `json:"conciliationId"`
-	AdditionalData   []PixAdditionalDataValue `json:"additionalData"`
+	AdditionalData   []PixAdditionalDataValue `json:"additionalData,omitempty"`
 	SinglePayment    bool                     `json:"singlePayment"`
 	Payer            PixPayer                 `json:"payer"`
 	ChangeAmountType string                   `json:"changeAmountType"`
 	ExpiresAt        string                   `json:"expiresAt"`
-	PayerRequestText string                   `json:"payerRequestText"`
+	PayerRequestText string                   `json:"payerRequestText,omitempty"`
 }
 
 // PixQrCodeResponse ...
