@@ -52,6 +52,7 @@ func (c *Business) CreateBusinessRegistration(ctx context.Context, model Busines
 	}
 
 	model = normalizeBusinessNameMEI(model)
+	model = validateBusinessSize(model)
 	businessRequest := ParseSimpleBusinessRequest(&model)
 
 	// validator
@@ -121,6 +122,22 @@ func (c *Business) CreateBusinessRegistration(ctx context.Context, model Busines
 
 	logrus.WithFields(fields).Error("default error business accounts - CreateBusinessRegistration")
 	return ErrDefaultBusinessAccounts
+}
+
+func validateBusinessSize(model BusinessRequest) BusinessRequest {
+	// MEI
+	if model.BusinessType == BusinessTypeMEI {
+		model.BusinessSize = BusinessSizeMEI
+		// EI ou EIRELI
+	} else if (model.BusinessType == BusinessTypeEI || model.BusinessType == BusinessTypeEIRELI) &&
+		(model.BusinessSize != BusinessSizeME && model.BusinessSize != BusinessSizeEPP) {
+		model.BusinessSize = BusinessSizeME
+		// SLU
+	} else if strings.Contains("LTDA", strings.ToUpper(model.BusinessName)) &&
+		model.BusinessSize != BusinessSizeME {
+		model.BusinessSize = BusinessSizeME
+	}
+	return model
 }
 
 // CreateCorporationBusinessRequest ...
