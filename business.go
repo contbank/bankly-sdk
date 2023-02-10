@@ -132,10 +132,6 @@ func validateBusinessSize(model BusinessRequest) BusinessRequest {
 	} else if (model.BusinessType == BusinessTypeEI || model.BusinessType == BusinessTypeEIRELI) &&
 		(model.BusinessSize != BusinessSizeME && model.BusinessSize != BusinessSizeEPP) {
 		model.BusinessSize = BusinessSizeME
-		// SLU
-	} else if strings.Contains("LTDA", strings.ToUpper(model.BusinessName)) &&
-		model.BusinessSize != BusinessSizeME {
-		model.BusinessSize = BusinessSizeME
 	}
 	return model
 }
