@@ -51,7 +51,7 @@ func (c *Business) CreateBusinessRegistration(ctx context.Context, model Busines
 		return ErrCorporationBusinessNotAllowed
 	}
 
-	model = normalizeBusinessNameMEI(model)
+	model = c.NormalizeBusinessNameMEI(model)
 	model = validateBusinessSize(model)
 	businessRequest := ParseSimpleBusinessRequest(&model)
 
@@ -122,18 +122,6 @@ func (c *Business) CreateBusinessRegistration(ctx context.Context, model Busines
 
 	logrus.WithFields(fields).Error("default error business accounts - CreateBusinessRegistration")
 	return ErrDefaultBusinessAccounts
-}
-
-func validateBusinessSize(model BusinessRequest) BusinessRequest {
-	// MEI
-	if model.BusinessType == BusinessTypeMEI {
-		model.BusinessSize = BusinessSizeMEI
-		// EI ou EIRELI
-	} else if (model.BusinessType == BusinessTypeEI || model.BusinessType == BusinessTypeEIRELI) &&
-		(model.BusinessSize != BusinessSizeME && model.BusinessSize != BusinessSizeEPP) {
-		model.BusinessSize = BusinessSizeME
-	}
-	return model
 }
 
 // CreateCorporationBusinessRequest ...
@@ -741,20 +729,25 @@ func (c *Business) getCorporationBusinessAPIEndpoint(requestID string, identifie
 	return &endpoint, nil
 }
 
-// normalizeBusinessNameMEI Ajusta o nome da empresa quando MEI, incluindo o identifier do proprietário ao final
-func normalizeBusinessNameMEI(businessRequest BusinessRequest) BusinessRequest {
+// NormalizeBusinessNameMEI Ajusta o nome da empresa quando MEI, incluindo o identifier do proprietário ao final
+func (c *Business) NormalizeBusinessNameMEI(businessRequest BusinessRequest) BusinessRequest {
 	if businessRequest.BusinessType == BusinessTypeMEI && len(businessRequest.LegalRepresentatives) > 0 {
 		// SLU
 		if strings.Contains(strings.ToUpper(businessRequest.BusinessName), "LTDA") {
 			return businessRequest
 		}
 		// MEI
-		cpf := businessRequest.LegalRepresentatives[0].DocumentNumber
-		businessName := businessRequest.LegalRepresentatives[0].RegisterName
-		if !strings.Contains(businessName, cpf) {
-			businessName = businessRequest.LegalRepresentatives[0].RegisterName + " " + cpf
+		legalCPF := businessRequest.LegalRepresentatives[0].DocumentNumber
+		legalName := businessRequest.LegalRepresentatives[0].RegisterName
+		preffixCNPJ := businessRequest.DocumentNumber[:8]
+		if strings.Contains(businessRequest.BusinessName, preffixCNPJ) {
+			return businessRequest
+		} else {
+			if !strings.Contains(legalName, legalCPF) {
+				legalName = businessRequest.LegalRepresentatives[0].RegisterName + " " + legalCPF
+			}
+			businessRequest.BusinessName = legalName
 		}
-		businessRequest.BusinessName = businessName
 	}
 	return businessRequest
 }
@@ -765,4 +758,17 @@ func isCorporationBusiness(businessType BusinessType) bool {
 		return true
 	}
 	return false
+}
+
+// validateBusinessSize ...
+func validateBusinessSize(model BusinessRequest) BusinessRequest {
+	// MEI
+	if model.BusinessType == BusinessTypeMEI {
+		model.BusinessSize = BusinessSizeMEI
+		// EI ou EIRELI
+	} else if (model.BusinessType == BusinessTypeEI || model.BusinessType == BusinessTypeEIRELI) &&
+		(model.BusinessSize != BusinessSizeME && model.BusinessSize != BusinessSizeEPP) {
+		model.BusinessSize = BusinessSizeME
+	}
+	return model
 }

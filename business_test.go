@@ -3,6 +3,7 @@ package bankly_test
 import (
 	"context"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -314,6 +315,229 @@ func (s *BusinessTestSuite) TestBusinessName_TypeEIRELI() {
 	s.assert.NoError(err)
 	s.assert.NotNil(account)
 	s.assert.Equal(businessRequest.BusinessName, account.BusinessName)
+}
+
+func (s *BusinessTestSuite) TestNormalizeBusinessNameMEI_MEI() {
+	req := bankly.BusinessRequest{
+		DocumentNumber: "49490714000114",
+		BusinessName:   "49490714 ODEILTON ALVES CARDOSO",
+		BusinessType:   bankly.BusinessTypeMEI,
+		LegalRepresentatives: []*bankly.LegalRepresentative{
+			createLegalRepresentative(),
+		},
+	}
+
+	// test 1 - with preffix
+	resp := s.business.NormalizeBusinessNameMEI(req)
+	elems := strings.Split(resp.BusinessName, " ")
+
+	s.assert.Equal("49490714", elems[0])
+
+	// test 2 - without preffix
+	req.DocumentNumber = "82462033000118"
+	req.BusinessName = "JOAO DA SILVA TESTE MEI"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+	elems = strings.Split(resp.BusinessName, " ")
+	expected := req.LegalRepresentatives[0].RegisterName + " " + req.LegalRepresentatives[0].DocumentNumber
+	s.assert.Equal(expected, resp.BusinessName)
+
+	// test 3 - without preffix
+	req.DocumentNumber = "60872089000108"
+	req.BusinessName = "NOME DA EMPRESA ME"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+	elems = strings.Split(resp.BusinessName, " ")
+	expected = req.LegalRepresentatives[0].RegisterName + " " + req.LegalRepresentatives[0].DocumentNumber
+	s.assert.Equal(expected, resp.BusinessName)
+
+	// test 4 - with preffix
+	req.DocumentNumber = "60872089000108"
+	req.BusinessName = "60872089 NOME DA EMPRESA ME"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+	elems = strings.Split(resp.BusinessName, " ")
+	s.assert.Equal("60872089", elems[0])
+
+	// test 4 - with preffix
+	req.DocumentNumber = "82315787000145"
+	req.BusinessName = "82315787 NOME DA EMPRESA"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+	elems = strings.Split(resp.BusinessName, " ")
+	s.assert.Equal("82315787", elems[0])
+}
+
+func (s *BusinessTestSuite) TestNormalizeBusinessNameMEI_EI() {
+	req := bankly.BusinessRequest{
+		DocumentNumber: "49490714000114",
+		BusinessName:   "49490714 ODEILTON ALVES CARDOSO",
+		BusinessType:   bankly.BusinessTypeEI,
+		LegalRepresentatives: []*bankly.LegalRepresentative{
+			createLegalRepresentative(),
+		},
+	}
+
+	// test 1 - with preffix
+	resp := s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal("49490714 ODEILTON ALVES CARDOSO", resp.BusinessName)
+
+	// test 2 - without preffix
+	req.DocumentNumber = "82462033000118"
+	req.BusinessName = "JOAO DA SILVA TESTE MEI"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+
+	// test 3 - without preffix
+	req.DocumentNumber = "60872089000108"
+	req.BusinessName = "NOME DA EMPRESA ME"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+
+	// test 4 - with preffix
+	req.DocumentNumber = "60872089000108"
+	req.BusinessName = "60872089 NOME DA EMPRESA ME"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+
+	// test 4 - with preffix
+	req.DocumentNumber = "82315787000145"
+	req.BusinessName = "82315787 NOME DA EMPRESA"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+}
+
+func (s *BusinessTestSuite) TestNormalizeBusinessNameMEI_EIRELI() {
+	req := bankly.BusinessRequest{
+		DocumentNumber: "49490714000114",
+		BusinessName:   "49490714 ODEILTON ALVES CARDOSO",
+		BusinessType:   bankly.BusinessTypeEIRELI,
+		LegalRepresentatives: []*bankly.LegalRepresentative{
+			createLegalRepresentative(),
+		},
+	}
+
+	// test 1 - with preffix
+	resp := s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal("49490714 ODEILTON ALVES CARDOSO", resp.BusinessName)
+
+	// test 2 - without preffix
+	req.DocumentNumber = "82462033000118"
+	req.BusinessName = "JOAO DA SILVA TESTE MEI"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+
+	// test 3 - without preffix
+	req.DocumentNumber = "60872089000108"
+	req.BusinessName = "NOME DA EMPRESA ME"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+
+	// test 4 - with preffix
+	req.DocumentNumber = "60872089000108"
+	req.BusinessName = "60872089 NOME DA EMPRESA ME"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+
+	// test 4 - with preffix
+	req.DocumentNumber = "82315787000145"
+	req.BusinessName = "82315787 NOME DA EMPRESA"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+}
+
+func (s *BusinessTestSuite) TestNormalizeBusinessNameMEI_LTDA() {
+	req := bankly.BusinessRequest{
+		DocumentNumber: "49490714000114",
+		BusinessName:   "49490714 ODEILTON ALVES CARDOSO",
+		BusinessType:   bankly.BusinessTypeLTDA,
+		LegalRepresentatives: []*bankly.LegalRepresentative{
+			createLegalRepresentative(),
+		},
+	}
+
+	// test 1 - with preffix
+	resp := s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal("49490714 ODEILTON ALVES CARDOSO", resp.BusinessName)
+
+	// test 2 - without preffix
+	req.DocumentNumber = "82462033000118"
+	req.BusinessName = "JOAO DA SILVA TESTE MEI"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+
+	// test 3 - without preffix
+	req.DocumentNumber = "60872089000108"
+	req.BusinessName = "NOME DA EMPRESA ME"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+
+	// test 4 - with preffix
+	req.DocumentNumber = "60872089000108"
+	req.BusinessName = "60872089 NOME DA EMPRESA ME"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+
+	// test 4 - with preffix
+	req.DocumentNumber = "82315787000145"
+	req.BusinessName = "82315787 NOME DA EMPRESA"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+}
+
+func (s *BusinessTestSuite) TestNormalizeBusinessNameMEI_SA() {
+	req := bankly.BusinessRequest{
+		DocumentNumber: "49490714000114",
+		BusinessName:   "49490714 ODEILTON ALVES CARDOSO",
+		BusinessType:   bankly.BusinessTypeSA,
+		LegalRepresentatives: []*bankly.LegalRepresentative{
+			createLegalRepresentative(),
+		},
+	}
+
+	// test 1 - with preffix
+	resp := s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal("49490714 ODEILTON ALVES CARDOSO", resp.BusinessName)
+
+	// test 2 - without preffix
+	req.DocumentNumber = "82462033000118"
+	req.BusinessName = "JOAO DA SILVA TESTE MEI"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+
+	// test 3 - without preffix
+	req.DocumentNumber = "60872089000108"
+	req.BusinessName = "NOME DA EMPRESA ME"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+
+	// test 4 - with preffix
+	req.DocumentNumber = "60872089000108"
+	req.BusinessName = "60872089 NOME DA EMPRESA ME"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
+
+	// test 4 - with preffix
+	req.DocumentNumber = "82315787000145"
+	req.BusinessName = "82315787 NOME DA EMPRESA"
+	resp = s.business.NormalizeBusinessNameMEI(req)
+
+	s.assert.Equal(req.BusinessName, resp.BusinessName)
 }
 
 // createBusinessRequest ...
