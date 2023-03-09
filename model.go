@@ -223,6 +223,21 @@ const (
 	INACTIVE_COMPANY DeclaredAnnualBilling = "INACTIVE_COMPANY"
 )
 
+type DuplicateCardStatus string
+
+const (
+	// LOST_MY_CARD Cartão perdido
+	LOST_MY_CARD DuplicateCardStatus = "LostMyCard"
+	// CARD_WAS_STOLEN Cartão roubado
+	CARD_WAS_STOLEN DuplicateCardStatus = "CardWasStolen"
+	// CARD_WAS_DAMAGED Cartão danificado
+	CARD_WAS_DAMAGED DuplicateCardStatus = "CardWasDamaged"
+	// CARD_NOT_DELIVERED Cartão não entregue
+	CARD_NOT_DELIVERED DuplicateCardStatus = "CardNotDelivered"
+	// UNRECOGNIZED_ONLINE_PURCHASE Compra online não reconhecida
+	UNRECOGNIZED_ONLINE_PURCHASE DuplicateCardStatus = "UnrecognizedOnlinePurchase"
+)
+
 // AuthenticationResponse ...
 type AuthenticationResponse struct {
 	AccessToken string `json:"access_token"`
@@ -1411,6 +1426,19 @@ type CardUpdateStatusDTO struct {
 	Status           string `json:"status"`
 	Password         string `json:"password"`
 	UpdateCardBinded bool   `json:"updateCardBinded"`
+}
+
+type CardDuplicateDTO struct {
+	Status         DuplicateCardStatus `json:"status"`
+	DocumentNumber string              `json:"documentNumber"`
+	Description    string              `json:"description"`
+	Password       string              `json:"password"`
+	Address        CardAddress         `json:"address"`
+}
+
+type CardDuplicateResponse struct {
+	Proxy        string `json:"proxy"`
+	ActivateCode string `json:"activateCode"`
 }
 
 type CardActivateDTO struct {

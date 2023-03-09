@@ -18,7 +18,7 @@ type Card struct {
 	httpClient BanklyHttpClient
 }
 
-//NewCard ...
+// NewCard ...
 func NewCard(newHttpClient BanklyHttpClient) *Card {
 	newHttpClient.SetErrorHandler(CardErrorHandler)
 	return &Card{newHttpClient}
@@ -301,6 +301,55 @@ func (c *Card) UpdateStatusCardByProxy(ctx context.Context, proxy *string,
 
 	logrus.WithFields(fields).Info("card status updated with success")
 	return nil
+}
+
+// DuplicateCardByProxy solicita a segunda via do cartão, cancelando a anterior.
+func (c *Card) DuplicateCardByProxy(ctx context.Context, proxy *string,
+	cardDuplicateDTO *CardDuplicateDTO) (*CardDuplicateResponse, error) {
+
+	fields := logrus.Fields{
+		"request_id": GetRequestID(ctx),
+		"proxy":      proxy,
+		"object":     cardDuplicateDTO,
+	}
+
+	if proxy == nil {
+		logrus.WithFields(fields).WithError(ErrInvalidCardProxy).Error("error invalid card proxy")
+		return nil, ErrInvalidCardProxy
+	} else if cardDuplicateDTO == nil {
+		logrus.WithFields(fields).WithError(ErrInvalidParameter).Error("error invalid parameter")
+		return nil, ErrInvalidParameter
+	}
+
+	url := fmt.Sprintf("cards/%s/duplicate", *proxy)
+	fields["url"] = url
+
+	resp, err := c.httpClient.Patch(ctx, url, cardDuplicateDTO, nil, nil)
+
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return nil, err
+	} else if resp != nil &&
+		resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted {
+		logrus.WithFields(fields).WithError(ErrCardDuplicate).Error("error card duplicate")
+		return nil, ErrCardDuplicate
+	}
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
+	var response *CardDuplicateResponse
+
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		return nil, ErrDefaultCard
+	}
+
+	defer resp.Body.Close()
+
+	logrus.WithFields(fields).Info("card duplicate with success")
+
+	return response, nil
 }
 
 // ActivateCardByProxy ...
