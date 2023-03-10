@@ -324,7 +324,7 @@ func (c *Card) DuplicateCardByProxy(ctx context.Context, proxy *string,
 	url := fmt.Sprintf("cards/%s/duplicate", *proxy)
 	fields["url"] = url
 
-	resp, err := c.httpClient.Patch(ctx, url, cardDuplicateDTO, nil, nil)
+	resp, err := c.httpClient.Post(ctx, url, cardDuplicateDTO, nil)
 
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
