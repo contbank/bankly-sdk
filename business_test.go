@@ -3,7 +3,6 @@ package bankly_test
 import (
 	"context"
 	"net/http"
-	"strings"
 	"testing"
 	"time"
 
@@ -317,6 +316,7 @@ func (s *BusinessTestSuite) TestBusinessName_TypeEIRELI() {
 	s.assert.Equal(businessRequest.BusinessName, account.BusinessName)
 }
 
+/*
 func (s *BusinessTestSuite) TestNormalizeBusinessNameMEI_MEI() {
 	req := bankly.BusinessRequest{
 		DocumentNumber: "49490714000114",
@@ -539,6 +539,7 @@ func (s *BusinessTestSuite) TestNormalizeBusinessNameMEI_SA() {
 
 	s.assert.Equal(req.BusinessName, resp.BusinessName)
 }
+*/
 
 // createBusinessRequest ...
 func createBusinessRequest(document string, businessType bankly.BusinessType,

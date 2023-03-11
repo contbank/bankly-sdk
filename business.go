@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"strings"
 )
 
 // Business ...
@@ -51,7 +50,6 @@ func (c *Business) CreateBusinessRegistration(ctx context.Context, model Busines
 		return ErrCorporationBusinessNotAllowed
 	}
 
-	model = c.NormalizeBusinessNameMEI(model)
 	model = validateBusinessSize(model)
 	businessRequest := ParseSimpleBusinessRequest(&model)
 
@@ -729,6 +727,7 @@ func (c *Business) getCorporationBusinessAPIEndpoint(requestID string, identifie
 	return &endpoint, nil
 }
 
+/*
 // NormalizeBusinessNameMEI Ajusta o nome da empresa quando MEI, incluindo o identifier do proprietário ao final
 func (c *Business) NormalizeBusinessNameMEI(businessRequest BusinessRequest) BusinessRequest {
 	if businessRequest.BusinessType == BusinessTypeMEI && len(businessRequest.LegalRepresentatives) > 0 {
@@ -751,6 +750,7 @@ func (c *Business) NormalizeBusinessNameMEI(businessRequest BusinessRequest) Bus
 	}
 	return businessRequest
 }
+*/
 
 // isCorporationBusiness ...
 func isCorporationBusiness(businessType BusinessType) bool {
