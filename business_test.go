@@ -2,6 +2,7 @@ package bankly_test
 
 import (
 	"context"
+	"github.com/aws/aws-sdk-go/aws"
 	"net/http"
 	"testing"
 	"time"
@@ -314,6 +315,20 @@ func (s *BusinessTestSuite) TestBusinessName_TypeEIRELI() {
 	s.assert.NoError(err)
 	s.assert.NotNil(account)
 	s.assert.Equal(businessRequest.BusinessName, account.BusinessName)
+}
+
+func (s *BusinessTestSuite) TestNormalizeNameWithoutSpecialCharacters() {
+	oldName := aws.String("Pães & Pães Padaria L.T.D.A.")
+	newName := bankly.NormalizeNameWithoutSpecialCharacters(oldName)
+	s.assert.Equal("PÃES E PÃES PADARIA LTDA", *newName)
+
+	oldName = aws.String("49.839.911 SEBASTIAO DA COSTA VAL")
+	newName = bankly.NormalizeNameWithoutSpecialCharacters(oldName)
+	s.assert.Equal("49839911 SEBASTIAO DA COSTA VAL", *newName)
+
+	oldName = aws.String("BOX & FEST")
+	newName = bankly.NormalizeNameWithoutSpecialCharacters(oldName)
+	s.assert.Equal("BOX E FEST", *newName)
 }
 
 /*

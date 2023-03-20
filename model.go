@@ -1,6 +1,7 @@
 package bankly
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
 	"os"
 	"time"
 
@@ -1857,6 +1858,14 @@ func ParseSimpleBusinessRequest(r *BusinessRequest) *SimpleBusinessRequest {
 	}
 	if len(r.LegalRepresentatives) > 0 {
 		resp.LegalRepresentative = ParseSimpleLegalRepresentative(r.LegalRepresentatives[0])
+	}
+	newBusinessName := NormalizeNameWithoutSpecialCharacters(aws.String(resp.BusinessName))
+	if newBusinessName != nil {
+		resp.BusinessName = *newBusinessName
+	}
+	newTradingName := NormalizeNameWithoutSpecialCharacters(aws.String(resp.TradingName))
+	if newTradingName != nil {
+		resp.TradingName = *newTradingName
 	}
 	return resp
 }

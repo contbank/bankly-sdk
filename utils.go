@@ -3,10 +3,13 @@ package bankly
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/contbank/grok"
 	"math"
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 	"unicode"
 
@@ -24,7 +27,7 @@ func mod(dividendo float64, divisor float64) float64 {
 	return math.Round(dividendo - (math.Floor(dividendo/divisor) * divisor))
 }
 
-//GeneratorCPF ...
+// GeneratorCPF ...
 func GeneratorCPF() string {
 	cpfString := ""
 
@@ -54,7 +57,7 @@ func verify(data []int, n int) int {
 	return 11 - total
 }
 
-//GeneratorCNPJ ...
+// GeneratorCNPJ ...
 func GeneratorCNPJ() string {
 	var n float64
 	var n9 float64
@@ -93,7 +96,7 @@ func GeneratorCNPJ() string {
 	return resultado
 }
 
-//GeneratorCellphone ...
+// GeneratorCellphone ...
 func GeneratorCellphone() string {
 	phoneString := ""
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -112,7 +115,7 @@ func GeneratorCellphone() string {
 	return phoneString
 }
 
-//OnlyDigits ...
+// OnlyDigits ...
 func OnlyDigits(value string) string {
 
 	var newValue string
@@ -126,7 +129,7 @@ func OnlyDigits(value string) string {
 	return newValue
 }
 
-//IsOnlyDigits ...
+// IsOnlyDigits ...
 func IsOnlyDigits(value string) bool {
 	for _, c := range value {
 		if !unicode.IsDigit(c) {
@@ -181,4 +184,16 @@ func GetEnvBanklyClientID() *string {
 func GetEnvBanklyClientSecret() *string {
 	clientSecret := os.Getenv("BANKLY_CLIENT_SECRET")
 	return &clientSecret
+}
+
+// NormalizeNameWithoutSpecialCharacters ...
+func NormalizeNameWithoutSpecialCharacters(value *string) *string {
+	if value == nil || (value != nil && *value == "") {
+		return nil
+	}
+	newValue := strings.Replace(*value, "&", "e", -1)
+	newValue = strings.Replace(newValue, ".", "", -1)
+	newValue = strings.Replace(newValue, "-", "", -1)
+	newValue = strings.Replace(newValue, "/", "", -1)
+	return aws.String(grok.ToTitle(newValue))
 }
