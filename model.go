@@ -76,6 +76,13 @@ const (
 	DocumentSideBack DocumentSide = "BACK"
 )
 
+type Provider string
+
+const (
+	// DocumentProviderUnicoCheck ...
+	DocumentProviderUnicoCheck Provider = "UNICO_CHECK"
+)
+
 // AccountType ...
 type AccountType string
 
@@ -496,13 +503,13 @@ type BusinessResponse struct {
 	UpdatedAt     time.Time    `json:"updatedAt"`
 }
 
-//BusinessAccountRequest ...
+// BusinessAccountRequest ...
 type BusinessAccountRequest struct {
 	Document    string      `validate:"required,cnpj" json:"documentNumber,omitempty"`
 	AccountType AccountType `validate:"required" json:"accountType"`
 }
 
-//BoletoType ...
+// BoletoType ...
 type BoletoType string
 
 const (
@@ -510,7 +517,7 @@ const (
 	Levy    BoletoType = "Levy"
 )
 
-//BoletoRequest ...
+// BoletoRequest ...
 type BoletoRequest struct {
 	Alias       *string    `json:"alias,omitempty"`
 	Document    string     `validate:"required,cnpjcpf" json:"documentNumber,omitempty"`
@@ -522,19 +529,19 @@ type BoletoRequest struct {
 	Payer       *Payer     `validate:"required" json:"payer,omitempty"`
 }
 
-//BoletoResponse ...
+// BoletoResponse ...
 type BoletoResponse struct {
 	AuthenticationCode string   `json:"authenticationCode,omitempty"`
 	Account            *Account `json:"account,omitempty"`
 }
 
-//BoletoAmount ...
+// BoletoAmount ...
 type BoletoAmount struct {
 	Value    float64 `json:"value,omitempty"`
 	Currency string  `json:"currency,omitempty"`
 }
 
-//BoletoPayment ...
+// BoletoPayment ...
 type BoletoPayment struct {
 	ID             string    `json:"id,omitempty"`
 	Amount         float64   `json:"amount,omitempty"`
@@ -542,7 +549,7 @@ type BoletoPayment struct {
 	PaidOutDate    time.Time `json:"paidOutDate,omitempty"`
 }
 
-//BoletoDetailedResponse ...
+// BoletoDetailedResponse ...
 type BoletoDetailedResponse struct {
 	Alias              *string          `json:"alias,omitempty"`
 	AuthenticationCode string           `json:"authenticationCode,omitempty"`
@@ -566,7 +573,7 @@ type BoletoDetailedResponse struct {
 	UpdatedAt time.Time `json:"updatedAt,omitempty"`
 }
 
-//FilterBoletoData ...
+// FilterBoletoData ...
 type FilterBoletoData struct {
 	Alias              *string          `json:"alias,omitempty"`
 	AuthenticationCode string           `json:"authenticationCode,omitempty"`
@@ -583,31 +590,31 @@ type FilterBoletoData struct {
 	// EmissionDate time.Time `json:"emissionDate,omitempty"`
 }
 
-//FilterBoletoResponse ...
+// FilterBoletoResponse ...
 type FilterBoletoResponse struct {
 	NextPageToken string             `json:"nextPageToken,omitempty"`
 	Data          []FilterBoletoData `json:"data,omitempty"`
 }
 
-//FindBoletoRequest ...
+// FindBoletoRequest ...
 type FindBoletoRequest struct {
 	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
 	Account            *Account `validate:"required" json:"account,omitempty"`
 }
 
-//CancelBoletoRequest ...
+// CancelBoletoRequest ...
 type CancelBoletoRequest struct {
 	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
 	Account            *Account `validate:"required" json:"account,omitempty"`
 }
 
-//SimulatePaymentRequest ...
+// SimulatePaymentRequest ...
 type SimulatePaymentRequest struct {
 	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
 	Account            *Account `validate:"required" json:"account,omitempty"`
 }
 
-//FilterBankListRequest ...
+// FilterBankListRequest ...
 type FilterBankListRequest struct {
 	IDs      []string
 	Name     *string
@@ -623,7 +630,7 @@ type BankData struct {
 	Code string `json:"compe,omitempty"`
 }
 
-//BankDataResponse ...
+// BankDataResponse ...
 type BankDataResponse struct {
 	Name        string   `json:"name,omitempty"`
 	ISPB        string   `json:"ispb,omitempty"`
@@ -721,6 +728,38 @@ type DocumentAnalysisRequest struct {
 // DocumentAnalysisRequestedResponse ...
 type DocumentAnalysisRequestedResponse struct {
 	Token string `json:"token,omitempty"`
+}
+
+// DocumentAnalysisUnicoCheckRequest ...
+type DocumentAnalysisUnicoCheckRequest struct {
+	Document         string                   `validate:"required" json:"document,omitempty"`
+	DocumentType     DocumentType             `validate:"required" json:"document_type,omitempty"`
+	DocumentSide     DocumentSide             `validate:"required" json:"document_side,omitempty"`
+	ImageFile        os.File                  `validate:"required" json:"image,omitempty"`
+	Provider         string                   `validate:"required" json:"provider,omitempty"`
+	ProviderMetaData *ProviderMetadataRequest `validate:"required" json:"provider_metadata,omitempty"`
+}
+
+// ProviderMetadataRequest ...
+type ProviderMetadataRequest struct {
+	IsLastDocument bool   `validate:"required" json:"is_last_document,omitempty"`
+	Encrypted      string `validate:"required" json:"encrypted,omitempty"`
+}
+
+// DocumentAnalysisUnicoCheck ...
+type DocumentAnalysisUnicoCheck struct {
+	Document         string            `validate:"required" json:"document,omitempty"`
+	DocumentType     DocumentType      `validate:"required" json:"documentType,omitempty"`
+	DocumentSide     DocumentSide      `validate:"required" json:"documentSide,omitempty"`
+	ImageFile        os.File           `validate:"required" json:"image,omitempty"`
+	Provider         string            `validate:"required" json:"provider,omitempty"`
+	ProviderMetaData *ProviderMetadata `validate:"required" json:"providerMetadata,omitempty"`
+}
+
+// ProviderMetadata ...
+type ProviderMetadata struct {
+	IsLastDocument bool   `validate:"required" json:"isLastDocument,omitempty"`
+	Encrypted      string `validate:"required" json:"encrypted,omitempty"`
 }
 
 // DocumentAnalysisResponse ...
