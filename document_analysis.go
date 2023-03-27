@@ -15,6 +15,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/contbank/grok"
 	"github.com/sirupsen/logrus"
 )
@@ -35,6 +36,94 @@ func NewDocumentAnalysis(httpClient *http.Client, session Session) *DocumentAnal
 	}
 }
 
+// SendDocumentUnicoCheck ...
+func (c *DocumentAnalysis) SendDocumentUnicoCheck(
+	ctx context.Context,
+	request DocumentAnalysisUnicoCheckRequest) (*DocumentAnalysisResponse, error) {
+	err := grok.Validator.Struct(request)
+	if err != nil {
+		return nil, grok.FromValidationErros(err)
+	}
+
+	endpoint, err := c.getDocumentAnalysisAPIEndpoint(request.Document, nil, nil, nil, aws.Bool(true))
+	if err != nil {
+		return nil, err
+	}
+
+	payload, writer, err := createIDOneFormData(request)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", *endpoint, payload)
+	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error new request")
+		return nil, err
+	}
+
+	token, err := c.authentication.Token(ctx)
+	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error authentication")
+		return nil, err
+	}
+
+	req.Header.Add("Authorization", token)
+	req.Header.Add("api-version", c.session.APIVersion)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error http client")
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusAccepted {
+		var bodyResp *DocumentAnalysisRequestedResponse
+
+		err = json.Unmarshal(respBody, &bodyResp)
+		if err != nil {
+			logrus.
+				WithError(err).
+				Error("error unmarshal")
+			return nil, err
+		}
+
+		response := &DocumentAnalysisResponse{
+			DocumentNumber: request.Document,
+			DocumentType:   string(request.DocumentType),
+			DocumentSide:   string(request.DocumentSide),
+			Token:          bodyResp.Token,
+		}
+		return response, nil
+	}
+
+	var bodyErr *ErrorResponse
+
+	err = json.Unmarshal(respBody, &bodyErr)
+	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error unmarshal")
+		return nil, err
+	}
+
+	if len(bodyErr.Errors) > 0 {
+		errModel := bodyErr.Errors[0]
+		return nil, FindError(errModel.Code, errModel.Messages...)
+	}
+
+	return nil, ErrSendDocumentAnalysis
+}
+
 // SendDocumentAnalysis ...
 func (c *DocumentAnalysis) SendDocumentAnalysis(ctx context.Context,
 	request DocumentAnalysisRequest) (*DocumentAnalysisResponse, error) {
@@ -45,7 +134,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(ctx context.Context,
 		return nil, grok.FromValidationErros(err)
 	}
 
-	endpoint, err := c.getDocumentAnalysisAPIEndpoint(request.Document, nil, nil, request.IsCorporationBusiness)
+	endpoint, err := c.getDocumentAnalysisAPIEndpoint(request.Document, nil, nil, request.IsCorporationBusiness, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +209,7 @@ func (c *DocumentAnalysis) FindDocumentAnalysis(ctx context.Context, documentNum
 	documentAnalysisToken string) (*DocumentAnalysisResponse, error) {
 
 	resultLevel := ResultLevelDetailed
-	endpoint, err := c.getDocumentAnalysisAPIEndpoint(documentNumber, &resultLevel, &documentAnalysisToken, nil)
+	endpoint, err := c.getDocumentAnalysisAPIEndpoint(documentNumber, &resultLevel, &documentAnalysisToken, nil, nil)
 	if err != nil {
 		return nil, err
 	} else if endpoint == nil {
@@ -185,7 +274,7 @@ func (c *DocumentAnalysis) FindDocumentAnalysis(ctx context.Context, documentNum
 
 // getDocumentAnalysisAPIEndpoint ...
 func (c *DocumentAnalysis) getDocumentAnalysisAPIEndpoint(document string, resultLevel *ResultLevel,
-	documentAnalysisToken *string, isCorporationBusiness *bool) (*string, error) {
+	documentAnalysisToken *string, isCorporationBusiness *bool, idOne *bool) (*string, error) {
 
 	u, err := url.Parse(c.session.APIEndpoint)
 	if err != nil {
@@ -199,6 +288,11 @@ func (c *DocumentAnalysis) getDocumentAnalysisAPIEndpoint(document string, resul
 	if isCorporationBusiness != nil && *isCorporationBusiness == true {
 		u.Path = path.Join(u.Path, CorporationBusinessPath)
 	}
+
+	if idOne != nil && *idOne == true {
+		u.Path = path.Join(u.Path, "deepface")
+	}
+
 	if documentAnalysisToken != nil {
 		q := u.Query()
 		q.Set("token", *documentAnalysisToken)
@@ -211,6 +305,85 @@ func (c *DocumentAnalysis) getDocumentAnalysisAPIEndpoint(document string, resul
 	}
 	endpoint := u.String()
 	return &endpoint, nil
+}
+
+// createIDOneFormData ...
+func createIDOneFormData(request DocumentAnalysisUnicoCheckRequest) (*bytes.Buffer, *multipart.Writer, error) {
+	payload := &bytes.Buffer{}
+
+	writer := multipart.NewWriter(payload)
+	file, errFile := os.Open(request.ImageFile.Name())
+	if errFile != nil {
+		return nil, nil, errFile
+	}
+	defer file.Close()
+
+	writerFormFile, errFormFile := createFormFile(writer, file, aws.Bool(false))
+	if errFormFile != nil {
+		logrus.
+			WithError(errFormFile).
+			Error("error")
+		return nil, nil, errFormFile
+	}
+
+	bFormFile, bErrorFormFile := ioutil.ReadFile(file.Name())
+	if bErrorFormFile != nil {
+		logrus.
+			WithError(bErrorFormFile).
+			Error("error")
+		return nil, nil, bErrorFormFile
+	}
+	writerFormFile.Write(bFormFile)
+
+	errTypeField := writer.WriteField("documentType", string(request.DocumentType))
+	if errTypeField != nil {
+		logrus.
+			WithError(errTypeField).
+			Error("error document type field")
+		return nil, nil, errTypeField
+	}
+
+	errSideField := writer.WriteField("documentSide", string(request.DocumentSide))
+	if errSideField != nil {
+		logrus.
+			WithError(errSideField).
+			Error("error document side field")
+		return nil, nil, errSideField
+	}
+
+	errProviderField := writer.WriteField("provider", string(DocumentProviderUnicoCheck))
+	if errProviderField != nil {
+		logrus.
+			WithError(errSideField).
+			Error("error document side field")
+		return nil, nil, errProviderField
+	}
+
+	b, err := json.Marshal(request.ProviderMetaData)
+	if err != nil {
+		logrus.
+			WithError(err).
+			Error("error marshalling providerMetdata object")
+		return nil, nil, err
+	}
+
+	errProviderMetadata := writer.WriteField("providerMetadata", string(b))
+	if errProviderMetadata != nil {
+		logrus.
+			WithError(errSideField).
+			Error("error document providerMetadata.Encrypted field")
+		return nil, nil, errSideField
+	}
+
+	errClose := writer.Close()
+	if errClose != nil {
+		logrus.
+			WithError(errClose).
+			Error("error writer close")
+		return nil, nil, errClose
+	}
+
+	return payload, writer, nil
 }
 
 // createSendImagePayload ...
