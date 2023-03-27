@@ -50,6 +50,41 @@ func (s *DocumentAnalysisTestSuite) SetupTest() {
 	s.documentAnalysis = bankly.NewDocumentAnalysis(httpClient, *s.bankSession)
 }
 
+func (s *DocumentAnalysisTestSuite) TestSendDocumentAnalysisUnico() {
+	// TODO Mockar teste
+	s.T().Skip("Bankly está retornando 500. Mockar teste.")
+
+	docType := bankly.DocumentTypeSELFIE
+	docSide := bankly.DocumentSideFront
+	documentNumber := grok.GeneratorCPF()
+
+	imageFile, errFile := os.Open("test_images/contbank.png")
+	s.assert.NoError(errFile)
+
+	request := bankly.DocumentAnalysisUnicoCheckRequest{
+		Document:     documentNumber,
+		DocumentType: docType,
+		DocumentSide: docSide,
+		ImageFile:    *imageFile,
+	}
+
+	response, err := s.documentAnalysis.SendDocumentUnicoCheck(s.ctx, request)
+
+	logrus.
+		WithFields(logrus.Fields{
+			"request":  request,
+			"response": response,
+		}).
+		Info("document sent")
+
+	s.assert.NoError(err)
+	s.assert.NotNil(response)
+	s.assert.Equal(docType, bankly.DocumentType(response.DocumentType))
+	s.assert.Equal(docSide, bankly.DocumentSide(response.DocumentSide))
+	s.assert.Equal(documentNumber, response.DocumentNumber)
+	s.assert.NotNil(response.Token)
+}
+
 func (s *DocumentAnalysisTestSuite) TestSendDocumentAnalysis() {
 	// TODO Mockar teste
 	s.T().Skip("Bankly está retornando 500. Mockar teste.")
