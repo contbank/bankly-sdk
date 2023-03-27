@@ -1,9 +1,10 @@
 package bankly
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	"os"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
 
 	"github.com/contbank/grok"
 )
@@ -85,6 +86,13 @@ const (
 	DocumentSideFront DocumentSide = "FRONT"
 	// DocumentSideBack ...
 	DocumentSideBack DocumentSide = "BACK"
+)
+
+type Provider string
+
+const (
+	// DocumentProviderUnicoCheck ...
+	DocumentProviderUnicoCheck Provider = "UNICO_CHECK"
 )
 
 // AccountType ...
@@ -238,6 +246,38 @@ const (
 	// UNRECOGNIZED_ONLINE_PURCHASE Compra online não reconhecida
 	UNRECOGNIZED_ONLINE_PURCHASE DuplicateCardStatus = "UnrecognizedOnlinePurchase"
 )
+
+// DocumentAnalysisUnicoCheckRequest ...
+type DocumentAnalysisUnicoCheckRequest struct {
+	Document         string                   `validate:"required" json:"document,omitempty"`
+	DocumentType     DocumentType             `validate:"required" json:"document_type,omitempty"`
+	DocumentSide     DocumentSide             `validate:"required" json:"document_side,omitempty"`
+	ImageFile        os.File                  `validate:"required" json:"image,omitempty"`
+	Provider         string                   `validate:"required" json:"provider,omitempty"`
+	ProviderMetaData *ProviderMetadataRequest `validate:"required" json:"provider_metadata,omitempty"`
+}
+
+// ProviderMetadataRequest ...
+type ProviderMetadataRequest struct {
+	IsLastDocument bool   `validate:"required" json:"is_last_document,omitempty"`
+	Encrypted      string `validate:"required" json:"encrypted,omitempty"`
+}
+
+// DocumentAnalysisUnicoCheck ...
+type DocumentAnalysisUnicoCheck struct {
+	Document         string            `validate:"required" json:"document,omitempty"`
+	DocumentType     DocumentType      `validate:"required" json:"documentType,omitempty"`
+	DocumentSide     DocumentSide      `validate:"required" json:"documentSide,omitempty"`
+	ImageFile        os.File           `validate:"required" json:"image,omitempty"`
+	Provider         string            `validate:"required" json:"provider,omitempty"`
+	ProviderMetaData *ProviderMetadata `validate:"required" json:"providerMetadata,omitempty"`
+}
+
+// ProviderMetadata ...
+type ProviderMetadata struct {
+	IsLastDocument bool   `validate:"required" json:"isLastDocument,omitempty"`
+	Encrypted      string `validate:"required" json:"encrypted,omitempty"`
+}
 
 // AuthenticationResponse ...
 type AuthenticationResponse struct {
