@@ -44,7 +44,7 @@ func (c *DocumentAnalysis) SendDocumentUnicoCheck(
 		return nil, grok.FromValidationErros(err)
 	}
 
-	endpoint, err := c.getDocumentAnalysisAPIEndpoint(request.Document, nil, nil)
+	endpoint, err := c.getDocumentAnalysisAPIEndpoint(request.Document, nil, nil, true)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(ctx context.Context, request Doc
 		return nil, grok.FromValidationErros(err)
 	}
 
-	endpoint, err := c.getDocumentAnalysisAPIEndpoint(request.Document, nil, nil)
+	endpoint, err := c.getDocumentAnalysisAPIEndpoint(request.Document, nil, nil, false)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +212,7 @@ func (c *DocumentAnalysis) SendDocumentAnalysis(ctx context.Context, request Doc
 // FindDocumentAnalysis ...
 func (c *DocumentAnalysis) FindDocumentAnalysis(ctx context.Context, documentNumber string, documentAnalysisToken string) (*DocumentAnalysisResponse, error) {
 	resultLevel := ResultLevelDetailed
-	endpoint, err := c.getDocumentAnalysisAPIEndpoint(documentNumber, &resultLevel, &documentAnalysisToken)
+	endpoint, err := c.getDocumentAnalysisAPIEndpoint(documentNumber, &resultLevel, &documentAnalysisToken, false)
 	if err != nil {
 		return nil, err
 	} else if endpoint == nil {
@@ -277,7 +277,7 @@ func (c *DocumentAnalysis) FindDocumentAnalysis(ctx context.Context, documentNum
 
 // getDocumentAnalysisAPIEndpoint ...
 func (c *DocumentAnalysis) getDocumentAnalysisAPIEndpoint(document string, resultLevel *ResultLevel,
-	documentAnalysisToken *string) (*string, error) {
+	documentAnalysisToken *string, idOne bool) (*string, error) {
 
 	u, err := url.Parse(c.session.APIEndpoint)
 	if err != nil {
@@ -288,6 +288,11 @@ func (c *DocumentAnalysis) getDocumentAnalysisAPIEndpoint(document string, resul
 	}
 	u.Path = path.Join(u.Path, DocumentAnalysisPath)
 	u.Path = path.Join(u.Path, grok.OnlyDigits(document))
+
+	if idOne {
+		u.Path = path.Join(u.Path, "deepface")
+	}
+
 	if documentAnalysisToken != nil {
 		q := u.Query()
 		q.Set("token", *documentAnalysisToken)
