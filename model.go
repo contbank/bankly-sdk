@@ -263,6 +263,14 @@ type ProviderMetadataRequest struct {
 	Encrypted      string `validate:"required" json:"encrypted,omitempty"`
 }
 
+// ParseProviderMetadaRequest ...
+func ParseProviderMetadaRequest(r *ProviderMetadataRequest) *ProviderMetadata {
+	return &ProviderMetadata{
+		IsLastDocument: r.IsLastDocument,
+		Encrypted:      r.Encrypted,
+	}
+}
+
 // DocumentAnalysisUnicoCheck ...
 type DocumentAnalysisUnicoCheck struct {
 	Document         string            `validate:"required" json:"document,omitempty"`
