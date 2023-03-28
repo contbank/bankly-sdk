@@ -359,7 +359,8 @@ func createIDOneFormData(request DocumentAnalysisUnicoCheckRequest) (*bytes.Buff
 		return nil, nil, errProviderField
 	}
 
-	b, err := json.Marshal(request.ProviderMetaData)
+	providerMetadata := ParseProviderMetadaRequest(request.ProviderMetaData)
+	b, err := json.Marshal(providerMetadata)
 	if err != nil {
 		logrus.
 			WithError(err).
