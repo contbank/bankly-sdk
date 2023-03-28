@@ -259,7 +259,7 @@ type DocumentAnalysisUnicoCheckRequest struct {
 
 // ProviderMetadataRequest ...
 type ProviderMetadataRequest struct {
-	IsLastDocument bool   `validate:"required" json:"is_last_document,omitempty"`
+	IsLastDocument bool   `validate:"required" json:"isLastDocument,omitempty"`
 	Encrypted      string `validate:"required" json:"encrypted,omitempty"`
 }
 
