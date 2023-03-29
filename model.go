@@ -93,6 +93,7 @@ type Provider string
 const (
 	// DocumentProviderUnicoCheck ...
 	DocumentProviderUnicoCheck Provider = "UNICO_CHECK"
+
 	// DocumentProviderBankly ...
 	DocumentProviderBankly Provider = "BANKLY"
 )
