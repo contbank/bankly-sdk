@@ -278,13 +278,13 @@ type DocumentAnalysisUnicoCheck struct {
 	DocumentSide     DocumentSide      `validate:"required" json:"documentSide,omitempty"`
 	ImageFile        os.File           `validate:"required" json:"image,omitempty"`
 	Provider         string            `validate:"required" json:"provider,omitempty"`
-	ProviderMetaData *ProviderMetadata `validate:"required" json:"providerMetadata,omitempty"`
+	ProviderMetaData *ProviderMetadata `json:"providerMetadata,omitempty"`
 }
 
 // ProviderMetadata ...
 type ProviderMetadata struct {
-	IsLastDocument bool   `validate:"required" json:"isLastDocument,omitempty"`
-	Encrypted      string `validate:"required" json:"encrypted,omitempty"`
+	IsLastDocument bool   `json:"isLastDocument,omitempty"`
+	Encrypted      string `json:"encrypted,omitempty"`
 }
 
 // AuthenticationResponse ...
