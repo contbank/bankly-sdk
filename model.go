@@ -254,7 +254,7 @@ type DocumentAnalysisUnicoCheckRequest struct {
 	DocumentSide     DocumentSide             `validate:"required" json:"document_side,omitempty"`
 	ImageFile        os.File                  `validate:"required" json:"image,omitempty"`
 	Provider         string                   `validate:"required" json:"provider,omitempty"`
-	ProviderMetaData *ProviderMetadataRequest `validate:"required" json:"provider_metadata,omitempty"`
+	ProviderMetaData *ProviderMetadataRequest `json:"provider_metadata,omitempty"`
 }
 
 // ProviderMetadataRequest ...
