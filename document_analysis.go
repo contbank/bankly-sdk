@@ -351,7 +351,7 @@ func createIDOneFormData(request DocumentAnalysisUnicoCheckRequest) (*bytes.Buff
 		return nil, nil, errSideField
 	}
 
-	errProviderField := writer.WriteField("provider", string(DocumentProviderUnicoCheck))
+	errProviderField := writer.WriteField("provider", request.Provider)
 	if errProviderField != nil {
 		logrus.
 			WithError(errSideField).
@@ -359,7 +359,7 @@ func createIDOneFormData(request DocumentAnalysisUnicoCheckRequest) (*bytes.Buff
 		return nil, nil, errProviderField
 	}
 
-	if request.Provider == UnicoProviderDocs {
+	if request.Provider == "UNICO_CHECK" {
 		providerMetadata := ParseProviderMetadaRequest(request.ProviderMetaData)
 		b, err := json.Marshal(providerMetadata)
 		if err != nil {
