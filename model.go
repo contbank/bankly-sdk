@@ -88,14 +88,11 @@ const (
 	DocumentSideBack DocumentSide = "BACK"
 )
 
-type Provider string
-
 const (
 	// DocumentProviderUnicoCheck ...
-	DocumentProviderUnicoCheck Provider = "UNICO_CHECK"
-
+	DocumentProviderUnicoCheck = "UNICO_CHECK"
 	// DocumentProviderBankly ...
-	DocumentProviderBankly Provider = "BANKLY"
+	DocumentProviderBankly = "BANKLY"
 )
 
 // AccountType ...
