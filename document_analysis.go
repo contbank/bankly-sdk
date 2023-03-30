@@ -351,7 +351,7 @@ func createIDOneFormData(request DocumentAnalysisUnicoCheckRequest) (*bytes.Buff
 		return nil, nil, errSideField
 	}
 
-	errProviderField := writer.WriteField("provider", string(DocumentProviderUnicoCheck))
+	errProviderField := writer.WriteField("provider", request.Provider)
 	if errProviderField != nil {
 		logrus.
 			WithError(errSideField).
@@ -359,21 +359,23 @@ func createIDOneFormData(request DocumentAnalysisUnicoCheckRequest) (*bytes.Buff
 		return nil, nil, errProviderField
 	}
 
-	providerMetadata := ParseProviderMetadaRequest(request.ProviderMetaData)
-	b, err := json.Marshal(providerMetadata)
-	if err != nil {
-		logrus.
-			WithError(err).
-			Error("error marshalling providerMetdata object")
-		return nil, nil, err
-	}
+	if request.Provider == "UNICO_CHECK" {
+		providerMetadata := ParseProviderMetadaRequest(request.ProviderMetaData)
+		b, err := json.Marshal(providerMetadata)
+		if err != nil {
+			logrus.
+				WithError(err).
+				Error("error marshalling providerMetdata object")
+			return nil, nil, err
+		}
 
-	errProviderMetadata := writer.WriteField("providerMetadata", string(b))
-	if errProviderMetadata != nil {
-		logrus.
-			WithError(errSideField).
-			Error("error document providerMetadata.Encrypted field")
-		return nil, nil, errSideField
+		errProviderMetadata := writer.WriteField("providerMetadata", string(b))
+		if errProviderMetadata != nil {
+			logrus.
+				WithError(errSideField).
+				Error("error document providerMetadata.Encrypted field")
+			return nil, nil, errSideField
+		}
 	}
 
 	errClose := writer.Close()
