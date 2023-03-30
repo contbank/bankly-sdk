@@ -88,11 +88,13 @@ const (
 	DocumentSideBack DocumentSide = "BACK"
 )
 
+type ProviderDocs string
+
 const (
-	// DocumentProviderBankly ...
-	DocumentProviderBankly = "BANKLY"
-	// DocumentProviderUnicoCheck ...
-	DocumentProviderUnicoCheck = "UNICO_CHECK"
+	// BanklyProviderDocs ...
+	BanklyProviderDocs ProviderDocs = "BANKLY"
+	// UnicoProviderDocs ...
+	UnicoProviderDocs ProviderDocs = "UNICO_CHECK"
 )
 
 // AccountType ...
@@ -253,8 +255,8 @@ type DocumentAnalysisUnicoCheckRequest struct {
 	DocumentType     DocumentType             `validate:"required" json:"document_type,omitempty"`
 	DocumentSide     DocumentSide             `validate:"required" json:"document_side,omitempty"`
 	ImageFile        os.File                  `validate:"required" json:"image,omitempty"`
-	Provider         string                   `validate:"required" json:"provider,omitempty"`
-	ProviderMetaData *ProviderMetadataRequest `validate:"required" json:"provider_metadata,omitempty"`
+	Provider         ProviderDocs             `validate:"required" json:"provider,omitempty"`
+	ProviderMetaData *ProviderMetadataRequest `json:"provider_metadata,omitempty"`
 }
 
 // ProviderMetadataRequest ...

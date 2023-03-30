@@ -359,7 +359,7 @@ func createIDOneFormData(request DocumentAnalysisUnicoCheckRequest) (*bytes.Buff
 		return nil, nil, errProviderField
 	}
 
-	if DocumentProviderUnicoCheck == request.Provider {
+	if request.Provider == UnicoProviderDocs {
 		providerMetadata := ParseProviderMetadaRequest(request.ProviderMetaData)
 		b, err := json.Marshal(providerMetadata)
 		if err != nil {
