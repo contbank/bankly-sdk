@@ -3,7 +3,6 @@ package bankly_test
 import (
 	"context"
 	"net/http"
-	"os"
 	"testing"
 	"time"
 
@@ -28,9 +27,6 @@ func TestAuthenticationTestSuite(t *testing.T) {
 func (s *AuthenticationTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 	s.ctx = context.Background()
-
-	os.Setenv("BANKLY_CLIENT_ID", "0a9f5c95-4b73-44b5-b3dd-03569c570630")
-	os.Setenv("BANKLY_CLIENT_SECRET", "V$^YzR$sI#Qhh4b!e0cHu6B1*r#*vkVj")
 
 	session, err := bankly.NewSession(bankly.Config{
 		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
