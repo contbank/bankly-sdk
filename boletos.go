@@ -31,6 +31,88 @@ func NewBoletos(httpClient *http.Client, session Session) *Boletos {
 	}
 }
 
+// SandboxSettleBoleto ...
+func (b *Boletos) SandboxSettleBoleto(ctx *context.Context, payload *SandboxSettleBoletoRequest) error {
+
+	fields := logrus.Fields{
+		"request_id": GetRequestID(*ctx),
+		"payload":    payload,
+	}
+
+	if err := grok.Validator.Struct(payload); err != nil {
+		return grok.FromValidationErros(err)
+	}
+
+	u, err := url.Parse(b.session.APIEndpoint)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error parsing api endpoint")
+		return err
+	}
+	u.Path = path.Join(u.Path, BoletosSettledPath)
+	endpoint := u.String()
+
+	reqbyte, err := json.Marshal(payload)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error encoding model to json")
+		return err
+	}
+
+	req, err := http.NewRequestWithContext(*ctx, "POST", endpoint, bytes.NewReader(reqbyte))
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error creating request")
+		return err
+	}
+
+	token, err := b.authentication.Token(*ctx)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error in authentication request")
+		return err
+	}
+
+	req.Header.Add("Authorization", token)
+	req.Header.Add("Content-type", "application/json")
+	req.Header.Add("api-version", b.session.APIVersion)
+
+	resp, err := b.httpClient.Do(req)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error performing the request")
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK ||
+		resp.StatusCode == http.StatusCreated ||
+		resp.StatusCode == http.StatusAccepted {
+		return nil
+	}
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	var bodyErr []*ErrorResponse
+
+	if err := json.Unmarshal(respBody, &bodyErr); err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
+		return ErrDefaultBoletos
+	}
+
+	if len(bodyErr) > 0 {
+		errModel := bodyErr[0]
+		if err := FindError(errModel.Code, errModel.Message); err != nil {
+			logrus.WithField("bankly_error", bodyErr).WithFields(fields).
+				WithError(err).Error("bankly create boleto error")
+			return err
+		}
+	}
+
+	return ErrDefaultBoletos
+}
+
 // CreateBoleto ...
 func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*BoletoResponse, error) {
 	fields := logrus.Fields{
@@ -49,6 +131,7 @@ func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*Bole
 			WithError(err).Error("error parsing api endpoint")
 		return nil, err
 	}
+
 	u.Path = path.Join(u.Path, BoletosPath)
 	endpoint := u.String()
 

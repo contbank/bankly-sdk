@@ -2,12 +2,13 @@ package bankly_test
 
 import (
 	"context"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/contbank/grok"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/contbank/grok"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	bankly "github.com/contbank/bankly-sdk"
 	"github.com/stretchr/testify/assert"
@@ -84,6 +85,28 @@ func (s *BoletosTestSuite) TestCreateBoleto_TypeDeposit() {
 	s.assert.Equal(request.Account.Number, response.Account.Number)
 }
 
+// TestCreateBoleto_TypeDeposit ...
+func (s *BoletosTestSuite) TestCreateBoletoAndSettle_TypeDeposit_Sandbox() {
+
+	// TODO Mockar teste
+	s.T().Skip("Mockar teste. Erro de SCOUTER_QUANTITY devido ao limite de geração de boletos")
+
+	s.ctx = context.WithValue(s.ctx, "Request-Id", primitive.NewObjectID().String())
+
+	request := createBoletoRequest(bankly.Deposit)
+	response, err := s.boletos.CreateBoleto(s.ctx, request)
+
+	s.assert.NoError(err)
+	s.assert.NotEmpty(response)
+	s.assert.NotEmpty(response.AuthenticationCode)
+	s.assert.Equal(request.Account.Branch, response.Account.Branch)
+	s.assert.Equal(request.Account.Number, response.Account.Number)
+
+	settleRequest := s.createSandboxSettleBoletoRequest(*request.Account, &response.AuthenticationCode)
+	err = s.boletos.SandboxSettleBoleto(&s.ctx, settleRequest)
+	s.assert.NoError(err)
+}
+
 // TestCreateBoleto_InvalidNameLength ...
 func (s *BoletosTestSuite) TestCreateBoleto_InvalidNameLength() {
 	s.ctx = context.WithValue(s.ctx, "Request-Id", primitive.NewObjectID().String())
@@ -113,7 +136,7 @@ func (s *BoletosTestSuite) TestFindBoleto() {
 
 	// TODO Mockar teste
 	s.T().Skip("Mockar teste. Erro de SCOUTER_QUANTITY devido ao limite de geração de boletos")
-	
+
 	s.ctx = context.WithValue(s.ctx, "Request-Id", primitive.NewObjectID().String())
 
 	// create boleto
@@ -201,6 +224,14 @@ func createBoletoRequest(boletoType bankly.BoletoType) *bankly.BoletoRequest {
 		request.Discounts = createDiscount(dueDate)
 	}
 	return request
+}
+
+// createSandboxSettleBoletoRequest create BoletoRequest object to tests
+func (s *BoletosTestSuite) createSandboxSettleBoletoRequest(account bankly.Account, authenticationCode *string) *bankly.SandboxSettleBoletoRequest {
+	return &bankly.SandboxSettleBoletoRequest{
+		AuthenticationCode: *authenticationCode,
+		Account:            account,
+	}
 }
 
 // createInterest create interest object to test

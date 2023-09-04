@@ -38,6 +38,8 @@ const (
 	DocumentAnalysisPath = "/document-analysis"
 	// CardDocumentPath ...
 	CardDocumentPath = "cards/document"
+	// BoletosSettledPath ...
+	BoletosSettledPath = "/bankslip/settlementpayment"
 )
 
 type PixType string
@@ -1887,6 +1889,12 @@ type Certificate struct {
 	Passphrase       string `json:"passphrase"`
 	UUID             string `json:"uuid"`
 	ClientID         string `json:"client_id"`
+}
+
+// SandboxSettleBoletoRequest ...
+type SandboxSettleBoletoRequest struct {
+	AuthenticationCode string  `validate:"required" json:"authenticationCode"`
+	Account            Account `validate:"required" json:"account"`
 }
 
 // ParseSimpleBusinessRequest ...
