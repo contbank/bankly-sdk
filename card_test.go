@@ -200,16 +200,16 @@ func (c *CardTestSuite) TestGetCardByAccount_NOT_FOUND() {
 }
 
 /*
-func (c *CardTestSuite) TestCreateCardVirtual_OK() {
-	c.CancelCard("21632071000187")
+	func (c *CardTestSuite) TestCreateCardVirtual_OK() {
+		c.CancelCard("21632071000187")
 
-	createCardModel := createCardModel("21632071000187", "202142", bankly.VirtualCardType)
+		createCardModel := createCardModel("21632071000187", "202142", bankly.VirtualCardType)
 
-	card, err := c.card.CreateCard(c.ctx, &createCardModel)
+		card, err := c.card.CreateCard(c.ctx, &createCardModel)
 
-	c.assert.NoError(err)
-	c.assert.NotNil(card)
-}
+		c.assert.NoError(err)
+		c.assert.NotNil(card)
+	}
 */
 func (c *CardTestSuite) TestCreateCardVirtual_INVALID_PARAMETER_EMPTY() {
 	createCardModel := createCardModel("1234567", "202142", bankly.VirtualCardType)
@@ -335,6 +335,10 @@ func (c *CardTestSuite) TestAlteredStatusCard_OK() {
 */
 
 func (c *CardTestSuite) TestUpdatePasswordByProxy_OK() {
+
+	// TODO Mockar teste
+	c.T().Skip("Bankly está retornando erro 500. Mockar teste.")
+
 	model := bankly.CardUpdatePasswordDTO{
 		Password: "1234",
 	}
@@ -345,6 +349,10 @@ func (c *CardTestSuite) TestUpdatePasswordByProxy_OK() {
 }
 
 func (c *CardTestSuite) TestUpdatePasswordByProxy_InvalidProxy() {
+
+	// TODO Mockar teste
+	c.T().Skip("Bankly está retornando erro 500. Mockar teste.")
+
 	model := bankly.CardUpdatePasswordDTO{
 		Password: "1234",
 	}
