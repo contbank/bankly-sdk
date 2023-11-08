@@ -25,7 +25,7 @@ func TestPixTestSuite(t *testing.T) {
 func (s *PixTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 	s.ctx = context.Background()
-
+ 
 	session, err := bankly.NewSession(bankly.Config{
 		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
 		ClientSecret: bankly.String(*bankly.GetEnvBanklyClientSecret()),
@@ -157,5 +157,35 @@ func builderCreateAddressKeyRequest(typePix bankly.PixType, valuePix, accountNum
 			Branch:      "0001",
 			AccountType: bankly.CheckingAccount,
 		},
+	}
+}
+
+func (c *PixTestSuite) TestClaimPixByCPF() {
+	addressingKeyValue := "16246241620"
+
+	pix := builderClaimRequest(bankly.PixCPF, addressingKeyValue, "207802", bankly.Portability)
+	currentIdentity := "16246241620"
+	response, err := c.pix.CreatePixClaim(context.Background(), pix, currentIdentity)
+
+	c.assert.NoError(err)
+	c.assert.NotNil(response)
+}
+
+func builderClaimRequest(typePix bankly.PixType, valuePix string, accountNumber string, claimType bankly.PixClaimType) *bankly.PixClaimRequest {
+	return &bankly.PixClaimRequest{
+		Type: claimType,
+		AddressingKey: bankly.PixTypeValue{
+			Type:  typePix,
+			Value: valuePix,
+		},
+		Claimer: bankly.Claimer{
+			Branch: "0001",
+			Number: accountNumber,
+			Bank: bankly.BankClaimer{
+				Name: "Acesso Soluções de Pagamento S.A",
+				Ispb: "13140088",
+			},
+		},
+		
 	}
 }

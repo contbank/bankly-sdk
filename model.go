@@ -57,6 +57,33 @@ const (
 	PixEVP PixType = "EVP"
 )
 
+type PixClaimType string
+
+const (
+	Portability PixClaimType = "PORTABILITY"
+	Ownership PixClaimType = "OWNERSHIP"
+)
+
+type StatusClaim string
+
+const (
+	Open StatusClaim = "OPEN"
+	WaitingResolution StatusClaim = "WAITING_RESOLUTION"
+	Confirmed StatusClaim = "CONFIRMED"
+	CanceledClaim StatusClaim = "CANCELED"
+	CompletedClaim StatusClaim = "COMPLETED"
+)
+
+type CancelReason string
+
+const (
+	ClaimerRequest CancelReason = "CLAIMER_REQUEST"
+	DonorRequest CancelReason = "DONOR_REQUEST"
+	AccountClosure CancelReason = "ACCOUNT_CLOSURE"
+	Fraud CancelReason = "FRAUD"
+	DefaultOperation CancelReason = "DEFAULT_OPERATION"
+)
+
 const (
 	// InternalBankCode ...
 	InternalBankCode string = "332"
@@ -1777,6 +1804,71 @@ type PixCashOutByAuthenticationCodeResponse struct {
 type PixAddressKeyCreateRequest struct {
 	AddressingKey PixTypeValue `json:"addressingKey"`
 	Account       Account      `json:"account"`
+}
+
+// Claim Request
+type PixClaimRequest struct {
+	Type PixClaimType `json:"type"`
+	AddressingKey PixTypeValue `json:"addressingKey"`
+	Claimer Claimer `json:"claimer"`
+}
+
+// Claimer
+type Claimer struct {
+	Branch string `json:"branch"`
+	Number string `json:"number"`
+	Bank BankClaimer `json:"bank"`
+}
+
+// BankClaimer
+type BankClaimer struct {
+	Name string `json:"name"`
+	Ispb string `json:"ispb"`
+}
+
+// PostPixClaimerResponse 
+type PixClaimResponse struct {
+	ClaimId string `json:"claimId"`
+	Type PixClaimType `json:"type"`
+	AddressingKey PixTypeValue `json:"addressingKey"`
+	Claimer Claimer `json:"claimer"`
+	Status StatusClaim `json:"status"`
+	CreatedAt string `json:"createdAt"`
+	ResolutionLimitDate string `json:"resolutionLimitDate"`
+	ConclusionLimitDate string `json:"conclusionLimitDate"`
+}
+
+// PixClaimConfirmResponse 
+type PixClaimConfirmResponse struct {
+	PixClaimResponse
+	Donor Claimer `json:"donor"`
+	PreviousStatus StatusClaim `json:"previousStatus"`
+	ConfirmReason string `json:"confirmReason"`
+	ConfirmedBy string `json:"confirmedBy"`
+	UpdatedAt string `json:"updatedAt"`
+	ConfirmedAt string `json:"confirmedAt"`
+}
+
+// PixClaimCompleteResponse 
+type PixClaimCompleteResponse struct {
+	PixClaimConfirmResponse
+	CompletedAt string `json:"completedAt"`
+}
+
+// PixClaimCompleteResponse 
+type PixClaimCancelResponse struct {
+	PixClaimResponse
+	Donor Claimer `json:"donor"`
+	PreviousStatus StatusClaim `json:"previousStatus"`
+	UpdatedAt string `json:"updatedAt"`
+	CancelReason CancelReason `json:"cancelReason"`
+	CanceledBy string `json:"canceledBy"`
+	CanceledAt string `json:"canceledAt"`
+}
+
+// PixClaimConfirmReason
+type PixClaimConfirmReason struct {
+	Reason string `json:"reason"`
 }
 
 // PostPixResponse
