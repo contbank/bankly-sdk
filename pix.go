@@ -374,7 +374,6 @@ func (p *Pix) CreatePixClaim(ctx context.Context, pix *PixClaimRequest, document
 
 	resp, err := p.httpClient.Post(ctx, url, pix, &header)
 	if err != nil {
-		log.Println("resposta -> ", err)
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
 	}
