@@ -350,52 +350,6 @@ func PixErrorHandler(log *logrus.Entry, resp *http.Response) error {
 	return ErrDefaultPix
 }
 
-// CreatePixClaim ...
-func (p *Pix) CreatePixClaim(ctx context.Context, pix *PixClaimRequest, documentNumber string) (*PixClaimResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
-	
-	if requestID == "" {
-		ctx = GenerateNewRequestID(ctx)
-	} else {
-		ctx = context.WithValue(ctx, "Request-Id", ctx.Value("Request-Id").(string))
-	}
-
-	requestID = GetRequestID(ctx)
-
-	fields := logrus.Fields{
-		"request_id": requestID,
-		"x-bkly-pix-user-id": documentNumber,
-	}
-
-	url := "/pix/claims"
-
-	header := http.Header{}
-	header.Add("x-bkly-pix-user-id", grok.OnlyDigits(documentNumber))
-
-	resp, err := p.httpClient.Post(ctx, url, pix, &header)
-	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error(err.Error())
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
-		return nil, err
-	}
-
-	response := new(PixClaimResponse)
-	log.Println(response)
-	err = json.Unmarshal(respBody, &response)
-	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
-		return nil, ErrDefaultPix
-	}
-
-	return response, nil
-}
-
 // GetPixClaim ...
 func (p *Pix) GetPixClaim(ctx context.Context, accountNumber string, documentNumber string, claimsFrom string) ([]*PixClaimResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
@@ -432,6 +386,53 @@ func (p *Pix) GetPixClaim(ctx context.Context, accountNumber string, documentNum
 		return nil, err
 	}
 
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		return nil, ErrDefaultPix
+	}
+
+	return response, nil
+}
+
+// CreatePixClaim ...
+func (p *Pix) CreatePixClaim(ctx context.Context, pix *PixClaimRequest, documentNumber string) (*PixClaimResponse, error) {
+	requestID, _ := ctx.Value("Request-Id").(string)
+
+	if requestID == "" {
+		ctx = GenerateNewRequestID(ctx)
+	} else {
+		ctx = context.WithValue(ctx, "Request-Id", ctx.Value("Request-Id").(string))
+	}
+
+	requestID = GetRequestID(ctx)
+
+	fields := logrus.Fields{
+		"request_id":         requestID,
+		"x-bkly-pix-user-id": documentNumber,
+	}
+
+	url := "/pix/claims"
+	fields["url"] = url
+
+	header := http.Header{}
+	header.Add("x-bkly-pix-user-id", grok.OnlyDigits(documentNumber))
+
+	resp, err := p.httpClient.Post(ctx, url, pix, &header)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
+		return nil, err
+	}
+
+	response := new(PixClaimResponse)
+	log.Println(response)
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
