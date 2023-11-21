@@ -529,7 +529,7 @@ func (p *Pix) CompletePixClaim(ctx context.Context, documentNumber string, claim
 }
 
 // CancelPixClaim ...
-func (p *Pix) CancelPixClaim(ctx context.Context, documentNumber string, claimId string, reason *PixClaimConfirmReason) (*PixClaimCancelResponse, error) {
+func (p *Pix) CancelPixClaim(ctx context.Context, documentNumber string, claimId string, reason *PixClaimCancelReason) (*PixClaimCancelResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id":       requestID,
