@@ -360,17 +360,20 @@ func (p *Pix) GetPixClaim(ctx context.Context, accountNumber string, documentNum
 		"claims_from":      claimsFrom,
 	}
 
-	url := fmt.Sprintf("/pix/claims?documentNumber=%v", documentNumber)
-
-	if claimsFrom != nil {
-		url = fmt.Sprintf("/pix/claims?documentNumber=%v&claimsFrom=%v", documentNumber, *claimsFrom)
-	}
+	url := fmt.Sprint("/pix/claims")
 
 	header := http.Header{}
 	header.Add("x-bkly-pix-user-id", grok.OnlyDigits(documentNumber))
 	header.Add("x-correlation-id", requestID)
 
-	resp, err := p.httpClient.Get(ctx, url, nil, &header)
+	query := make(map[string]string)
+	query["documentNumber"] = grok.OnlyDigits(documentNumber)
+
+	if claimsFrom != nil {
+		query["claimsFrom"] = *claimsFrom
+	}
+
+	resp, err := p.httpClient.Get(ctx, url, query, &header)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
