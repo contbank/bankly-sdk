@@ -351,15 +351,20 @@ func PixErrorHandler(log *logrus.Entry, resp *http.Response) error {
 }
 
 // GetPixClaim ...
-func (p *Pix) GetPixClaim(ctx context.Context, accountNumber string, documentNumber string, claimsFrom string) ([]*PixClaimResponse, error) {
+func (p *Pix) GetPixClaim(ctx context.Context, accountNumber string, documentNumber string, claimsFrom *string) ([]*PixClaimResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id":       requestID,
 		"account":          accountNumber,
 		"current_identity": documentNumber,
+		"claims_from":      claimsFrom,
 	}
 
-	url := fmt.Sprintf("/pix/claims?documentNumber=%v&claimsFrom=%v", documentNumber, claimsFrom)
+	url := fmt.Sprintf("/pix/claims?documentNumber=%v", documentNumber)
+
+	if claimsFrom != nil {
+		url = fmt.Sprintf("/pix/claims?documentNumber=%v&claimsFrom=%v", documentNumber, *claimsFrom)
+	}
 
 	header := http.Header{}
 	header.Add("x-bkly-pix-user-id", grok.OnlyDigits(documentNumber))
@@ -377,7 +382,7 @@ func (p *Pix) GetPixClaim(ctx context.Context, accountNumber string, documentNum
 	response := []*PixClaimResponse{}
 
 	if resp.StatusCode == http.StatusNoContent {
-		logrus.WithFields(fields).Info("no data found")
+		logrus.WithFields(fields).Info("no content")
 		return response, nil
 	}
 
