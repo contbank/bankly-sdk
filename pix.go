@@ -549,18 +549,13 @@ func (p *Pix) CancelPixClaim(ctx context.Context, documentNumber string, claimId
 
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
-
-	response := new(PixClaimCancelResponse)
-
-	if resp.StatusCode == http.StatusNoContent {
-		logrus.WithFields(fields).Info("no data found")
-		return response, nil
-	}
-
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
 		return nil, err
 	}
+
+	response := new(PixClaimCancelResponse)
+	log.Println(response)
 
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
