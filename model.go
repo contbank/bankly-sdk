@@ -338,10 +338,17 @@ type CustomersRequest struct {
 	Address                  *Address                 `validate:"required,dive" json:"address,omitempty"`
 	BirthDate                time.Time                `validate:"required" json:"birthDate,omitempty"`
 	MotherName               string                   `validate:"required" json:"motherName,omitempty"`
-	DeclaredIncome           DeclaredIncome           `validate:"required" json:"declaredIncome,omitempty"`
+	DeclaredIncome           DeclaredIncome           `json:"declaredIncome,omitempty"` // deprecated
+	AssertedIncome           AssertedIncome           `validate:"required" json:"assertedIncome,omitempty"`
 	Occupation               string                   `validate:"required" json:"occupation,omitempty"`
 	PoliticallyExposedPerson PoliticallyExposedPerson `validate:"required,dive" json:"pep,omitempty"`
 	Documentation            Documentation            `validate:"required,dive" json:"documentation,omitempty"`
+}
+
+// AssertedIncome ...
+type AssertedIncome struct {
+	Value    float64 `json:"value,omitempty"`
+	Currency string  `json:"currency,omitempty"`
 }
 
 // Documentation
@@ -664,13 +671,16 @@ type BusinessUpdateRequest struct {
 
 // CustomerUpdateRequest ...
 type CustomerUpdateRequest struct {
-	RegisterName string    `validate:"required" json:"registerName,omitempty"`
-	SocialName   string    `json:"socialName,omitempty"`
-	Phone        *Phone    `validate:"required,dive" json:"phone,omitempty"`
-	Address      *Address  `validate:"required,dive" json:"address,omitempty"`
-	BirthDate    time.Time `validate:"required" json:"birthDate,omitempty"`
-	MotherName   string    `validate:"required" json:"motherName,omitempty"`
-	Email        string    `validate:"required" json:"email,omitempty"`
+	RegisterName             string                   `validate:"required" json:"registerName,omitempty"`
+	SocialName               string                   `json:"socialName,omitempty"`
+	Phone                    *Phone                   `validate:"required,dive" json:"phone,omitempty"`
+	Address                  *Address                 `validate:"required,dive" json:"address,omitempty"`
+	BirthDate                time.Time                `validate:"required" json:"birthDate,omitempty"`
+	MotherName               string                   `validate:"required" json:"motherName,omitempty"`
+	Email                    string                   `validate:"required" json:"email,omitempty"`
+	PoliticallyExposedPerson PoliticallyExposedPerson `json:"pep,omitempty"`
+	Occupation               string                   `json:"occupation,omitempty"`
+	AssertedIncome           AssertedIncome           `json:"assertedIncome,omitempty"`
 }
 
 // CancelAccountReason ...
