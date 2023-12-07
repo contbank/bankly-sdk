@@ -3,25 +3,26 @@ package bankly
 import (
 	"context"
 	"encoding/json"
-	"github.com/thoas/go-funk"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
 	"strconv"
 
+	"github.com/thoas/go-funk"
+
 	"github.com/contbank/grok"
 	"github.com/sirupsen/logrus"
 )
 
-//BankStatement ...
+// BankStatement ...
 type BankStatement struct {
 	session        Session
 	httpClient     *http.Client
 	authentication *Authentication
 }
 
-//NewBankStatement ...
+// NewBankStatement ...
 func NewBankStatement(httpClient *http.Client, session Session) *BankStatement {
 	return &BankStatement{
 		session:        session,
@@ -71,6 +72,12 @@ func (c *BankStatement) FilterBankStatements(ctx context.Context, model *FilterB
 	if len(model.CardProxy) > 0 {
 		for _, c := range model.CardProxy {
 			q.Add("cardProxy", c)
+		}
+	}
+
+	if model.EventName != nil && len(model.EventName) != 0 {
+		for _, eventName := range model.EventName {
+			q.Add("eventName", eventName)
 		}
 	}
 

@@ -1100,6 +1100,7 @@ type FilterBankStatementRequest struct {
 	Page           int64 `validate:"required"`
 	PageSize       int64 `validate:"required"`
 	Status         *EventStatus
+	EventName      []string
 }
 
 // DocumentAnalysisRequest ...
