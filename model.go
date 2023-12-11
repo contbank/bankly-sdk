@@ -1701,10 +1701,10 @@ type PixAddress struct {
 
 // PixPayer ...
 type PixPayer struct {
+	Name           string     `json:"name"`
+	DocumentNumber string     `json:"documentNumber"`
 	Type           string     `json:"type"`
 	Address        PixAddress `json:"address"`
-	DocumentNumber string     `json:"documentNumber"`
-	Name           string     `json:"name"`
 }
 
 // PixQrCodeStaticRequest ...
@@ -1775,6 +1775,7 @@ func ParseResponseCard(cardResponseDTO *CardResponseDTO) *CardResponse {
 
 type PixQrCodeBankResponse struct {
 	Name string `json:"name"`
+	Ispb string `json:"ispb"`
 }
 
 type PixQrCodePaymentResponse struct {
@@ -1782,6 +1783,7 @@ type PixQrCodePaymentResponse struct {
 	InterestValue   float64 `json:"interestValue"`
 	PenaltyValue    float64 `json:"penaltyValue"`
 	DiscountValue   float64 `json:"discountValue"`
+	ReductionValue  float64 `json:"reductionValue"`
 	TotalValue      float64 `json:"totalValue"`
 	DueDate         string  `json:"dueDate"`
 	ChangeValue     float64 `json:"changeValue"`
@@ -1799,15 +1801,29 @@ type PixQrCodeLocationResponse struct {
 }
 
 type PixQrCodeDecodeResponse struct {
-	EndToEndID     string                    `json:"endToEndId"`
-	ConciliationID string                    `json:"conciliationId"`
-	AddressingKey  PixTypeValue              `json:"addressingKey"`
-	QrCodeType     string                    `json:"qrCodeType"`
-	Holder         PixHolder                 `json:"holder"`
-	Bank           PixQrCodeBankResponse     `json:"bank"`
-	Payment        PixQrCodePaymentResponse  `json:"payment"`
-	Location       PixQrCodeLocationResponse `json:"location"`
-	QrCodePurpose  string                    `json:"qrCodePurpose"`
+	EndToEndID         string                      `json:"endToEndId"`
+	ConciliationID     string                      `json:"conciliationId"`
+	AddressingKey      PixTypeValue                `json:"addressingKey"`
+	QrCodeType         string                      `json:"qrCodeType"`
+	Payer              PixPayer                    `json:"payer"`
+	Holder             PixHolder                   `json:"holder"`
+	Bank               PixQrCodeBankResponse       `json:"bank"`
+	Payment            PixQrCodePaymentResponse    `json:"payment"`
+	Location           PixQrCodeLocationResponse   `json:"location"`
+	WithdrawalDetail   PixQrCodeWithdrawalDetail   `json:"withdrawalDetail"`
+	ChangeAmountDetail PixQrCodeChangeAmountDetail `json:"changeAmountDetail"`
+	QrCodePurpose      string                      `json:"qrCodePurpose"`
+}
+
+type PixQrCodeWithdrawalDetail struct {
+	ChangeAmountType string `json:"changeAmountType"`
+	AgentType        string `json:"agentType"`
+	ProviderISPB     string `json:"providerIspb"`
+}
+
+type PixQrCodeChangeAmountDetail struct {
+	ChangeAmountType string `json:"changeAmountType"`
+	AgentType        string `json:"agentType"`
 }
 
 type PixCashOutByAuthenticationCodeResponse struct {

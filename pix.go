@@ -275,6 +275,7 @@ func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest,
 	}
 
 	defer resp.Body.Close()
+
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		logrus.WithFields(fields).
