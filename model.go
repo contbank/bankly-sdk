@@ -1707,6 +1707,17 @@ type PixPayer struct {
 	Name           string     `json:"name"`
 }
 
+// PixQrCodeStaticRequest ...
+type PixQrCodeStaticRequest struct {
+	AddressingKey     PixTypeValue             `validate:"required" json:"addressingKey"`
+	Amount            float64                  `json:"amount"`
+	RecipientName     string                   `validate:"required" json:"recipientName"`
+	PixQrCodeLocation PixQrCodeLocation        `validate:"required" json:"location"`
+	ConciliationID    string                   `json:"conciliationId"`
+	CategoryCode      *string                  `json:"categoryCode"`
+	AdditionalData    []PixAdditionalDataValue `json:"additionalData,omitempty"`
+}
+
 // PixQrCodeDynamicRequest ...
 type PixQrCodeDynamicRequest struct {
 	AddressingKey    PixTypeValue             `json:"addressingKey"`
@@ -1775,6 +1786,11 @@ type PixQrCodePaymentResponse struct {
 	DueDate         string  `json:"dueDate"`
 	ChangeValue     float64 `json:"changeValue"`
 	WithdrawalValue float64 `json:"withdrawalValue"`
+}
+
+type PixQrCodeLocation struct {
+	City    string `json:"city"`
+	ZipCode string `json:"zipCode"`
 }
 
 type PixQrCodeLocationResponse struct {

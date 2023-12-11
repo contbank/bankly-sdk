@@ -106,7 +106,9 @@ func (p *Pix) GetAddressKey(ctx context.Context, key string, currentIdentity str
 
 // CashOut ...
 func (p *Pix) CashOut(ctx context.Context, pix *PixCashOutRequest) (*PixCashOutResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
+
+	requestID := grok.GetRequestID(ctx)
+
 	fields := logrus.Fields{
 		"request_id": requestID,
 		"object":     pix,
@@ -114,38 +116,102 @@ func (p *Pix) CashOut(ctx context.Context, pix *PixCashOutRequest) (*PixCashOutR
 
 	url := "pix/cash-out"
 
-	resp, err := p.httpClient.Post(ctx, url, pix, nil)
+	header := http.Header{}
+	header.Add("x-correlation-id", requestID)
+
+	resp, err := p.httpClient.Post(ctx, url, pix, &header)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	defer resp.Body.Close()
+
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
+		logrus.WithFields(fields).WithError(err).
+			Error("error decoding body response")
 		return nil, err
 	}
 
+	logrus.WithFields(fields).
+		Info("unmarshal bankly response")
+
 	response := new(PixCashOutResponse)
+
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		logrus.WithFields(fields).WithError(err).
+			Error("error decoding json response")
 		return nil, ErrDefaultPix
 	}
 
+	logrus.WithFields(fields).
+		WithField("response", response).
+		Info("pix cash out. bankly response success")
+
 	return response, nil
+}
+
+// QrCodeStatic ...
+func (p *Pix) QrCodeStatic(ctx context.Context, data *PixQrCodeStaticRequest,
+	currentIdentity string) (*PixQrCodeResponse, error) {
+
+	requestID := grok.GetRequestID(ctx)
+
+	fields := logrus.Fields{
+		"request_id": requestID,
+		"object":     data,
+	}
+
+	url := "pix/qrcodes/static/transfer"
+
+	header := http.Header{}
+	header.Add("x-bkly-pix-user-id", currentIdentity)
+	header.Add("x-correlation-id", requestID)
+
+	resp, err := p.httpClient.Post(ctx, url, data, &header)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding body response")
+		return nil, err
+	}
+
+	result := new(PixQrCodeResponse)
+
+	err = json.Unmarshal(respBody, &result)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
+		return nil, ErrDefaultPix
+	}
+
+	logrus.WithFields(fields).
+		WithField("response", result).
+		Info("pix qrcode static. bankly response success")
+
+	return result, nil
 }
 
 // QrCodeDynamic ...
 func (p *Pix) QrCodeDynamic(ctx context.Context, data *PixQrCodeDynamicRequest,
 	currentIdentity string) (*PixQrCodeResponse, error) {
 
-	requestID, _ := ctx.Value("Request-Id").(string)
-	log := logrus.WithFields(logrus.Fields{
+	requestID := grok.GetRequestID(ctx)
+
+	fields := logrus.Fields{
 		"request_id": requestID,
 		"object":     data,
-	})
+	}
 
 	url := "pix/qrcodes/dynamic/payment"
 
@@ -155,23 +221,31 @@ func (p *Pix) QrCodeDynamic(ctx context.Context, data *PixQrCodeDynamicRequest,
 
 	resp, err := p.httpClient.Post(ctx, url, data, &header)
 	if err != nil {
-		log.WithError(err).Error(err.Error())
+		logrus.WithFields(fields).
+			WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.WithError(err).Error("error decoding body response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding body response")
 		return nil, err
 	}
 
 	result := new(PixQrCodeResponse)
+
 	err = json.Unmarshal(respBody, &result)
 	if err != nil {
-		log.WithError(err).Error("error decoding json response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultPix
 	}
+
+	logrus.WithFields(fields).
+		WithField("response", result).
+		Info("pix qrcode dynamic. bankly response success")
 
 	return result, nil
 }
@@ -179,7 +253,9 @@ func (p *Pix) QrCodeDynamic(ctx context.Context, data *PixQrCodeDynamicRequest,
 // QrCodeDecode ...
 func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest,
 	currentIdentity string) (*PixQrCodeDecodeResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
+
+	requestID := grok.GetRequestID(ctx)
+
 	fields := logrus.Fields{
 		"request_id": requestID,
 		"object":     encode,
@@ -192,23 +268,31 @@ func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest,
 
 	resp, err := p.httpClient.Post(ctx, url, encode, &header)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		logrus.WithFields(fields).
+			WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding body response")
 		return nil, err
 	}
 
 	response := new(PixQrCodeDecodeResponse)
+
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultPix
 	}
+
+	logrus.WithFields(fields).
+		WithField("response", response).
+		Info("pix qrcode decode. bankly response success")
 
 	return response, nil
 }
@@ -217,7 +301,8 @@ func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest,
 func (p *Pix) GetCashOutByAuthenticationCode(ctx context.Context, accountNumber string,
 	authenticationCode string) (*PixCashOutByAuthenticationCodeResponse, error) {
 
-	requestID, _ := ctx.Value("Request-Id").(string)
+	requestID := grok.GetRequestID(ctx)
+
 	fields := logrus.Fields{
 		"request_id":          requestID,
 		"authentication_code": authenticationCode,
@@ -230,31 +315,39 @@ func (p *Pix) GetCashOutByAuthenticationCode(ctx context.Context, accountNumber 
 
 	resp, err := p.httpClient.Get(ctx, url, nil, &header)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		logrus.WithFields(fields).
+			WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding body response")
 		return nil, err
 	}
 
 	response := new(PixCashOutByAuthenticationCodeResponse)
+
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultPix
 	}
+
+	logrus.WithFields(fields).
+		WithField("response", response).
+		Info("pix get cash out by authentication code. bankly response success")
 
 	return response, nil
 }
 
 // CreateAddressKey ...
 func (p *Pix) CreateAddressKey(ctx context.Context, pix *PixAddressKeyCreateRequest) (*PixAddressKeyCreateResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
 
+	requestID, _ := ctx.Value("Request-Id").(string)
 	if requestID == "" {
 		ctx = GenerateNewRequestID(ctx)
 	} else {
@@ -265,6 +358,7 @@ func (p *Pix) CreateAddressKey(ctx context.Context, pix *PixAddressKeyCreateRequ
 
 	fields := logrus.Fields{
 		"request_id": requestID,
+		"object":     pix,
 	}
 
 	url := "/pix/entries"
@@ -274,31 +368,39 @@ func (p *Pix) CreateAddressKey(ctx context.Context, pix *PixAddressKeyCreateRequ
 
 	resp, err := p.httpClient.Post(ctx, url, pix, &header)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		logrus.WithFields(fields).
+			WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding body response")
 		return nil, err
 	}
 
 	response := new(PixAddressKeyCreateResponse)
+
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultPix
 	}
+
+	logrus.WithFields(fields).
+		WithField("response", response).
+		Info("pix create address key. bankly response success")
 
 	return response, nil
 }
 
 // DeleteAddressKey ...
 func (p *Pix) DeleteAddressKey(ctx context.Context, identifier, addressingKey string) error {
-	requestID, _ := ctx.Value("Request-Id").(string)
 
+	requestID, _ := ctx.Value("Request-Id").(string)
 	if requestID == "" {
 		ctx = GenerateNewRequestID(ctx)
 	} else {
@@ -308,8 +410,8 @@ func (p *Pix) DeleteAddressKey(ctx context.Context, identifier, addressingKey st
 	requestID = GetRequestID(ctx)
 
 	fields := logrus.Fields{
-		"request_id":    requestID,
-		"addressingKey": addressingKey,
+		"request_id": requestID,
+		"object":     addressingKey,
 	}
 
 	header := http.Header{}
@@ -326,33 +428,17 @@ func (p *Pix) DeleteAddressKey(ctx context.Context, identifier, addressingKey st
 
 	defer resp.Body.Close()
 
+	logrus.WithFields(fields).
+		Info("pix delete address key success")
+
 	return nil
-}
-
-// PixErrorHandler ...
-func PixErrorHandler(log *logrus.Entry, resp *http.Response) error {
-	var bodyErr *ErrorResponse
-	respBody, _ := ioutil.ReadAll(resp.Body)
-	err := json.Unmarshal(respBody, &bodyErr)
-	if err != nil {
-		log.WithError(err).Error("error decoding json response")
-		return ErrDefaultPix
-	}
-
-	if len(bodyErr.Errors) > 0 {
-		errModel := bodyErr.Errors[0]
-		err := FindPixError(errModel.Code, errModel.Messages...)
-
-		log.WithField("bankly_error", bodyErr).WithError(err).Error("bankly get pix error")
-
-		return err
-	}
-	return ErrDefaultPix
 }
 
 // GetPixClaim ...
 func (p *Pix) GetPixClaim(ctx context.Context, accountNumber string, documentNumber string, claimsFrom *string) ([]*PixClaimResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
+
+	requestID := grok.GetRequestID(ctx)
+
 	fields := logrus.Fields{
 		"request_id":       requestID,
 		"account":          accountNumber,
@@ -400,13 +486,17 @@ func (p *Pix) GetPixClaim(ctx context.Context, accountNumber string, documentNum
 		return nil, ErrDefaultPix
 	}
 
+	logrus.WithFields(fields).
+		WithField("response", response).
+		Info("pix get claim. bankly response success")
+
 	return response, nil
 }
 
 // CreatePixClaim ...
 func (p *Pix) CreatePixClaim(ctx context.Context, pix *PixClaimRequest, documentNumber string) (*PixClaimResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
 
+	requestID, _ := ctx.Value("Request-Id").(string)
 	if requestID == "" {
 		ctx = GenerateNewRequestID(ctx)
 	} else {
@@ -428,18 +518,21 @@ func (p *Pix) CreatePixClaim(ctx context.Context, pix *PixClaimRequest, document
 
 	resp, err := p.httpClient.Post(ctx, url, pix, &header)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		logrus.WithFields(fields).
+			WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding body response")
 		return nil, err
 	}
 
 	response := new(PixClaimResponse)
+
 	log.Println(response)
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
@@ -447,11 +540,17 @@ func (p *Pix) CreatePixClaim(ctx context.Context, pix *PixClaimRequest, document
 		return nil, ErrDefaultPix
 	}
 
+	logrus.WithFields(fields).
+		WithField("response", response).
+		Info("pix create claim. bankly response success")
+
 	return response, nil
 }
 
 // ConfirmPixClaim ...
-func (p *Pix) ConfirmPixClaim(ctx context.Context, documentNumber string, claimId string, reason *PixClaimConfirmReason) (*PixClaimConfirmResponse, error) {
+func (p *Pix) ConfirmPixClaim(ctx context.Context, documentNumber string,
+	claimId string, reason *PixClaimConfirmReason) (*PixClaimConfirmResponse, error) {
+
 	requestID, _ := ctx.Value("Request-Id").(string)
 	fields := logrus.Fields{
 		"request_id":       requestID,
@@ -465,7 +564,8 @@ func (p *Pix) ConfirmPixClaim(ctx context.Context, documentNumber string, claimI
 
 	resp, err := p.httpClient.Patch(ctx, url, reason, nil, &header)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		logrus.WithFields(fields).
+			WithError(err).Error(err.Error())
 		return nil, err
 	}
 
@@ -480,22 +580,30 @@ func (p *Pix) ConfirmPixClaim(ctx context.Context, documentNumber string, claimI
 	}
 
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding body response")
 		return nil, err
 	}
 
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultPix
 	}
+
+	logrus.WithFields(fields).
+		WithField("response", response).
+		Info("pix confirm claim. bankly response success")
 
 	return response, nil
 }
 
 // CompletePixClaim ...
 func (p *Pix) CompletePixClaim(ctx context.Context, documentNumber string, claimId string) (*PixClaimCompleteResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
+
+	requestID := grok.GetRequestID(ctx)
+
 	fields := logrus.Fields{
 		"request_id":       requestID,
 		"current_identity": documentNumber,
@@ -508,7 +616,8 @@ func (p *Pix) CompletePixClaim(ctx context.Context, documentNumber string, claim
 
 	resp, err := p.httpClient.Patch(ctx, url, nil, nil, &header)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error(err.Error())
+		logrus.WithFields(fields).
+			WithError(err).Error(err.Error())
 		return nil, err
 	}
 
@@ -518,7 +627,8 @@ func (p *Pix) CompletePixClaim(ctx context.Context, documentNumber string, claim
 	response := new(PixClaimCompleteResponse)
 
 	if resp.StatusCode == http.StatusNoContent {
-		logrus.WithFields(fields).Info("no data found")
+		logrus.WithFields(fields).
+			Info("no data found")
 		return response, nil
 	}
 
@@ -529,16 +639,24 @@ func (p *Pix) CompletePixClaim(ctx context.Context, documentNumber string, claim
 
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultPix
 	}
+
+	logrus.WithFields(fields).
+		WithField("response", response).
+		Info("pix complete claim. bankly response success")
 
 	return response, nil
 }
 
 // CancelPixClaim ...
-func (p *Pix) CancelPixClaim(ctx context.Context, documentNumber string, claimId string, reason *PixClaimCancelReason) (*PixClaimCancelResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
+func (p *Pix) CancelPixClaim(ctx context.Context, documentNumber string,
+	claimId string, reason *PixClaimCancelReason) (*PixClaimCancelResponse, error) {
+
+	requestID := grok.GetRequestID(ctx)
+
 	fields := logrus.Fields{
 		"request_id":       requestID,
 		"current_identity": documentNumber,
@@ -558,18 +676,51 @@ func (p *Pix) CancelPixClaim(ctx context.Context, documentNumber string, claimId
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding body response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding body response")
 		return nil, err
 	}
 
 	response := new(PixClaimCancelResponse)
-	log.Println(response)
 
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultPix
 	}
 
+	logrus.WithFields(fields).
+		WithField("response", response).
+		Info("pix cancel claim. bankly response success")
+
 	return response, nil
+}
+
+// PixErrorHandler ...
+func PixErrorHandler(log *logrus.Entry, resp *http.Response) error {
+	var bodyErr *ErrorResponse
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
+	err := json.Unmarshal(respBody, &bodyErr)
+	if err != nil {
+		log.WithError(err).
+			Error("error decoding json response")
+		return ErrDefaultPix
+	}
+
+	if len(bodyErr.Errors) > 0 {
+		errModel := bodyErr.Errors[0]
+		err := FindPixError(errModel.Code, errModel.Messages...)
+
+		log.WithField("bankly_error", bodyErr).
+			WithError(err).Error("bankly get pix error")
+
+		return err
+	}
+
+	log.WithError(ErrDefaultPix).Error("pix default error")
+
+	return ErrDefaultPix
 }
