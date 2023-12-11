@@ -265,6 +265,7 @@ func (p *Pix) QrCodeDecode(ctx context.Context, encode *PixQrCodeDecodeRequest,
 
 	header := http.Header{}
 	header.Add("x-bkly-pix-user-id", currentIdentity)
+	header.Add("x-correlation-id", requestID)
 
 	resp, err := p.httpClient.Post(ctx, url, encode, &header)
 	if err != nil {
