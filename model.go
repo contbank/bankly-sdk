@@ -426,10 +426,11 @@ type CardAddress struct {
 
 // BoletoAddress ...
 type BoletoAddress struct {
-	AddressLine string `validate:"required" json:"addressLine,omitempty"`
-	ZipCode     string `validate:"required" json:"zipCode,omitempty"`
-	State       string `validate:"required" json:"state,omitempty"`
-	City        string `validate:"required" json:"city,omitempty"`
+	ZipCode      string `validate:"required" json:"zipCode,omitempty"`
+	AddressLine  string `validate:"required" json:"addressLine,omitempty"`
+	Neighborhood string `validate:"required" json:"neighborhood,omitempty"`
+	State        string `validate:"required" json:"state,omitempty"`
+	City         string `validate:"required" json:"city,omitempty"`
 }
 
 // Account ...
@@ -846,16 +847,18 @@ const (
 
 // BoletoRequest ...
 type BoletoRequest struct {
-	Alias        *string          `json:"alias,omitempty"`
+	APIVersion   *string          `validate:"required" json:"api_version,omitempty"`
+	Account      *Account         `validate:"required" json:"account,omitempty"`
 	Document     string           `validate:"required,cnpjcpf" json:"documentNumber,omitempty"`
 	Amount       float64          `validate:"required" json:"amount,omitempty"`
 	DueDate      time.Time        `validate:"required" json:"dueDate,omitempty"`
 	Type         BoletoType       `validate:"required" json:"type,omitempty"`
-	Account      *Account         `validate:"required" json:"account,omitempty"`
+	Alias        *string          `json:"alias,omitempty"`
 	Payer        *BoletoPayer     `json:"payer,omitempty"`
-	Interest     *BoletoInterest  `json:"interest,omitempty"`
 	Fine         *BoletoFine      `json:"fine,omitempty"`
-	Discounts    *BoletoDiscounts `json:"discounts,omitempty"`
+	Interest     *BoletoInterest  `json:"interest,omitempty"`
+	Discount     *BoletoDiscounts `json:"discount,omitempty"`  // api-version 2.0
+	Discounts    *BoletoDiscounts `json:"discounts,omitempty"` // deprecated // api-version 1.0
 	ClosePayment time.Time        `json:"closePayment,omitempty"`
 }
 
@@ -869,11 +872,8 @@ type BoletoResponse struct {
 type BoletoInterestType string
 
 const (
-	AmountPerBusinessDay       BoletoInterestType = "AmountPerBusinessDay"
-	AmountPerCalendaryDay      BoletoInterestType = "AmountPerCalendaryDay"
-	PercentPerMonth            BoletoInterestType = "PercentPerMonth"
-	PercentPerMonthBusinessDay BoletoInterestType = "PercentPerMonthBusinessDay"
-	Free                       BoletoInterestType = "Free"
+	FixedAmountInterestType BoletoInterestType = "FixedAmount"
+	PercentInterestType     BoletoInterestType = "Percent"
 )
 
 // BoletoInterest ...
@@ -887,8 +887,8 @@ type BoletoInterest struct {
 type BoletoFineType string
 
 const (
-	FixedAmount BoletoFineType = "FixedAmount"
-	Percent     BoletoFineType = "Percent"
+	FixedAmountFineType BoletoFineType = "FixedAmount"
+	PercentFineType     BoletoFineType = "Percent"
 )
 
 // BoletoFine ...
@@ -902,8 +902,8 @@ type BoletoFine struct {
 type BoletoDiscountsType string
 
 const (
-	FixedAmountUntilLimitDate  BoletoDiscountsType = "FixedAmountUntilLimitDate"
-	FixedPercentUntilLimitDate BoletoDiscountsType = "FixedPercentUntilLimitDate"
+	FixedAmountDiscountType  BoletoDiscountsType = "FixedAmountUntilLimitDate"
+	FixedPercentDiscountType BoletoDiscountsType = "FixedPercentUntilLimitDate"
 )
 
 // BoletoDiscounts ...
@@ -919,43 +919,50 @@ type BoletoAmount struct {
 	Currency string  `json:"currency,omitempty"`
 }
 
-// BoletoMinimumAmount ...
-type BoletoMinimumAmount struct {
-	Value    float64 `json:"value,omitempty"`
-	Currency string  `json:"currency,omitempty"`
-}
+type PaymentChannel string
+
+const (
+	AgencyPaymentChannel               PaymentChannel = "Agency"
+	SelfServiceTerminalPaymentChannel  PaymentChannel = "SelfServiceTerminal"
+	InternetBankingPaymentChannel      PaymentChannel = "InternetBanking"
+	CorrespondentBankingPaymentChannel PaymentChannel = "CorrespondentBanking"
+	CallCenterPaymentChannel           PaymentChannel = "CallCenter"
+	EletronicFilePaymentChannel        PaymentChannel = "EletronicFile"
+	DDAPaymentChannel                  PaymentChannel = "DDA"
+)
 
 // BoletoPayment ...
 type BoletoPayment struct {
-	ID             string    `json:"id,omitempty"`
-	Amount         float64   `json:"amount,omitempty"`
-	PaymentChannel string    `json:"paymentChannel,omitempty"`
-	PaidOutDate    time.Time `json:"paidOutDate,omitempty"`
+	ID             string         `json:"id,omitempty"`
+	Amount         float64        `json:"amount,omitempty"`
+	PaymentChannel PaymentChannel `json:"paymentChannel,omitempty"`
+	PaidOutDate    time.Time      `json:"paidOutDate,omitempty"`
 }
 
 // BoletoDetailedResponse ...
 type BoletoDetailedResponse struct {
-	Alias              *string              `json:"alias,omitempty"`
-	AuthenticationCode string               `json:"authenticationCode,omitempty"`
-	Digitable          string               `json:"digitable,omitempty"`
-	Status             string               `json:"status,omitempty"`
-	Document           string               `json:"document,omitempty"`
-	DueDate            time.Time            `json:"dueDate,omitempty"`
-	ClosePayment       *time.Time           `json:"closePayment,omitempty"`
-	EmissionDate       *time.Time           `json:"emissionDate,omitempty"` // API is returning error for this field
-	OurNumber          string               `json:"ourNumber,omitempty"`
-	Type               BoletoType           `json:"type,omitempty"`
-	Amount             *BoletoAmount        `json:"amount,omitempty"`
-	MinimumAmount      *BoletoMinimumAmount `json:"minimumAmount,omitempty"`
-	Account            *Account             `json:"account,omitempty"`
-	Payer              *Payer               `json:"payer,omitempty"`
-	RecipientFinal     *Payer               `json:"recipientFinal,omitempty"`
-	RecipientOrigin    *Payer               `json:"recipientOrigin,omitempty"`
-	Payments           []*BoletoPayment     `json:"payments,omitempty"`
-	Interest           *BoletoInterest      `json:"interest,omitempty"`
-	Fine               *BoletoFine          `json:"fine,omitempty"`
-	Discounts          *BoletoDiscounts     `json:"discount,omitempty"`
-	UpdatedAt          time.Time            `json:"updatedAt,omitempty"`
+	Alias              *string          `json:"alias,omitempty"`
+	AuthenticationCode string           `json:"authenticationCode,omitempty"`
+	Barcode            string           `json:"barcode,omitempty"`
+	Digitable          string           `json:"digitable,omitempty"`
+	Status             string           `json:"status,omitempty"`
+	Document           string           `json:"document,omitempty"`
+	DueDate            time.Time        `json:"dueDate,omitempty"`
+	ClosePayment       *time.Time       `json:"closePayment,omitempty"`
+	EmissionDate       *time.Time       `json:"emissionDate,omitempty"`
+	OurNumber          string           `json:"ourNumber,omitempty"`
+	Type               BoletoType       `json:"type,omitempty"`
+	Amount             *BoletoAmount    `json:"amount,omitempty"`
+	MinimumAmount      *float64         `json:"minimumAmount,omitempty"`
+	Account            *Account         `json:"account,omitempty"`
+	Payer              *Payer           `json:"payer,omitempty"`
+	RecipientFinal     *Payer           `json:"recipientFinal,omitempty"`
+	RecipientOrigin    *Payer           `json:"recipientOrigin,omitempty"`
+	Payments           []*BoletoPayment `json:"payments,omitempty"`
+	Fine               *BoletoFine      `json:"fine,omitempty"`
+	Interest           *BoletoInterest  `json:"interest,omitempty"`
+	Discount           *BoletoDiscounts `json:"discount,omitempty"`
+	UpdatedAt          time.Time        `json:"updatedAt,omitempty"`
 }
 
 // FilterBoletoData ...
@@ -983,18 +990,21 @@ type FilterBoletoResponse struct {
 
 // FindBoletoRequest ...
 type FindBoletoRequest struct {
+	APIVersion         *string  `validate:"required" json:"api_version,omitempty"`
 	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
 	Account            *Account `validate:"required" json:"account,omitempty"`
 }
 
 // CancelBoletoRequest ...
 type CancelBoletoRequest struct {
+	APIVersion         *string  `validate:"required" json:"api_version,omitempty"`
 	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
 	Account            *Account `validate:"required" json:"account,omitempty"`
 }
 
 // SimulatePaymentRequest ...
 type SimulatePaymentRequest struct {
+	APIVersion         *string  `validate:"required" json:"api_version,omitempty"`
 	AuthenticationCode string   `validate:"required" json:"authenticationCode,omitempty"`
 	Account            *Account `validate:"required" json:"account,omitempty"`
 }
@@ -2031,8 +2041,9 @@ type Certificate struct {
 	ClientID         string `json:"client_id"`
 }
 
-// SandboxSettleBoletoRequest ...
-type SandboxSettleBoletoRequest struct {
+// SandboxSimulateBankslipPaymentRequest ...
+type SandboxSimulateBankslipPaymentRequest struct {
+	APIVersion         *string `validate:"required" json:"api_version,omitempty"`
 	AuthenticationCode string  `validate:"required" json:"authenticationCode"`
 	Account            Account `validate:"required" json:"account"`
 }
