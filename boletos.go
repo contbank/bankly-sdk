@@ -50,6 +50,13 @@ func (b *Boletos) CreateBankslip(ctx context.Context, model *BoletoRequest) (*Bo
 		return nil, grok.FromValidationErros(err)
 	}
 
+	// discount
+	if model.Discount != nil && model.Discounts == nil && model.APIVersion != nil && *model.APIVersion == "1.0" {
+		model.Discounts = model.Discount // api-version 1.0
+	} else if model.Discounts != nil && model.Discount == nil {
+		model.Discount = model.Discounts // api-version 2.0
+	}
+
 	u, err := url.Parse(b.session.APIEndpoint)
 	if err != nil {
 		logrus.WithFields(fields).
@@ -202,6 +209,13 @@ func (b *Boletos) FindBankslip(ctx context.Context, model *FindBoletoRequest) (*
 			logrus.WithFields(fields).
 				WithError(err).Error("error decoding json response")
 			return nil, ErrDefaultBoletos
+		}
+
+		// discount
+		if response.Discount != nil && response.Discounts == nil {
+			response.Discounts = response.Discount
+		} else if response.Discounts != nil && response.Discount == nil {
+			response.Discount = response.Discounts
 		}
 
 		return response, nil
@@ -549,12 +563,14 @@ func (b *Boletos) FilterBankslipByUpdateAt(ctx context.Context, date time.Time) 
 
 	if resp.StatusCode == http.StatusOK {
 		var response *FilterBoletoResponse
+
 		err = json.Unmarshal(respBody, &response)
 		if err != nil {
 			logrus.WithFields(fields).
 				WithError(err).Error("error decoding json response")
 			return nil, ErrDefaultBoletos
 		}
+
 		return response, nil
 	} else if resp.StatusCode == http.StatusNotFound {
 		logrus.WithFields(fields).Info("not found")

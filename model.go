@@ -962,6 +962,7 @@ type BoletoDetailedResponse struct {
 	Fine               *BoletoFine      `json:"fine,omitempty"`
 	Interest           *BoletoInterest  `json:"interest,omitempty"`
 	Discount           *BoletoDiscounts `json:"discount,omitempty"`
+	Discounts          *BoletoDiscounts `json:"discounts,omitempty"` // deprecated (api-version 1.0)
 	UpdatedAt          time.Time        `json:"updatedAt,omitempty"`
 }
 
