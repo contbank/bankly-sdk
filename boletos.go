@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"time"
 )
 
 // Boletos ...
@@ -377,6 +378,26 @@ func (b *Boletos) CancelBankslip(ctx context.Context, model *CancelBoletoRequest
 		return nil
 	}
 
+	logrus.WithFields(fields).Error("error cancel boletos")
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	var bodyErr []*ErrorResponse
+
+	if err := json.Unmarshal(respBody, &bodyErr); err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
+		return ErrDefaultBoletos
+	}
+
+	if len(bodyErr) > 0 {
+		errModel := bodyErr[0]
+		if err := FindError(errModel.Code, errModel.Message); err != nil {
+			logrus.WithField("bankly_error", bodyErr).WithFields(fields).
+				WithError(err).Error("bankly cancel boleto error")
+			return err
+		}
+	}
+
 	logrus.WithFields(fields).Error("error default - cancel boletos")
 
 	return ErrDefaultBoletos
@@ -471,12 +492,16 @@ func (b *Boletos) SandboxSimulateBankslipPayment(ctx *context.Context, model *Sa
 	return ErrDefaultBoletos
 }
 
-/*
-// FilterBoleto ...
-func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBoletoResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
+// FilterBankslipByUpdateAt ...
+func (b *Boletos) FilterBankslipByUpdateAt(ctx context.Context, date time.Time) (*FilterBoletoResponse, error) {
+
+	// only at 1.0 api version
+	apiVersion := "1.0"
+
 	fields := logrus.Fields{
-		"request_id": requestID,
+		"request_id":  grok.GetRequestID(ctx),
+		"api_version": apiVersion,
+		"object":      date,
 	}
 
 	u, err := url.Parse(b.session.APIEndpoint)
@@ -508,7 +533,7 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 	}
 
 	req.Header.Add("Authorization", token)
-	req.Header.Add("api-version", b.session.APIVersion)
+	req.Header.Add("api-version", apiVersion)
 
 	resp, err := b.httpClient.Do(req)
 
@@ -554,7 +579,6 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 
 	return nil, ErrDefaultBoletos
 }
-*/
 
 /*
 // FindBoletoByBarCode ...
