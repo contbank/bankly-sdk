@@ -941,29 +941,28 @@ type BoletoPayment struct {
 
 // BoletoDetailedResponse ...
 type BoletoDetailedResponse struct {
-	Alias              *string       `json:"alias,omitempty"`
-	AuthenticationCode string        `json:"authenticationCode,omitempty"`
-	Barcode            string        `json:"barcode,omitempty"`
-	Digitable          string        `json:"digitable,omitempty"`
-	Status             string        `json:"status,omitempty"`
-	Document           string        `json:"document,omitempty"`
-	DueDate            time.Time     `json:"dueDate,omitempty"`
-	ClosePayment       *time.Time    `json:"closePayment,omitempty"`
-	EmissionDate       *time.Time    `json:"emissionDate,omitempty"`
-	OurNumber          string        `json:"ourNumber,omitempty"`
-	Type               BoletoType    `json:"type,omitempty"`
-	Amount             *BoletoAmount `json:"amount,omitempty"`
-	//// MinimumAmount      *float64         `json:"minimumAmount,omitempty"`
-	Account         *Account         `json:"account,omitempty"`
-	Payer           *Payer           `json:"payer,omitempty"`
-	RecipientFinal  *Payer           `json:"recipientFinal,omitempty"`
-	RecipientOrigin *Payer           `json:"recipientOrigin,omitempty"`
-	Payments        []*BoletoPayment `json:"payments,omitempty"`
-	Fine            *BoletoFine      `json:"fine,omitempty"`
-	Interest        *BoletoInterest  `json:"interest,omitempty"`
-	Discount        *BoletoDiscounts `json:"discount,omitempty"`
-	Discounts       *BoletoDiscounts `json:"discounts,omitempty"` // deprecated (api-version 1.0)
-	UpdatedAt       time.Time        `json:"updatedAt,omitempty"`
+	Alias              *string          `json:"alias,omitempty"`
+	AuthenticationCode string           `json:"authenticationCode,omitempty"`
+	Barcode            string           `json:"barcode,omitempty"`
+	Digitable          string           `json:"digitable,omitempty"`
+	Status             string           `json:"status,omitempty"`
+	Document           string           `json:"document,omitempty"`
+	DueDate            time.Time        `json:"dueDate,omitempty"`
+	ClosePayment       *time.Time       `json:"closePayment,omitempty"`
+	EmissionDate       *time.Time       `json:"emissionDate,omitempty"`
+	OurNumber          string           `json:"ourNumber,omitempty"`
+	Type               BoletoType       `json:"type,omitempty"`
+	Amount             *BoletoAmount    `json:"amount,omitempty"`
+	Account            *Account         `json:"account,omitempty"`
+	Payer              *Payer           `json:"payer,omitempty"`
+	RecipientFinal     *Payer           `json:"recipientFinal,omitempty"`
+	RecipientOrigin    *Payer           `json:"recipientOrigin,omitempty"`
+	Payments           []*BoletoPayment `json:"payments,omitempty"`
+	Fine               *BoletoFine      `json:"fine,omitempty"`
+	Interest           *BoletoInterest  `json:"interest,omitempty"`
+	Discount           *BoletoDiscounts `json:"discount,omitempty"`
+	Discounts          *BoletoDiscounts `json:"discounts,omitempty"` // deprecated (api-version 1.0)
+	UpdatedAt          time.Time        `json:"updatedAt,omitempty"`
 }
 
 // FilterBoletoData ...
