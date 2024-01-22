@@ -137,8 +137,18 @@ var (
 	ErrInvalidPassword = grok.NewError(http.StatusUnauthorized, "INVALID_PASSWORD", "invalid password")
 	// ErrUnauthorized ...
 	ErrUnauthorized = grok.NewError(http.StatusUnauthorized, "UNAUTHORIZED", "error unauthorized")
-	// ErrBlockedByRiskAanalysis ...
-	ErrBlockedByRiskAanalysis = grok.NewError(http.StatusForbidden, "BLOCKED", "blocked")
+	// ErrBlockedByRiskAnalysis ...
+	ErrBlockedByRiskAnalysis = grok.NewError(http.StatusForbidden, "BLOCKED", "blocked")
+	// ErrBankslipAlreadyCancelled ...
+	ErrBankslipAlreadyCancelled = grok.NewError(http.StatusBadRequest, "BANKSLIP_HAS_ALREADY_BEEN_CANCELED", "bankslip has already been canceled")
+	// ErrBankslipLimitQuantityExceeded ...
+	ErrBankslipLimitQuantityExceeded = grok.NewError(http.StatusBadRequest, "LIMIT_QUANTITY_EXCEEDED", "maximum quantity limit per month exceeded")
+	// ErrBankslipLimitNotEnough ...
+	ErrBankslipLimitNotEnough = grok.NewError(http.StatusBadRequest, "LIMIT_NOT_ENOUGH", "limit not enough")
+	// ErrAccountWasClosed ...
+	ErrAccountWasClosed = grok.NewError(http.StatusBadRequest, "ACCOUNT_WAS_CLOSED", "account was closed")
+	// ErrInvalidDocument ...
+	ErrInvalidDocument = grok.NewError(http.StatusBadRequest, "ACCOUNT_DOCUMENT_INVALID", "invalid document for this account")
 	// ErrInvalidCardName ...
 	ErrInvalidCardName = grok.NewError(http.StatusBadRequest, "INVALID_CARD_NAME", "invalid card name")
 	// ErrInvalidIdentifier ...
@@ -699,6 +709,26 @@ var errorBoletoList = []Error{
 	},
 	{
 		ErrorKey:  "BLOCKED_BY_RISK_ANALYSIS",
-		GrokError: ErrBlockedByRiskAanalysis,
+		GrokError: ErrBlockedByRiskAnalysis,
+	},
+	{
+		ErrorKey:  "BANKSLIP_HAS_ALREADY_BEEN_CANCELED",
+		GrokError: ErrBankslipAlreadyCancelled,
+	},
+	{
+		ErrorKey:  "LIMIT_QUANTITY_EXCEEDED",
+		GrokError: ErrBankslipLimitQuantityExceeded,
+	},
+	{
+		ErrorKey:  "LIMIT_NOT_ENOUGH",
+		GrokError: ErrBankslipLimitNotEnough,
+	},
+	{
+		ErrorKey:  "ACCOUNT_WAS_CLOSED",
+		GrokError: ErrAccountWasClosed,
+	},
+	{
+		ErrorKey:  "ACCOUNT_DOCUMENT_INVALID",
+		GrokError: ErrInvalidDocument,
 	},
 }
