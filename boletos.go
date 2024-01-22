@@ -36,7 +36,7 @@ func (b *Boletos) CreateBankslip(ctx context.Context, model *BoletoRequest) (*Bo
 
 	// api version
 	if model.APIVersion == nil {
-		model.APIVersion = aws.String(b.session.APIEndpoint)
+		model.APIVersion = aws.String(b.session.APIVersion)
 	}
 
 	fields := logrus.Fields{
@@ -143,7 +143,7 @@ func (b *Boletos) FindBankslip(ctx context.Context, model *FindBoletoRequest) (*
 
 	// api version
 	if model.APIVersion == nil {
-		model.APIVersion = aws.String(b.session.APIEndpoint)
+		model.APIVersion = aws.String(b.session.APIVersion)
 	}
 
 	fields := logrus.Fields{
@@ -251,7 +251,7 @@ func (b *Boletos) DownloadBankslip(ctx context.Context, authenticationCode strin
 
 	// api version
 	if apiVersion == nil {
-		apiVersion = aws.String(b.session.APIEndpoint)
+		apiVersion = aws.String(b.session.APIVersion)
 	}
 
 	fields := logrus.Fields{
@@ -325,7 +325,7 @@ func (b *Boletos) CancelBankslip(ctx context.Context, model *CancelBoletoRequest
 
 	// api version
 	if model.APIVersion == nil {
-		model.APIVersion = aws.String(b.session.APIEndpoint)
+		model.APIVersion = aws.String(b.session.APIVersion)
 	}
 
 	fields := logrus.Fields{
@@ -422,7 +422,7 @@ func (b *Boletos) SandboxSimulateBankslipPayment(ctx *context.Context, model *Sa
 
 	// api version
 	if model.APIVersion == nil {
-		model.APIVersion = aws.String(b.session.APIEndpoint)
+		model.APIVersion = aws.String(b.session.APIVersion)
 	}
 
 	fields := logrus.Fields{
@@ -709,7 +709,7 @@ func (b *Boletos) SimulatePayment(ctx context.Context, model *SimulatePaymentReq
 
 	// api version
 	if model.APIVersion == nil {
-		model.APIVersion = aws.String(b.session.APIEndpoint)
+		model.APIVersion = aws.String(b.session.APIVersion)
 	}
 
 	err := grok.Validator.Struct(model)
