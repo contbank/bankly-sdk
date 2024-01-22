@@ -4,15 +4,15 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/contbank/grok"
+	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
 	"time"
-
-	"github.com/contbank/grok"
-	"github.com/sirupsen/logrus"
 )
 
 // Boletos ...
@@ -31,98 +31,30 @@ func NewBoletos(httpClient *http.Client, session Session) *Boletos {
 	}
 }
 
-// SandboxSettleBoleto ...
-func (b *Boletos) SandboxSettleBoleto(ctx *context.Context, payload *SandboxSettleBoletoRequest) error {
+// CreateBankslip
+func (b *Boletos) CreateBankslip(ctx context.Context, model *BoletoRequest) (*BoletoResponse, error) {
+
+	// api version
+	if model.APIVersion == nil {
+		model.APIVersion = aws.String(b.session.APIVersion)
+	}
 
 	fields := logrus.Fields{
-		"request_id": GetRequestID(*ctx),
-		"payload":    payload,
-	}
-
-	if err := grok.Validator.Struct(payload); err != nil {
-		return grok.FromValidationErros(err)
-	}
-
-	u, err := url.Parse(b.session.APIEndpoint)
-	if err != nil {
-		logrus.WithFields(fields).
-			WithError(err).Error("error parsing api endpoint")
-		return err
-	}
-	u.Path = path.Join(u.Path, BoletosSettledPath)
-	endpoint := u.String()
-
-	reqbyte, err := json.Marshal(payload)
-	if err != nil {
-		logrus.WithFields(fields).
-			WithError(err).Error("error encoding model to json")
-		return err
-	}
-
-	req, err := http.NewRequestWithContext(*ctx, "POST", endpoint, bytes.NewReader(reqbyte))
-	if err != nil {
-		logrus.WithFields(fields).
-			WithError(err).Error("error creating request")
-		return err
-	}
-
-	token, err := b.authentication.Token(*ctx)
-	if err != nil {
-		logrus.WithFields(fields).
-			WithError(err).Error("error in authentication request")
-		return err
-	}
-
-	req.Header.Add("Authorization", token)
-	req.Header.Add("Content-type", "application/json")
-	req.Header.Add("api-version", b.session.APIVersion)
-
-	resp, err := b.httpClient.Do(req)
-	if err != nil {
-		logrus.WithFields(fields).
-			WithError(err).Error("error performing the request")
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusOK ||
-		resp.StatusCode == http.StatusCreated ||
-		resp.StatusCode == http.StatusAccepted {
-		return nil
-	}
-
-	respBody, _ := ioutil.ReadAll(resp.Body)
-	var bodyErr []*ErrorResponse
-
-	if err := json.Unmarshal(respBody, &bodyErr); err != nil {
-		logrus.WithFields(fields).
-			WithError(err).Error("error decoding json response")
-		return ErrDefaultBoletos
-	}
-
-	if len(bodyErr) > 0 {
-		errModel := bodyErr[0]
-		if err := FindError(errModel.Code, errModel.Message); err != nil {
-			logrus.WithField("bankly_error", bodyErr).WithFields(fields).
-				WithError(err).Error("bankly create boleto error")
-			return err
-		}
-	}
-
-	return ErrDefaultBoletos
-}
-
-// CreateBoleto ...
-func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*BoletoResponse, error) {
-	fields := logrus.Fields{
-		"request_id": GetRequestID(ctx),
-		"object":     model,
+		"request_id":  GetRequestID(ctx),
+		"api_version": model.APIVersion,
+		"object":      model,
 	}
 
 	// validator
 	if err := grok.Validator.Struct(model); err != nil {
 		return nil, grok.FromValidationErros(err)
+	}
+
+	// discount
+	if model.Discount != nil && model.Discounts == nil && model.APIVersion != nil && *model.APIVersion == "1.0" {
+		model.Discounts = model.Discount // api-version 1.0
+	} else if model.Discounts != nil && model.Discount == nil {
+		model.Discount = model.Discounts // api-version 2.0
 	}
 
 	u, err := url.Parse(b.session.APIEndpoint)
@@ -158,7 +90,7 @@ func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*Bole
 
 	req.Header.Add("Authorization", token)
 	req.Header.Add("Content-type", "application/json")
-	req.Header.Add("api-version", b.session.APIVersion)
+	req.Header.Add("api-version", *model.APIVersion)
 
 	// call bankly
 	resp, err := b.httpClient.Do(req)
@@ -206,11 +138,23 @@ func (b *Boletos) CreateBoleto(ctx context.Context, model *BoletoRequest) (*Bole
 	return nil, ErrDefaultBoletos
 }
 
-// FindBoleto ...
-func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*BoletoDetailedResponse, error) {
+// FindBankslip ...
+func (b *Boletos) FindBankslip(ctx context.Context, model *FindBoletoRequest) (*BoletoDetailedResponse, error) {
+
+	// api version
+	if model.APIVersion == nil {
+		model.APIVersion = aws.String(b.session.APIVersion)
+	}
+
 	fields := logrus.Fields{
-		"request_id": GetRequestID(ctx),
-		"object":     model,
+		"request_id":  GetRequestID(ctx),
+		"api_version": model.APIVersion,
+		"object":      model,
+	}
+
+	// validator
+	if err := grok.Validator.Struct(model); err != nil {
+		return nil, grok.FromValidationErros(err)
 	}
 
 	u, err := url.Parse(b.session.APIEndpoint)
@@ -244,7 +188,7 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 	}
 
 	req.Header.Add("Authorization", token)
-	req.Header.Add("api-version", b.session.APIVersion)
+	req.Header.Add("api-version", *model.APIVersion)
 
 	resp, err := b.httpClient.Do(req)
 	if err != nil {
@@ -265,6 +209,13 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 			logrus.WithFields(fields).
 				WithError(err).Error("error decoding json response")
 			return nil, ErrDefaultBoletos
+		}
+
+		// discount
+		if response.Discount != nil && response.Discounts == nil {
+			response.Discounts = response.Discount
+		} else if response.Discounts != nil && response.Discount == nil {
+			response.Discount = response.Discounts
 		}
 
 		return response, nil
@@ -295,11 +246,276 @@ func (b *Boletos) FindBoleto(ctx context.Context, model *FindBoletoRequest) (*Bo
 	return nil, ErrDefaultBoletos
 }
 
-// FilterBoleto ...
-func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBoletoResponse, error) {
-	requestID, _ := ctx.Value("Request-Id").(string)
+// DownloadBankslip ...
+func (b *Boletos) DownloadBankslip(ctx context.Context, authenticationCode string, apiVersion *string, w io.Writer) error {
+
+	// api version
+	if apiVersion == nil {
+		apiVersion = aws.String(b.session.APIVersion)
+	}
+
 	fields := logrus.Fields{
-		"request_id": requestID,
+		"request_id":  grok.GetRequestID(ctx),
+		"api_version": apiVersion,
+		"object":      authenticationCode,
+	}
+
+	if apiVersion == nil {
+		return ErrInvalidAPIVersion
+	}
+
+	u, err := url.Parse(b.session.APIEndpoint)
+
+	if err != nil {
+		return err
+	}
+	u.Path = path.Join(u.Path, BoletosPath)
+	u.Path = path.Join(u.Path, authenticationCode)
+	u.Path = path.Join(u.Path, "pdf")
+	endpoint := u.String()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
+
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error creating request")
+		return err
+	}
+
+	token, err := b.authentication.Token(ctx)
+
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error in authentication request")
+		return err
+	}
+
+	req.Header.Add("Authorization", token)
+	req.Header.Add("Content-type", "application/json")
+	req.Header.Add("api-version", *apiVersion)
+
+	resp, err := b.httpClient.Do(req)
+
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error performing the request")
+		return err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		_, err := io.Copy(w, resp.Body)
+		if err != nil {
+			logrus.WithFields(fields).
+				WithError(err).Error("error writting bytes to writer")
+			return ErrDefaultBoletos
+		}
+
+		return nil
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		return ErrEntryNotFound
+	}
+
+	return ErrDefaultBoletos
+}
+
+// CancelBankslip ...
+func (b *Boletos) CancelBankslip(ctx context.Context, model *CancelBoletoRequest) error {
+
+	// api version
+	if model.APIVersion == nil {
+		model.APIVersion = aws.String(b.session.APIVersion)
+	}
+
+	fields := logrus.Fields{
+		"request_id":  GetRequestID(ctx),
+		"api_version": model.APIVersion,
+		"object":      model,
+	}
+
+	// validator
+	err := grok.Validator.Struct(model)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error cancel boleto validator")
+		return grok.FromValidationErros(err)
+	}
+
+	u, err := url.Parse(b.session.APIEndpoint)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error parsing api endpoint")
+		return err
+	}
+	u.Path = path.Join(u.Path, BoletosPath)
+	u.Path = path.Join(u.Path, "cancel")
+	endpoint := u.String()
+
+	// mashal
+	reqbyte, err := json.Marshal(model)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error encoding model to json")
+		return err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "DELETE", endpoint, bytes.NewReader(reqbyte))
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error creating request")
+		return err
+	}
+
+	token, err := b.authentication.Token(ctx)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error in authentication request")
+		return err
+	}
+
+	req.Header.Add("Authorization", token)
+	req.Header.Add("Content-type", "application/json")
+	req.Header.Add("api-version", *model.APIVersion)
+
+	// call bankly
+	resp, err := b.httpClient.Do(req)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error performing the request")
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	}
+
+	logrus.WithFields(fields).Error("error cancel boletos")
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	var bodyErr []*ErrorResponse
+
+	if err := json.Unmarshal(respBody, &bodyErr); err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
+		return ErrDefaultBoletos
+	}
+
+	if len(bodyErr) > 0 {
+		errModel := bodyErr[0]
+		if err := FindError(errModel.Code, errModel.Message); err != nil {
+			logrus.WithField("bankly_error", bodyErr).WithFields(fields).
+				WithError(err).Error("bankly cancel boleto error")
+			return err
+		}
+	}
+
+	logrus.WithFields(fields).Error("error default - cancel boletos")
+
+	return ErrDefaultBoletos
+}
+
+// SandboxSimulateBankslipPayment ...
+func (b *Boletos) SandboxSimulateBankslipPayment(ctx *context.Context, model *SandboxSimulateBankslipPaymentRequest) error {
+
+	// api version
+	if model.APIVersion == nil {
+		model.APIVersion = aws.String(b.session.APIVersion)
+	}
+
+	fields := logrus.Fields{
+		"request_id":  GetRequestID(*ctx),
+		"api_version": model.APIVersion,
+		"object":      model,
+	}
+
+	// validator
+	if err := grok.Validator.Struct(model); err != nil {
+		return grok.FromValidationErros(err)
+	}
+
+	u, err := url.Parse(b.session.APIEndpoint)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error parsing api endpoint")
+		return err
+	}
+	u.Path = path.Join(u.Path, BoletosSettledPath)
+	endpoint := u.String()
+
+	reqbyte, err := json.Marshal(model)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error encoding model to json")
+		return err
+	}
+
+	req, err := http.NewRequestWithContext(*ctx, "POST", endpoint, bytes.NewReader(reqbyte))
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error creating request")
+		return err
+	}
+
+	token, err := b.authentication.Token(*ctx)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error in authentication request")
+		return err
+	}
+
+	req.Header.Add("Authorization", token)
+	req.Header.Add("Content-type", "application/json")
+	req.Header.Add("api-version", *model.APIVersion)
+
+	resp, err := b.httpClient.Do(req)
+	if err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error performing the request")
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK ||
+		resp.StatusCode == http.StatusCreated ||
+		resp.StatusCode == http.StatusAccepted {
+		return nil
+	}
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	var bodyErr []*ErrorResponse
+
+	if err := json.Unmarshal(respBody, &bodyErr); err != nil {
+		logrus.WithFields(fields).
+			WithError(err).Error("error decoding json response")
+		return ErrDefaultBoletos
+	}
+
+	if len(bodyErr) > 0 {
+		errModel := bodyErr[0]
+		if err := FindError(errModel.Code, errModel.Message); err != nil {
+			logrus.WithField("bankly_error", bodyErr).WithFields(fields).
+				WithError(err).Error("bankly create boleto error")
+			return err
+		}
+	}
+
+	return ErrDefaultBoletos
+}
+
+// FilterBankslipByUpdateAt ...
+func (b *Boletos) FilterBankslipByUpdateAt(ctx context.Context, date time.Time) (*FilterBoletoResponse, error) {
+
+	// only at 1.0 api version
+	apiVersion := "1.0"
+
+	fields := logrus.Fields{
+		"request_id":  grok.GetRequestID(ctx),
+		"api_version": apiVersion,
+		"object":      date,
 	}
 
 	u, err := url.Parse(b.session.APIEndpoint)
@@ -331,7 +547,7 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 	}
 
 	req.Header.Add("Authorization", token)
-	req.Header.Add("api-version", b.session.APIVersion)
+	req.Header.Add("api-version", apiVersion)
 
 	resp, err := b.httpClient.Do(req)
 
@@ -347,12 +563,14 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 
 	if resp.StatusCode == http.StatusOK {
 		var response *FilterBoletoResponse
+
 		err = json.Unmarshal(respBody, &response)
 		if err != nil {
 			logrus.WithFields(fields).
 				WithError(err).Error("error decoding json response")
 			return nil, ErrDefaultBoletos
 		}
+
 		return response, nil
 	} else if resp.StatusCode == http.StatusNotFound {
 		logrus.WithFields(fields).Info("not found")
@@ -378,6 +596,7 @@ func (b *Boletos) FilterBoleto(ctx context.Context, date time.Time) (*FilterBole
 	return nil, ErrDefaultBoletos
 }
 
+/*
 // FindBoletoByBarCode ...
 func (b *Boletos) FindBoletoByBarCode(ctx context.Context, barcode string) (*BoletoDetailedResponse, error) {
 	requestID, _ := ctx.Value("Request-Id").(string)
@@ -482,152 +701,18 @@ func (b *Boletos) FindBoletoByBarCode(ctx context.Context, barcode string) (*Bol
 
 	return nil, ErrDefaultBoletos
 }
+*/
 
-// DownloadBoleto ...
-func (b *Boletos) DownloadBoleto(ctx context.Context, authenticationCode string, w io.Writer) error {
-	requestID, _ := ctx.Value("Request-Id").(string)
-	fields := logrus.Fields{
-		"request_id": requestID,
-	}
-
-	u, err := url.Parse(b.session.APIEndpoint)
-
-	if err != nil {
-		return err
-	}
-	u.Path = path.Join(u.Path, BoletosPath)
-	u.Path = path.Join(u.Path, authenticationCode)
-	u.Path = path.Join(u.Path, "pdf")
-	endpoint := u.String()
-
-	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
-
-	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error creating request")
-		return err
-	}
-
-	token, err := b.authentication.Token(ctx)
-
-	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error in authentication request")
-		return err
-	}
-
-	req.Header.Add("Authorization", token)
-	req.Header.Add("Content-type", "application/json")
-	req.Header.Add("api-version", b.session.APIVersion)
-
-	resp, err := b.httpClient.Do(req)
-
-	if err != nil {
-		logrus.
-			WithFields(fields).
-			WithError(err).
-			Error("error performing the request")
-		return err
-	}
-
-	if resp.StatusCode == http.StatusOK {
-		_, err := io.Copy(w, resp.Body)
-		if err != nil {
-			logrus.
-				WithFields(fields).
-				WithError(err).
-				Error("error writting bytes to writer")
-			return ErrDefaultBoletos
-		}
-
-		return nil
-	}
-
-	if resp.StatusCode == http.StatusNotFound {
-		return ErrEntryNotFound
-	}
-
-	return ErrDefaultBoletos
-}
-
-// CancelBoleto ...
-func (b *Boletos) CancelBoleto(ctx context.Context, model *CancelBoletoRequest) error {
-
-	fields := logrus.Fields{
-		"request_id": GetRequestID(ctx),
-		"object":     model,
-	}
-
-	// validator
-	err := grok.Validator.Struct(model)
-	if err != nil {
-		logrus.WithFields(fields).WithError(err).Error("error cancel boleto validator")
-		return grok.FromValidationErros(err)
-	}
-
-	u, err := url.Parse(b.session.APIEndpoint)
-	if err != nil {
-		logrus.WithFields(fields).
-			WithError(err).Error("error parsing api endpoint")
-		return err
-	}
-	u.Path = path.Join(u.Path, BoletosPath)
-	u.Path = path.Join(u.Path, "cancel")
-	endpoint := u.String()
-
-	// mashal
-	reqbyte, err := json.Marshal(model)
-	if err != nil {
-		logrus.WithFields(fields).
-			WithError(err).Error("error encoding model to json")
-		return err
-	}
-
-	req, err := http.NewRequestWithContext(ctx, "DELETE", endpoint, bytes.NewReader(reqbyte))
-	if err != nil {
-		logrus.WithFields(fields).
-			WithError(err).Error("error creating request")
-		return err
-	}
-
-	token, err := b.authentication.Token(ctx)
-	if err != nil {
-		logrus.WithFields(fields).
-			WithError(err).Error("error in authentication request")
-		return err
-	}
-
-	req.Header.Add("Authorization", token)
-	req.Header.Add("Content-type", "application/json")
-	req.Header.Add("api-version", b.session.APIVersion)
-
-	// call bankly
-	resp, err := b.httpClient.Do(req)
-	if err != nil {
-		logrus.WithFields(fields).
-			WithError(err).Error("error performing the request")
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusOK {
-		return nil
-	}
-
-	logrus.WithFields(fields).Error("error default - cancel boletos")
-
-	return ErrDefaultBoletos
-}
-
+/*
 // SimulatePayment ...
 func (b *Boletos) SimulatePayment(ctx context.Context, model *SimulatePaymentRequest) error {
-	err := grok.Validator.Struct(model)
 
+	// api version
+	if model.APIVersion == nil {
+		model.APIVersion = aws.String(b.session.APIVersion)
+	}
+
+	err := grok.Validator.Struct(model)
 	if err != nil {
 		return grok.FromValidationErros(err)
 	}
@@ -662,7 +747,7 @@ func (b *Boletos) SimulatePayment(ctx context.Context, model *SimulatePaymentReq
 
 	req.Header.Add("Authorization", token)
 	req.Header.Add("Content-type", "application/json")
-	req.Header.Add("api-version", b.session.APIVersion)
+	req.Header.Add("api-version", *model.APIVersion)
 
 	resp, err := b.httpClient.Do(req)
 
@@ -693,3 +778,4 @@ func (b *Boletos) SimulatePayment(ctx context.Context, model *SimulatePaymentReq
 
 	return ErrDefaultBoletos
 }
+*/

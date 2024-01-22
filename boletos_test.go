@@ -58,7 +58,7 @@ func (s *BoletosTestSuite) TestCreateBoleto_TypeLevy() {
 	s.ctx = context.WithValue(s.ctx, "Request-Id", primitive.NewObjectID().String())
 
 	request := createBoletoRequest(bankly.Levy)
-	response, err := s.boletos.CreateBoleto(s.ctx, request)
+	response, err := s.boletos.CreateBankslip(s.ctx, request)
 
 	s.assert.NoError(err)
 	s.assert.NotEmpty(response)
@@ -76,7 +76,7 @@ func (s *BoletosTestSuite) TestCreateBoleto_TypeDeposit() {
 	s.ctx = context.WithValue(s.ctx, "Request-Id", primitive.NewObjectID().String())
 
 	request := createBoletoRequest(bankly.Deposit)
-	response, err := s.boletos.CreateBoleto(s.ctx, request)
+	response, err := s.boletos.CreateBankslip(s.ctx, request)
 
 	s.assert.NoError(err)
 	s.assert.NotEmpty(response)
@@ -94,7 +94,7 @@ func (s *BoletosTestSuite) TestCreateBoletoAndSettle_TypeDeposit_Sandbox() {
 	s.ctx = context.WithValue(s.ctx, "Request-Id", primitive.NewObjectID().String())
 
 	request := createBoletoRequest(bankly.Deposit)
-	response, err := s.boletos.CreateBoleto(s.ctx, request)
+	response, err := s.boletos.CreateBankslip(s.ctx, request)
 
 	s.assert.NoError(err)
 	s.assert.NotEmpty(response)
@@ -102,8 +102,8 @@ func (s *BoletosTestSuite) TestCreateBoletoAndSettle_TypeDeposit_Sandbox() {
 	s.assert.Equal(request.Account.Branch, response.Account.Branch)
 	s.assert.Equal(request.Account.Number, response.Account.Number)
 
-	settleRequest := s.createSandboxSettleBoletoRequest(*request.Account, &response.AuthenticationCode)
-	err = s.boletos.SandboxSettleBoleto(&s.ctx, settleRequest)
+	settleRequest := s.createSandboxSimulateBankslipPaymentRequest(*request.Account, &response.AuthenticationCode)
+	err = s.boletos.SandboxSimulateBankslipPayment(&s.ctx, settleRequest)
 	s.assert.NoError(err)
 }
 
@@ -113,7 +113,7 @@ func (s *BoletosTestSuite) TestCreateBoleto_InvalidNameLength() {
 
 	request := createBoletoRequest(bankly.Levy)
 	request.Payer.Name = grok.GeneratorIDBase(51)
-	response, err := s.boletos.CreateBoleto(s.ctx, request)
+	response, err := s.boletos.CreateBankslip(s.ctx, request)
 
 	s.assert.Error(err)
 	s.assert.Empty(response)
@@ -125,7 +125,7 @@ func (s *BoletosTestSuite) TestCreateBoleto_InvalidTradeNameLength() {
 
 	request := createBoletoRequest(bankly.Levy)
 	request.Payer.Name = grok.GeneratorIDBase(81)
-	response, err := s.boletos.CreateBoleto(s.ctx, request)
+	response, err := s.boletos.CreateBankslip(s.ctx, request)
 
 	s.assert.Error(err)
 	s.assert.Empty(response)
@@ -141,7 +141,7 @@ func (s *BoletosTestSuite) TestFindBoleto() {
 
 	// create boleto
 	request := createBoletoRequest(bankly.Deposit)
-	response, err := s.boletos.CreateBoleto(s.ctx, request)
+	response, err := s.boletos.CreateBankslip(s.ctx, request)
 
 	s.assert.NoError(err)
 	s.assert.NotEmpty(response)
@@ -155,7 +155,7 @@ func (s *BoletosTestSuite) TestFindBoleto() {
 	}
 
 	// find boleto
-	r, err := s.boletos.FindBoleto(s.ctx, findRequest)
+	r, err := s.boletos.FindBankslip(s.ctx, findRequest)
 
 	s.assert.NoError(err)
 	s.assert.NotNil(r)
@@ -171,7 +171,7 @@ func (s *BoletosTestSuite) TestCancelBoleto() {
 
 	// create boleto
 	request := createBoletoRequest(bankly.Deposit)
-	response, err := s.boletos.CreateBoleto(s.ctx, request)
+	response, err := s.boletos.CreateBankslip(s.ctx, request)
 
 	s.assert.NoError(err)
 	s.assert.NotEmpty(response)
@@ -179,7 +179,7 @@ func (s *BoletosTestSuite) TestCancelBoleto() {
 	// time.Sleep(time.Second * 3)
 
 	// cancel boleto
-	err = s.boletos.CancelBoleto(s.ctx,
+	err = s.boletos.CancelBankslip(s.ctx,
 		&bankly.CancelBoletoRequest{
 			AuthenticationCode: response.AuthenticationCode,
 			Account: &bankly.Account{
@@ -226,9 +226,10 @@ func createBoletoRequest(boletoType bankly.BoletoType) *bankly.BoletoRequest {
 	return request
 }
 
-// createSandboxSettleBoletoRequest create BoletoRequest object to tests
-func (s *BoletosTestSuite) createSandboxSettleBoletoRequest(account bankly.Account, authenticationCode *string) *bankly.SandboxSettleBoletoRequest {
-	return &bankly.SandboxSettleBoletoRequest{
+// createSandboxSimulateBankslipPaymentRequest create BoletoRequest object to tests
+func (s *BoletosTestSuite) createSandboxSimulateBankslipPaymentRequest(account bankly.Account,
+	authenticationCode *string) *bankly.SandboxSimulateBankslipPaymentRequest {
+	return &bankly.SandboxSimulateBankslipPaymentRequest{
 		AuthenticationCode: *authenticationCode,
 		Account:            account,
 	}
@@ -240,7 +241,7 @@ func createInterest(dueDate time.Time) *bankly.BoletoInterest {
 	return &bankly.BoletoInterest{
 		StartDate: *bankly.OnlyDate(&dueDate1D),
 		Value:     2.00,
-		Type:      bankly.PercentPerMonth,
+		Type:      bankly.PercentInterestType,
 	}
 }
 
@@ -250,7 +251,7 @@ func createFine(dueDate time.Time) *bankly.BoletoFine {
 	return &bankly.BoletoFine{
 		StartDate: *bankly.OnlyDate(&dueDate1D),
 		Value:     1.75,
-		Type:      bankly.Percent,
+		Type:      bankly.PercentFineType,
 	}
 }
 
@@ -260,6 +261,6 @@ func createDiscount(dueDate time.Time) *bankly.BoletoDiscounts {
 	return &bankly.BoletoDiscounts{
 		LimitDate: *bankly.OnlyDate(&previousDate),
 		Value:     1.75,
-		Type:      bankly.FixedPercentUntilLimitDate,
+		Type:      bankly.FixedPercentDiscountType,
 	}
 }
