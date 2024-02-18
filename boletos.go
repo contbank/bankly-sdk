@@ -218,6 +218,16 @@ func (b *Boletos) FindBankslip(ctx context.Context, model *FindBoletoRequest) (*
 			response.Discount = response.Discounts
 		}
 
+		// recipient origin
+		if response.RecipientOrigin != nil && response.RecipientOrigin.Address != nil && len(response.RecipientOrigin.Address.Neighborhood) == 0 {
+			response.RecipientOrigin.Address.Neighborhood = "NÃO INFORMADO"
+		}
+
+		// recipient final
+		if response.RecipientFinal != nil && response.RecipientFinal.Address != nil && len(response.RecipientFinal.Address.Neighborhood) == 0 {
+			response.RecipientFinal.Address.Neighborhood = "NÃO INFORMADO"
+		}
+
 		return response, nil
 	}
 
