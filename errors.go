@@ -426,7 +426,7 @@ func FindIncomeReportError(code string, messages ...string) *grok.Error {
 		}
 	}
 
-	return grok.NewError(http.StatusConflict, code, messages...)
+	return grok.NewError(http.StatusInternalServerError, code, messages...)
 }
 
 // verifyInvalidIncomeReportParameter Find the correspondent error message for income reports.
