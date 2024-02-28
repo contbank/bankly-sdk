@@ -68,6 +68,8 @@ func (s *IncomeReportTestSuite) TestIncomeReport_SUCCESS() {
 
 // TestIncomeReport_INVALID_ACCOUNT_NUMBER ...
 func (s *IncomeReportTestSuite) TestIncomeReport_INVALID_ACCOUNT_NUMBER() {
+	s.T().Skip("token")
+
 	report, err := s.bankIncomeReport.GetIncomeReport(s.ctx,
 		&bankly.IncomeReportRequest{
 			Account: "100000",
