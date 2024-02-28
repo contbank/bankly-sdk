@@ -556,9 +556,61 @@ type IncomeReportRequest struct {
 
 // IncomeReportResponse ...
 type IncomeReportResponse struct {
-	FileName    string `json:"fileName"`
-	ContentType string `json:"contentType"`
-	IncomeFile  string `json:"incomeFile"`
+	Data  IncomeReportData   `json:"data"`
+	Links []IncomeReportLink `json:"links"`
+}
+
+// IncomeReportData ...
+type IncomeReportData struct {
+	Holder  IncomeReportHolder   `json:"holder"`
+	Account IncomeReportAccount  `json:"account"`
+	Payers  []IncomeReportPayers `json:"payers"`
+}
+
+// IncomeReportHolder ...
+type IncomeReportHolder struct {
+	Type      string               `json:"type"`
+	CreatedAt time.Time            `json:"createdAt"`
+	Name      string               `json:"name"`
+	Document  IncomeReportDocument `json:"document"`
+}
+
+// IncomeReportDocument ...
+type IncomeReportDocument struct {
+	Value string `json:"value"`
+	Type  string `json:"type"`
+}
+
+// IncomeReportPayers ...
+type IncomeReportPayers struct {
+	Source struct {
+		Name     string               `json:"name"`
+		Document IncomeReportDocument `json:"document"`
+	} `json:"source"`
+	Currencies struct {
+		BRL struct {
+			Balances []struct {
+				Year   int `json:"year"`
+				Amount struct {
+					Value    float64 `json:"value"`
+					Currency string  `json:"currency"`
+				} `json:"amount"`
+			} `json:"balances"`
+		} `json:"brl"`
+	} `json:"currencies"`
+}
+
+// IncomeReportAccount ...
+type IncomeReportAccount struct {
+	Branch string `json:"branch"`
+	Number string `json:"number"`
+}
+
+// IncomeReportLink ...
+type IncomeReportLink struct {
+	URL    string `json:"url"`
+	Rel    string `json:"rel"`
+	Method string `json:"method"`
 }
 
 // TransfersAccountType ...
