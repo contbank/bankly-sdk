@@ -562,17 +562,17 @@ type IncomeReportResponse struct {
 
 // IncomeReportData ...
 type IncomeReportData struct {
-	Holder  IncomeReportHolder   `json:"holder"`
-	Account IncomeReportAccount  `json:"account"`
+	Holder  *IncomeReportHolder  `json:"holder"`
+	Account *IncomeReportAccount `json:"account"`
 	Payers  []IncomeReportPayers `json:"payers"`
 }
 
 // IncomeReportHolder ...
 type IncomeReportHolder struct {
-	Type      string               `json:"type"`
-	CreatedAt time.Time            `json:"createdAt"`
-	Name      string               `json:"name"`
-	Document  IncomeReportDocument `json:"document"`
+	Type      string                `json:"type"`
+	CreatedAt time.Time             `json:"createdAt"`
+	Name      string                `json:"name"`
+	Document  *IncomeReportDocument `json:"document"`
 }
 
 // IncomeReportDocument ...
@@ -581,23 +581,38 @@ type IncomeReportDocument struct {
 	Type  string `json:"type"`
 }
 
+// IncomeReportSource ...
+type IncomeReportSource struct {
+	Name     string                `json:"name"`
+	Document *IncomeReportDocument `json:"document"`
+}
+
 // IncomeReportPayers ...
 type IncomeReportPayers struct {
-	Source struct {
-		Name     string               `json:"name"`
-		Document IncomeReportDocument `json:"document"`
-	} `json:"source"`
-	Currencies struct {
-		BRL struct {
-			Balances []struct {
-				Year   int `json:"year"`
-				Amount struct {
-					Value    float64 `json:"value"`
-					Currency string  `json:"currency"`
-				} `json:"amount"`
-			} `json:"balances"`
-		} `json:"brl"`
-	} `json:"currencies"`
+	Source     *IncomeReportSource   `json:"source"`
+	Currencies *IncomeReportCurrency `json:"currencies"`
+}
+
+// IncomeReportCurrency ...
+type IncomeReportCurrency struct {
+	BRL *IncomeReportBRL `json:"brl"`
+}
+
+// IncomeReportBRL ...
+type IncomeReportBRL struct {
+	Balances []IncomeReportBalance `json:"balances"`
+}
+
+// IncomeReportBalance ...
+type IncomeReportBalance struct {
+	Year   int                 `json:"year"`
+	Amount *IncomeReportAmount `json:"amount"`
+}
+
+// IncomeReportAmount ...
+type IncomeReportAmount struct {
+	Value    float64 `json:"value"`
+	Currency string  `json:"currency"`
 }
 
 // IncomeReportAccount ...
