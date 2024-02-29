@@ -48,7 +48,6 @@ func (s *IncomeReportTestSuite) SetupTest() {
 
 // TestIncomeReport_SUCCESS ...
 func (s *IncomeReportTestSuite) TestIncomeReport_SUCCESS() {
-
 	s.T().Skip("token")
 
 	s.ctx = context.WithValue(s.ctx, "Request-Id", primitive.NewObjectID().Hex())
