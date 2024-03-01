@@ -3,11 +3,12 @@ package bankly
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/contbank/grok"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"path"
 )
 
 // IncomeReport ...
@@ -43,11 +44,25 @@ func (c *IncomeReport) GetIncomeReport(ctx context.Context,
 		return nil, grok.FromValidationErros(err)
 	}
 
-	// endpoint url
-	url := fmt.Sprintf("/accounts/%s/income-report?calendar=%s", model.Account, grok.OnlyDigits(model.Year))
-	fields["url"] = url
+	u, err := url.Parse(c.session.APIEndpoint)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).
+			Error("error parsing api endpoint")
+		return nil, err
+	}
 
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	u.Path = path.Join(u.Path, AccountsPath)
+	u.Path = path.Join(u.Path, model.Account)
+	u.Path = path.Join(u.Path, IncomeReportPath)
+
+	q := u.Query()
+
+	q.Set("calendar", grok.OnlyDigits(model.Year))
+
+	u.RawQuery = q.Encode()
+	endpoint := u.String()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 	if err != nil {
 		logrus.WithFields(fields).WithError(err).
 			Error("error request income report")
@@ -55,19 +70,22 @@ func (c *IncomeReport) GetIncomeReport(ctx context.Context,
 	}
 
 	token, err := c.authentication.Token(ctx)
-
 	if err != nil {
-		logrus.
-			WithError(err).
-			WithFields(fields).
+		logrus.WithFields(fields).WithError(err).
 			Error("error in authentication request")
 		return nil, err
 	}
 
 	req.Header.Add("Authorization", token)
+	req.Header.Add("Content-type", "application/json")
 	req.Header.Add("api-version", "2.0")
 
 	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		logrus.WithFields(fields).WithError(err).
+			Error("error performing the request")
+		return nil, err
+	}
 
 	defer resp.Body.Close()
 
