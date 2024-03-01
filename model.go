@@ -591,8 +591,15 @@ type IncomeReportSource struct {
 
 // IncomeReportPayers ...
 type IncomeReportPayers struct {
-	Source     *IncomeReportSource   `json:"source"`
-	Currencies *IncomeReportCurrency `json:"currencies"`
+	Source     *IncomeReportSource    `json:"source"`
+	Currencies *IncomeReportCurrency  `json:"currencies"`
+	NetIncome  *IncomeReportNetIncome `json:"netIncome"`
+}
+
+// IncomeReportNetIncome ...
+type IncomeReportNetIncome struct {
+	Year   int                `json:"year"`
+	Amount IncomeReportAmount `json:"amount"`
 }
 
 // IncomeReportCurrency ...
