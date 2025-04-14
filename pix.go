@@ -94,14 +94,19 @@ func (p *Pix) GetAddressKey(ctx context.Context, key string, currentIdentity str
 		return nil, err
 	}
 
-	response := new(PixAddressKeyResponse)
-	err = json.Unmarshal(respBody, &response)
-	if err != nil {
+	var rawResponse json.RawMessage
+	if err := json.Unmarshal(respBody, &rawResponse); err != nil {
+		logrus.WithFields(fields).WithError(err).Error("error decoding raw JSON response")
+		return nil, ErrDefaultPix
+	}
+
+	var response PixAddressKeyResponse
+	if err := response.UnmarshalJSON(rawResponse); err != nil {
 		logrus.WithFields(fields).WithError(err).Error("error decoding json response")
 		return nil, ErrDefaultPix
 	}
 
-	return response, nil
+	return &response, nil
 }
 
 // CashOut ...
