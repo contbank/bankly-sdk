@@ -1695,6 +1695,7 @@ type PixAddressKeyResponse struct {
 
 func parseTime(value string) (time.Time, error) {
 	var timeFormats = []string{
+		"2006-01-02T15:04:05.000-07:00",  // ISO8601 com offset de fuso horário
 		"2006-01-02T15:04:05.999999999Z", // ISO8601 com nanossegundos e Zulu
 		"2006-01-02T15:04:05.999999999",  // ISO8601 com nanossegundos
 		"2006-01-02T15:04:05.999Z",       // ISO8601 com milissegundos e Zulu
