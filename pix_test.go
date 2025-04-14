@@ -25,7 +25,7 @@ func TestPixTestSuite(t *testing.T) {
 func (s *PixTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
 	s.ctx = context.Background()
- 
+
 	session, err := bankly.NewSession(bankly.Config{
 		ClientID:     bankly.String(*bankly.GetEnvBanklyClientID()),
 		ClientSecret: bankly.String(*bankly.GetEnvBanklyClientSecret()),
@@ -131,7 +131,7 @@ func (c *PixTestSuite) TestCreatePixByEVP_OK() {
 }
 
 func (c *PixTestSuite) TestDeletePixByAddressKey_OK() {
-	
+
 	c.T().Skip("Bankly falhando")
 
 	addressingKeyValue := "41345365373"
@@ -184,10 +184,9 @@ func builderClaimRequest(typePix bankly.PixType, valuePix string, accountNumber 
 			Branch: "0001",
 			Number: accountNumber,
 			Bank: bankly.BankClaimer{
-				Name: "Acesso Soluções de Pagamento S.A",
+				Name: " Soluções de Pagamento S.A",
 				Ispb: "13140088",
 			},
 		},
-		
 	}
 }

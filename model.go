@@ -1,6 +1,8 @@
 package bankly
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"time"
 
@@ -1689,6 +1691,58 @@ type PixAddressKeyResponse struct {
 	Status        string       `json:"status"`
 	CreatedAt     time.Time    `json:"createdAt"`
 	OwnedAt       time.Time    `json:"ownedAt"`
+}
+
+func parseTime(value string) (time.Time, error) {
+	var timeFormats = []string{
+		"2006-01-02T15:04:05.999999999Z", // ISO8601 com nanossegundos e Zulu
+		"2006-01-02T15:04:05.999999999",  // ISO8601 com nanossegundos
+		"2006-01-02T15:04:05.999Z",       // ISO8601 com milissegundos e Zulu
+		"2006-01-02T15:04:05.999",        // ISO8601 com milissegundos
+		"2006-01-02T15:04:05Z",           // ISO8601 sem fração de segundo e Zulu
+		"2006-01-02T15:04:05",            // ISO8601 sem fuso horário
+		"2006-01-02 15:04:05.999",        // Espaço em vez de 'T', com milissegundos
+		"2006-01-02 15:04:05",            // Espaço em vez de 'T'
+		"2006-01-02",                     // Apenas data
+	}
+
+	for _, format := range timeFormats {
+		if t, err := time.Parse(format, value); err == nil {
+			return t, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("invalid date format: %s", value)
+}
+
+func (p *PixAddressKeyResponse) UnmarshalJSON(data []byte) error {
+	type Alias PixAddressKeyResponse // Evita recursão infinita
+	aux := &struct {
+		CreatedAt string `json:"createdAt"`
+		OwnedAt   string `json:"ownedAt"`
+		*Alias
+	}{
+		Alias: (*Alias)(p),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	// Tenta parsear o campo CreatedAt com múltiplos formatos
+	createdAt, err := parseTime(aux.CreatedAt)
+	if err != nil {
+		return fmt.Errorf("failed to parse CreatedAt: %w", err)
+	}
+	p.CreatedAt = createdAt
+
+	// Tenta parsear o campo OwnedAt com múltiplos formatos
+	ownedAt, err := parseTime(aux.OwnedAt)
+	if err != nil {
+		return fmt.Errorf("failed to parse OwnedAt: %w", err)
+	}
+	p.OwnedAt = ownedAt
+
+	return nil
 }
 
 type PixTypeValue struct {
